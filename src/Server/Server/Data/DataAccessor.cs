@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
-using SmartHome.Server.Data.Models;
+using Server.Data.Models.Descriptors.Database;
 using System.Data;
 
 namespace SmartHome.Server.Data;
@@ -18,17 +18,17 @@ public sealed class DataAccessor
         return await connection.QuerySingleAsync<T>(procedureName, parameters, commandType: CommandType.StoredProcedure);
     }
 
-    public async Task<StationDescriptor> CreateStation(StationDescriptor stationDescriptor)
+    public async Task<StationDatabaseDescriptor> CreateStation(StationDatabaseDescriptor stationDescriptor)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@mac_address", stationDescriptor.MacAddress);
         parameters.Add("@ip_address", stationDescriptor.IpAddress);
         parameters.Add("@alias", stationDescriptor.Alias, size: 100);
 
-        return await CreateEntity<StationDescriptor>("create_station", parameters);
+        return await CreateEntity<StationDatabaseDescriptor>("create_station", parameters);
     }
 
-    public async Task<ElectricalSwitchDescriptor> CreatePowerSwitch(ElectricalSwitchDescriptor electricalSwitchDescriptor)
+    public async Task<ElectricalSwitchApiDescriptor> CreatePowerSwitch(ElectricalSwitchApiDescriptor electricalSwitchDescriptor)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@station_identifier", electricalSwitchDescriptor.StationIdentifier);
@@ -36,6 +36,6 @@ public sealed class DataAccessor
         parameters.Add("@alias", electricalSwitchDescriptor.Alias, size: 100);
         parameters.Add("@is_closed", electricalSwitchDescriptor.IsClosed);
         
-        return await CreateEntity<ElectricalSwitchDescriptor>("create_electrical_switch", parameters);
+        return await CreateEntity<ElectricalSwitchApiDescriptor>("create_electrical_switch", parameters);
     }
 }
