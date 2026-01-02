@@ -1,5 +1,9 @@
 using Dapper;
-using SmartHome.Server.Data.TypeHandlers;
+using Server.Data.Database;
+using Server.Data.Repositories;
+using Server.Data.TypeHandlers.Dapper;
+
+const string ConnectionString = "Server=127.0.0.1;Database=smart_home;User Id=smart_home_controller;Password=1234; Encrypt=True; TrustServerCertificate=True";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,9 +12,19 @@ DefaultTypeMap.MatchNamesWithUnderscores = true;    // Enable mapping of snake c
 SqlMapper.AddTypeHandler(new PhysicalAddressHandler());
 SqlMapper.AddTypeHandler(new IPAddressHandler());
 
+builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
+builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
+builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
+
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
+    });
 
 var app = builder.Build();
 

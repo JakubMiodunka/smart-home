@@ -61,10 +61,11 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="tables\stations.sql" />
-    <Build Include="stored_procedures\SP_station_create.sql" />
+    <Build Include="stored_procedures\SP_stations_create.sql" />
     <Build Include="tables\electrical_switches.sql" />
-    <Build Include="stored_procedures\SP_electrical_switch_create.sql" />
-    <Build Include="stored_procedures\SP_station_exists.sql" />
+    <Build Include="stored_procedures\SP_electrical_switches_create.sql" />
+    <Build Include="stored_procedures\SP_stations_get.sql" />
+    <Build Include="stored_procedures\SP_stations_update.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Database.refactorlog" />

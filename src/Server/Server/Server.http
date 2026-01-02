@@ -1,6 +1,9 @@
 @Server_HostAddress = http://localhost:5236
 
-GET {{Server_HostAddress}}/weatherforecast/
+POST {{Server_HostAddress}}/api/v1/stations
 Accept: application/json
-
+CONTENT-TYPE: application/json
+{
+    "MacAddress": "001A2B3C4D5E"
+}
 ###

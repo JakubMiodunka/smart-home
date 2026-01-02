@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Server.Data.Models.Dtos;
-using Server.Data.Models.Entities;
 using Server.Data.Repositories;
+using SmartHome.Server.Data.Models.Dtos;
+using SmartHome.Server.Data.Models.Entities;
+using System.Net;
 
 namespace Server.Controllers;
 
@@ -9,21 +10,25 @@ namespace Server.Controllers;
 [Route("api/v1/stations")]
 public class StationsController : ControllerBase
 {
-    private readonly IStationRepository _stationRepository;
+    private readonly IStationsRepository _stationsRepository;
 
-    public StationsController(IStationRepository stationRepository)
-    {
-        _stationRepository = stationRepository;
-    }
+    public StationsController(IStationsRepository stationsRepository) =>
+        _stationsRepository = stationsRepository;
 
     [HttpPost]
-    public async Task<IActionResult> ReqisterStation([FromBody] StationDto stationDto)
+    public async Task<IActionResult> RegisterStation([FromBody] StationDto stationDto)
     {
-        if (await _stationRepository.IsStationExistAsync(stationDto.MacAddress))
+        StationEntity? knownStation = await _stationsRepository.GetSingleStationAsync(macAddress: stationDto.MacAddress, ignoreMacAddress: false);
+        bool isKnownStation = knownStation is not null;
+        IPAddress? stationIpAddress = HttpContext.Connection.RemoteIpAddress;
+
+        if (isKnownStation)
         {
-            return Ok();
+            StationEntity? updatedStation = await _stationsRepository.UpdateStationAsync(stationDto.MacAddress, ipAddress: stationIpAddress, ignoreIpAddress: false);
+            return Ok(updatedStation?.ToDto());
         }
 
-        // TODO: Continue here.
+        StationEntity newStationEntity = await _stationsRepository.CreateStationAsync(stationDto.MacAddress, stationIpAddress);
+        return CreatedAtAction(nameof(RegisterStation), new { id = newStationEntity.Id }, newStationEntity.ToDto());
     }
 }
