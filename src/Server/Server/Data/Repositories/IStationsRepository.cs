@@ -37,7 +37,7 @@ public interface IStationsRepository
     /// <returns>
     /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    Task<StationEntity?> GetSingleStationAsync(bool filterByMacAddress = true, PhysicalAddress? macAddress = null);
+    Task<StationEntity?> GetSingleStationAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
 
     /// <summary>
     /// Retrieves stations from the repository basing on provided criteria.
@@ -52,7 +52,7 @@ public interface IStationsRepository
     /// <returns>
     /// Collection of stations that match the provided criteria.
     /// </returns>
-    Task<StationEntity[]> GetMultipleStationsAsync(bool filterByMacAddress = true, PhysicalAddress? macAddress = null);
+    Task<StationEntity[]> GetMultipleStationsAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
 
     /// <summary>
     /// Updates properties of specified station.
@@ -71,5 +71,5 @@ public interface IStationsRepository
     /// The updated station model saved within the repository.
     /// If the specified station does not exist, <see langword="null"/> reference is returned.
     /// </returns>
-    Task<StationEntity?> UpdateStationAsync(PhysicalAddress macAddress, bool updateIpAddress = true, IPAddress? ipAddress = null);
+    Task<StationEntity?> UpdateStationAsync(PhysicalAddress macAddress, bool updateIpAddress = false, IPAddress? ipAddress = null);
 }

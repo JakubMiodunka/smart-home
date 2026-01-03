@@ -174,7 +174,7 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <returns>
     /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    public async Task<StationEntity?> GetSingleStationAsync(bool filterByMacAddress = true, PhysicalAddress? macAddress = null)
+    public async Task<StationEntity?> GetSingleStationAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@filter_by_mac_address", filterByMacAddress);
@@ -196,7 +196,7 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <returns>
     /// Collection of stations that match the provided criteria.
     /// </returns>
-    public async Task<StationEntity[]> GetMultipleStationsAsync(bool filterByMacAddress = true, PhysicalAddress? macAddress = null)
+    public async Task<StationEntity[]> GetMultipleStationsAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@filter_by_mac_address", filterByMacAddress);
@@ -225,7 +225,7 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a null reference.
     /// </exception>
-    public async Task<StationEntity?> UpdateStationAsync(PhysicalAddress macAddress, bool updateIpAddress = true, IPAddress? ipAddress = null)
+    public async Task<StationEntity?> UpdateStationAsync(PhysicalAddress macAddress, bool updateIpAddress = false, IPAddress? ipAddress = null)
     {
         ArgumentNullException.ThrowIfNull(macAddress, nameof(macAddress));
 
