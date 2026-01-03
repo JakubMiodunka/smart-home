@@ -12,19 +12,20 @@ DefaultTypeMap.MatchNamesWithUnderscores = true;    // Enable mapping of snake c
 SqlMapper.AddTypeHandler(new PhysicalAddressHandler());
 SqlMapper.AddTypeHandler(new IPAddressHandler());
 
+// JSON serializer configuration
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
+    });
+
+// Dependency injection configuration
 builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
-    });
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 

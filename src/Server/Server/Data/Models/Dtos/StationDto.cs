@@ -3,7 +3,7 @@
 namespace SmartHome.Server.Data.Models.Dtos;
 
 /// <summary>
-/// Data transfer object (DTO) representing the general details of a station reqistered within the system.
+/// Data transfer object (DTO) representing the general details of a station functioning within the system.
 /// Used for data exchange between the server and the API clients.
 /// </summary>
 /// <param name="MacAddress">

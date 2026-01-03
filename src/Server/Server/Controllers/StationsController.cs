@@ -18,12 +18,22 @@ public class StationsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> RegisterStation([FromBody] StationDto stationDto)
     {
-        StationEntity? knownStation = await _stationsRepository.GetSingleStationAsync(macAddress: stationDto.MacAddress, ignoreMacAddress: false);
-        bool isKnownStation = knownStation is not null;
         IPAddress? stationIpAddress = HttpContext.Connection.RemoteIpAddress;
 
-        if (isKnownStation)
+        if (stationIpAddress is null)
         {
+            return BadRequest("Could not determine station IP address.");
+        }
+
+        StationEntity? knownStation = await _stationsRepository.GetSingleStationAsync(macAddress: stationDto.MacAddress, ignoreMacAddress: false);
+
+        if (knownStation is not null)
+        {
+            if (knownStation.IpAddress == stationIpAddress)
+            {
+                return Ok(knownStation.ToDto());
+            }
+
             StationEntity? updatedStation = await _stationsRepository.UpdateStationAsync(stationDto.MacAddress, ipAddress: stationIpAddress, ignoreIpAddress: false);
             return Ok(updatedStation?.ToDto());
         }

@@ -5,18 +5,19 @@ using System.Net.NetworkInformation;
 namespace Server.Data.Repositories;
 
 /// <summary>
-/// Defines interactions with repositories agreagting details about stations within the system.
+/// Defines interactions with repositories aggregating details about stations within the system.
 /// </summary>
 public interface IStationsRepository
 {
     /// <summary>
-    /// Creates a new station within the repository.
+    /// Creates a new representation of station within the repository.
     /// </summary>
     /// <param name="macAddress">
-    /// Unique MAC address of the station.
+    /// MAC address of the station.
+    /// Shall be unique within the repository.
     /// </param>
     /// <param name="ipAddress">
-    /// Unique IP address of the station.
+    /// IP address of the station.
     /// </param>
     /// <returns>
     /// Station model saved within the repository.
@@ -24,50 +25,51 @@ public interface IStationsRepository
     Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress);
 
     /// <summary>
-    /// Retrivaes single station from the repository basing on provided criteria.
+    /// Retrieves single station from the repository basing on provided criteria.
     /// </summary>
-    /// <param name="macAddress">
-    /// Filter by privided vaule of MAC address.
+    /// <param name="filterByMacAddress">
+    /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
     /// </param>
-    /// <param name="ignoreMacAddress">
-    /// True, if filtering by MAC address shall be skipped, false otherwise.
+    /// <param name="macAddress">
+    /// Value of MAC address by which stations shall be filtered.
+    /// Ignored if value of <paramref name="filterByMacAddress"/> is set to <see langword="false"/>.
     /// </param>
     /// <returns>
-    /// Station model matching provided criteria.
-    /// If no station stored within repository matches provided criteria, null reference is returned.
+    /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    Task<StationEntity?> GetSingleStationAsync(PhysicalAddress? macAddress = null, bool ignoreMacAddress = true);
+    Task<StationEntity?> GetSingleStationAsync(bool filterByMacAddress = true, PhysicalAddress? macAddress = null);
 
     /// <summary>
-    /// Retrivaes stations from the repository basing on provided criteria.
+    /// Retrieves stations from the repository basing on provided criteria.
     /// </summary>
-    /// <param name="macAddress">
-    /// Filter by privided MAC address.
-    /// If null reference, filtering by MAC address is skipped.
+    /// <param name="filterByMacAddress">
+    /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
+    /// Ignored if value of <paramref name="filterByMacAddress"/> is set to <see langword="false"/>.
     /// </param>
-    /// <param name="ignoreMacAddress">
-    /// True, if filtering by MAC address shall be skipped, false otherwise.
+    /// <param name="macAddress">
+    /// Value of MAC address by which stations shall be filtered.
     /// </param>
     /// <returns>
-    /// Collection of station models matching provided criteria.
+    /// Collection of stations that match the provided criteria.
     /// </returns>
-    Task<StationEntity[]> GetMultipleStationsAsync(PhysicalAddress? macAddress = null, bool ignoreMacAddress = true);
+    Task<StationEntity[]> GetMultipleStationsAsync(bool filterByMacAddress = true, PhysicalAddress? macAddress = null);
 
     /// <summary>
-    /// Updates properties of station with specified ID.
+    /// Updates properties of specified station.
     /// </summary>
     /// <param name="macAddress">
-    /// Unique MAC address of the station, which shall be updated.
+    /// Specifies which station shall be updated.
+    /// </param>
+    /// <param name="updateIpAddress">
+    /// <see langword="true"/> if IP address of specified station shall be updated, <see langword="false"/> otherwise.
     /// </param>
     /// <param name="ipAddress">
     /// New IP address of the station.
-    /// </param>
-    /// <param name="ignoreIpAddress">
-    /// True if updating station IP address shall be skipped, false otherwise.
+    /// Ignored if value of <paramref name="updateIpAddress"/> is set to <see langword="false"/>.
     /// </param>
     /// <returns>
-    /// Updated station model saved within the repository.
-    /// If station with specified ID does not exist within the repository, null reference is returned.
+    /// The updated station model saved within the repository.
+    /// If the specified station does not exist, <see langword="null"/> reference is returned.
     /// </returns>
-    Task<StationEntity?> UpdateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress = null, bool ignoreIpAddress = true);
+    Task<StationEntity?> UpdateStationAsync(PhysicalAddress macAddress, bool updateIpAddress = true, IPAddress? ipAddress = null);
 }
