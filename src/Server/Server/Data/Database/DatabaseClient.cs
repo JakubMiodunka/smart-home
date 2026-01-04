@@ -5,7 +5,7 @@ using System.Data;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace Server.Data.Database;
+namespace SmartHome.Server.Data.Database;
 
 /// <summary>
 /// Database client handling interactions with the database.
@@ -133,7 +133,6 @@ public sealed class DatabaseClient : IDatabaseClient
     #endregion
 
     #region Data access - stations
-
     /// <summary>
     /// Creates a new representation of station within the database.
     /// </summary>

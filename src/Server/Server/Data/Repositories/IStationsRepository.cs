@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace Server.Data.Repositories;
+namespace SmartHome.Server.Data.Repositories;
 
 /// <summary>
 /// Defines interactions with repositories aggregating details about stations within the system.

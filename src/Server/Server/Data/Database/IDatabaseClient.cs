@@ -1,6 +1,6 @@
-﻿using Server.Data.Repositories;
+﻿using SmartHome.Server.Data.Repositories;
 
-namespace Server.Data.Database;
+namespace SmartHome.Server.Data.Database;
 
 /// <summary>
 /// Defines interactions with the database client containing all data aggregated by the system.

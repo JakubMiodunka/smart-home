@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Server.Data.Repositories;
 using SmartHome.Server.Data.Models.Dtos;
 using SmartHome.Server.Data.Models.Entities;
+using SmartHome.Server.Data.Repositories;
 using System.Net;
 
-namespace Server.Controllers;
+namespace SmartHome.Server.Controllers;
 
 /// <summary>
 /// Controller dedicated to managing stations.
@@ -14,6 +14,7 @@ namespace Server.Controllers;
 public class StationsController : ControllerBase
 {
     #region Properties
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IStationsRepository _stationsRepository;
     #endregion
 
@@ -21,13 +22,21 @@ public class StationsController : ControllerBase
     /// <summary>
     /// Creates an new controller instance.
     /// </summary>
+    /// <param name="httpContextAccessor">
+    /// Provides access to the <see cref="HttpContext"/> of the current request.
+    /// </param>
     /// <param name="stationsRepository">
     /// Station repository which shall be managed by this controller.
     /// </param>
-    public StationsController(IStationsRepository stationsRepository)
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
+    /// </exception>
+    public StationsController(IHttpContextAccessor httpContextAccessor, IStationsRepository stationsRepository)
     {
+        ArgumentNullException.ThrowIfNull(httpContextAccessor, nameof(httpContextAccessor));
         ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
 
+        _httpContextAccessor = httpContextAccessor;
         _stationsRepository = stationsRepository;
     }
     #endregion
@@ -50,7 +59,7 @@ public class StationsController : ControllerBase
     {
         ArgumentNullException.ThrowIfNull(stationDto, nameof(stationDto));
 
-        IPAddress? stationIpAddress = HttpContext.Connection.RemoteIpAddress;
+        IPAddress? stationIpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
         
         if (stationIpAddress is null)
         {

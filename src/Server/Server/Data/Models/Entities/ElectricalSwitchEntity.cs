@@ -3,7 +3,6 @@ using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Entities;
 
-
 /// <summary>
 /// Entity representing the details of an electrical switch functioning within the system.
 /// Used for data exchange between the server and the database.

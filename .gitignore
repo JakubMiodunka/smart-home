@@ -9,3 +9,6 @@ src/Server/Server/obj/
 
 src/Server/Database/bin/
 src/Server/Database/obj/
+
+src/Server/UnitTests/bin/
+src/Server/UnitTests/obj/

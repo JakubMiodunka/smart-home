@@ -1,7 +1,8 @@
 using Dapper;
-using Server.Data.Database;
-using Server.Data.Repositories;
-using Server.Data.TypeHandlers.Dapper;
+using SmartHome.Server.Data.Database;
+using SmartHome.Server.Data.Repositories;
+using SmartHome.Server.Data.Converters.Dapper;
+using SmartHome.Server.Data.Converters.JsonSerializer;
 
 const string ConnectionString = "Server=127.0.0.1;Database=smart_home;User Id=smart_home_controller;Password=1234; Encrypt=True; TrustServerCertificate=True";
 
@@ -23,6 +24,7 @@ builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
