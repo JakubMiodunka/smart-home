@@ -119,7 +119,7 @@ public class IPAddressHandlerTests
     }
 
     [Test]
-    public void ParsingImpossibleUsingInvalidString()
+    public void ParsingImpossibleUsingInvalidIpAddressString()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
         
