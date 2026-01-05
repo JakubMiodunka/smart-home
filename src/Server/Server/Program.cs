@@ -20,11 +20,11 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     });
 
 // Dependency injection configuration
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();

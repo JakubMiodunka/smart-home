@@ -16,20 +16,6 @@ namespace SmartHome.UnitTests.Server.Controllers;
 [Author("Jakub Miodunka")]
 public sealed class StationsControllerTests
 {
-
-    private Mock<IHttpContextAccessor> CreateHttpContextAccessorFake(IPAddress remoteIpAddress)
-    {
-        ArgumentNullException.ThrowIfNull(remoteIpAddress, nameof(remoteIpAddress));
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Connection.RemoteIpAddress = remoteIpAddress;
-
-        var httpContextAccessorFake = new Mock<IHttpContextAccessor>();
-        httpContextAccessorFake.Setup(fake => fake.HttpContext).Returns(httpContext);
-
-        return httpContextAccessorFake;
-    }
-
     #region Test cases
     [Test]
     public void InstantiationPossible()
@@ -71,7 +57,7 @@ public sealed class StationsControllerTests
 
         IPAddress stationIpAddress = randomizer.NextIpAddress();
         Mock<IHttpContextAccessor> httpContextAccessorStub = 
-            CreateHttpContextAccessorFake(stationIpAddress);
+            TestDataGenerator.CreateHttpContextAccessorFake(stationIpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         
@@ -104,7 +90,8 @@ public sealed class StationsControllerTests
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         IPAddress stationNewIpAddress = randomizer.NextIpAddress();
-        Mock<IHttpContextAccessor> httpContextAccessorStub = CreateHttpContextAccessorFake(stationNewIpAddress);
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(stationNewIpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
 
