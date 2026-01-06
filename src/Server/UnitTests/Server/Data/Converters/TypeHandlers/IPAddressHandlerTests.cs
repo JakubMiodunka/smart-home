@@ -10,7 +10,7 @@ namespace SmartHome.UnitTests.Server.Data.Converters.TypeHandlers;
 [Category("UnitTest")]
 [TestOf(typeof(IPAddressHandler))]
 [Author("Jakub Miodunka")]
-public class IPAddressHandlerTests
+public sealed class IPAddressHandlerTests
 {
     #region Test cases
     [Test]
