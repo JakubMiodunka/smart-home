@@ -163,6 +163,13 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <summary>
     /// Retrieves single station from the database basing on provided criteria.
     /// </summary>
+    /// <param name="filterById">
+    /// <see langword="true"/>, if filtering by ID shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="macAddress">
+    /// Value of ID by which stations shall be filtered.
+    /// Ignored if value of <paramref name="filterById"/> is set to <see langword="false"/>.
+    /// </param>
     /// <param name="filterByMacAddress">
     /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
     /// </param>
@@ -173,9 +180,13 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <returns>
     /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    public async Task<StationEntity?> GetSingleStationAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null)
+    public async Task<StationEntity?> GetSingleStationAsync(
+        bool filterById = false, long? id = null,
+        bool filterByMacAddress = false, PhysicalAddress? macAddress = null)
     {
         var parameters = new DynamicParameters();
+        parameters.Add("@filter_by_id", filterById);
+        parameters.Add("@id", id);
         parameters.Add("@filter_by_mac_address", filterByMacAddress);
         parameters.Add("@mac_address", macAddress);
 

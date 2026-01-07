@@ -1,9 +1,18 @@
 @Server_HostAddress = http://localhost:5236
 
+### Station registration
+
 POST {{Server_HostAddress}}/api/v1/stations
 Accept: application/json
 CONTENT-TYPE: application/json
 {
-    "MacAddress": "001A2B3C4D5E"
+    "macAddress": "001A2B3C4D5F"
 }
+
+### Get station
+
+GET {{Server_HostAddress}}/api/v1/stations/4
+Accept: application/json
+CONTENT-TYPE: application/json
+
 ###

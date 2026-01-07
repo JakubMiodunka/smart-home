@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework.Internal;
+using SmartHome.Server.Data.Models.Entities;
 using System.Net;
 using System.Net.NetworkInformation;
 
@@ -22,5 +23,16 @@ internal static class RandomizerExtensions
         var ipAddress = new byte[4];
         randomizer.NextBytes(ipAddress);
         return new IPAddress(ipAddress);
+    }
+
+    public static StationEntity NextStationEntity(this Randomizer randomizer)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        long Id = randomizer.NextInt64(1, long.MaxValue);
+        PhysicalAddress macAddress = randomizer.NextMacAddress();
+        IPAddress ipAddress = randomizer.NextIpAddress();
+
+        return new StationEntity(Id, macAddress, ipAddress);
     }
 }

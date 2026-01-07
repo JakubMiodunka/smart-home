@@ -8,7 +8,7 @@ namespace UnitTests;
 
 internal static class TestDataGenerator
 {
-    public static Mock<IHttpContextAccessor> CreateHttpContextAccessorFake(IPAddress remoteIpAddress)
+    public static Mock<IHttpContextAccessor> CreateHttpContextAccessorFake(IPAddress? remoteIpAddress = null)
     {
         ArgumentNullException.ThrowIfNull(remoteIpAddress, nameof(remoteIpAddress));
 

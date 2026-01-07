@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Controllers;
@@ -11,6 +12,7 @@ using UnitTests;
 
 namespace SmartHome.UnitTests.Server.Controllers;
 
+// TODO: Add tests for HTTP responses.
 [Category("UnitTest")]
 [TestOf(typeof(StationsController))]
 [Author("Jakub Miodunka")]
@@ -61,8 +63,9 @@ public sealed class StationsControllerTests
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         
-        stationsRepositoryMock.Setup(mock => mock
-            .GetSingleStationAsync(filterByMacAddress: true, macAddress: It.IsAny<PhysicalAddress>()))
+        stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
+            filterById: false, id: It.IsAny<long>(),
+            filterByMacAddress: true, macAddress: It.IsAny<PhysicalAddress>()))
             .ReturnsAsync(null as StationEntity);
 
         long stationId = randomizer.NextInt64(1, long.MaxValue);
@@ -78,7 +81,7 @@ public sealed class StationsControllerTests
             stationsRepositoryMock.Object);
 
         var stationDto = new StationDto(stationMacAddress);
-        await controllerUnderTest.RegisterStation(stationDto);
+        IActionResult registrationResult = await controllerUnderTest.RegisterStation(stationDto);
 
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(stationMacAddress, stationIpAddress), Times.Once);
@@ -100,8 +103,9 @@ public sealed class StationsControllerTests
         IPAddress stationOldIpAddress = randomizer.NextIpAddress();
         var oldStationEntity = new StationEntity(stationId, stationMacAddress, stationOldIpAddress);
 
-        stationsRepositoryMock.Setup(mock => mock
-            .GetSingleStationAsync(filterByMacAddress: true, macAddress: stationMacAddress))
+        stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
+            filterById: false, id: It.IsAny<long?>(),
+            filterByMacAddress: true, macAddress: stationMacAddress))
             .ReturnsAsync(oldStationEntity);
 
         var newStationEntity = new StationEntity(stationId, stationMacAddress, stationNewIpAddress);
@@ -119,6 +123,32 @@ public sealed class StationsControllerTests
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(stationMacAddress, updateIpAddress: true, ipAddress: stationNewIpAddress), Times.Once);
+    }
+    
+    public async Task ControllerRetrievesExistingStation()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake();
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        StationEntity stationEntity = randomizer.NextStationEntity();
+
+        stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
+            filterById: true, id: stationEntity.Id,
+            filterByMacAddress: false, macAddress: It.IsAny<PhysicalAddress?>()))
+            .ReturnsAsync(stationEntity);
+
+        var controllerUnderTest = new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryMock.Object);
+
+        IActionResult retrievalResult = await controllerUnderTest.GetStation(stationEntity.Id);
+
+        stationsRepositoryMock.Verify(mock => mock
+            .GetSingleStationAsync(filterById: true, id: stationEntity.Id), Times.Once);
     }
     #endregion
 }

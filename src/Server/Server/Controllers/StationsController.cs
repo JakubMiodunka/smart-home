@@ -41,6 +41,7 @@ public class StationsController : ControllerBase
     }
     #endregion
 
+    // TODO: Refine this method.
     /// <summary>
     /// Registers a station within the system using details provided in request body.
     /// If the station is known to the server, details related to it will be updated on the server site accordingly.
@@ -57,7 +58,10 @@ public class StationsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> RegisterStation([FromBody] StationDto stationDto)
     {
-        ArgumentNullException.ThrowIfNull(stationDto, nameof(stationDto));
+        if (stationDto is null)
+        {
+            return BadRequest("Station details must be provided in request body.");
+        }
 
         IPAddress? stationIpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
         
@@ -80,6 +84,22 @@ public class StationsController : ControllerBase
         }
 
         StationEntity newStationEntity = await _stationsRepository.CreateStationAsync(stationDto.MacAddress, stationIpAddress);
-        return CreatedAtAction(nameof(RegisterStation), new { id = newStationEntity.Id }, newStationEntity.ToDto());
+        return CreatedAtAction(nameof(GetStation), new { id = newStationEntity.Id }, newStationEntity.ToDto());
+    }
+
+    /// <summary>
+    /// Retrieves details about a specific station.
+    /// </summary>
+    /// <param name="id">
+    /// Identifier of the station to be retrieved.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> that represents the result of the performed operation.
+    /// </returns>
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetStation(long id)
+    {
+        StationEntity? stationEntity = await _stationsRepository.GetSingleStationAsync(filterById: true, id: id);
+        return stationEntity is null ? NotFound() : Ok(stationEntity.ToDto());
     }
 }

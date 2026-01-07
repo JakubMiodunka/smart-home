@@ -27,6 +27,13 @@ public interface IStationsRepository
     /// <summary>
     /// Retrieves single station from the repository basing on provided criteria.
     /// </summary>
+    /// <param name="filterById">
+    /// <see langword="true"/>, if filtering by ID shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="macAddress">
+    /// Value of ID by which stations shall be filtered.
+    /// Ignored if value of <paramref name="filterById"/> is set to <see langword="false"/>.
+    /// </param>
     /// <param name="filterByMacAddress">
     /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
     /// </param>
@@ -37,7 +44,9 @@ public interface IStationsRepository
     /// <returns>
     /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    Task<StationEntity?> GetSingleStationAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
+    Task<StationEntity?> GetSingleStationAsync(
+        bool filterById = false, long? id = null,
+        bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
 
     /// <summary>
     /// Retrieves stations from the repository basing on provided criteria.
