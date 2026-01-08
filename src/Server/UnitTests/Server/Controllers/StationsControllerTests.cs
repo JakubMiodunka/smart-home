@@ -85,6 +85,24 @@ public sealed class StationsControllerTests
 
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(stationMacAddress, stationIpAddress), Times.Once);
+
+        // TODO: Maybe lets create universal set of methods to test IActionResult objects?
+        Assert.Multiple(() =>
+        {
+            Assert.That(registrationResult, Is.Not.Null);
+            Assert.That(registrationResult, Is.InstanceOf<CreatedAtActionResult>());
+        });
+
+        var specificResult = (CreatedAtActionResult)registrationResult;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(specificResult.StatusCode, Is.EqualTo(201));
+            Assert.That(specificResult.ControllerName, Is.AnyOf(null, nameof(StationsController)));
+            Assert.That(specificResult.ActionName, Is.EqualTo(nameof(StationsController.GetStation)));
+            Assert.That(specificResult.Value, Is.InstanceOf<StationDto>());
+            Assert.That(specificResult.Value as StationDto, Is.EqualTo(stationDto));
+        });
     }
 
     [Test]

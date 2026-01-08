@@ -52,22 +52,15 @@ public class StationsController : ControllerBase
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
-    /// </exception>
     [HttpPost]
     public async Task<IActionResult> RegisterStation([FromBody] StationDto stationDto)
     {
-        if (stationDto is null)
-        {
-            return BadRequest("Station details must be provided in request body.");
-        }
-
         IPAddress? stationIpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
-        
+
         if (stationIpAddress is null)
         {
-            return BadRequest("Unable to determine station IP address.");
+            ModelState.AddModelError("Connection", "Unable to determine station IP address.");
+            return ValidationProblem(ModelState);
         }
 
         StationEntity? stationEntity = await _stationsRepository.GetSingleStationAsync(filterByMacAddress: true, macAddress: stationDto.MacAddress);
