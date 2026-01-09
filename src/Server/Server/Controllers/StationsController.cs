@@ -9,12 +9,10 @@ namespace SmartHome.Server.Controllers;
 /// <summary>
 /// Controller dedicated to managing stations.
 /// </summary>
-[ApiController]
 [Route("api/v1/stations")]
-public class StationsController : ControllerBase
+public class StationsController : SmartHomeController
 {
     #region Properties
-    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IStationsRepository _stationsRepository;
     #endregion
 
@@ -32,16 +30,14 @@ public class StationsController : ControllerBase
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
     public StationsController(IHttpContextAccessor httpContextAccessor, IStationsRepository stationsRepository)
+        : base(httpContextAccessor)
     {
-        ArgumentNullException.ThrowIfNull(httpContextAccessor, nameof(httpContextAccessor));
         ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
 
-        _httpContextAccessor = httpContextAccessor;
         _stationsRepository = stationsRepository;
     }
     #endregion
 
-    // TODO: Refine this method.
     /// <summary>
     /// Registers a station within the system using details provided in request body.
     /// If the station is known to the server, details related to it will be updated on the server site accordingly.
@@ -54,30 +50,36 @@ public class StationsController : ControllerBase
     /// </returns>
     [HttpPost]
     public async Task<IActionResult> RegisterStation([FromBody] StationDto stationDto)
-    {
-        IPAddress? stationIpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
-
-        if (stationIpAddress is null)
+    {       
+        if (!TryGetRemoteIpAddress(out IPAddress? remoteIpAddress))
         {
-            ModelState.AddModelError("Connection", "Unable to determine station IP address.");
-            return ValidationProblem(ModelState);
+            return BadRequest("Unable to determine remote IP address.");
         }
 
-        StationEntity? stationEntity = await _stationsRepository.GetSingleStationAsync(filterByMacAddress: true, macAddress: stationDto.MacAddress);
+        StationEntity? knownStationEntity = await _stationsRepository.GetSingleStationAsync(
+            filterByMacAddress: true,
+            macAddress: stationDto.MacAddress);
 
-        if (stationEntity is not null)
+        if (knownStationEntity is null)
         {
-            if (stationEntity.IpAddress == stationIpAddress)
-            {
-                return Ok(stationEntity.ToDto());
-            }
+            StationEntity createdStationEntity = await _stationsRepository.CreateStationAsync(
+                stationDto.MacAddress,
+                remoteIpAddress);
 
-            StationEntity? updatedStationEntity = await _stationsRepository.UpdateStationAsync(stationDto.MacAddress, updateIpAddress: true, ipAddress: stationIpAddress);
-            return Ok(updatedStationEntity?.ToDto());
+            return CreatedAtAction(nameof(GetStation), new { id = createdStationEntity.Id }, createdStationEntity.ToDto());
         }
 
-        StationEntity newStationEntity = await _stationsRepository.CreateStationAsync(stationDto.MacAddress, stationIpAddress);
-        return CreatedAtAction(nameof(GetStation), new { id = newStationEntity.Id }, newStationEntity.ToDto());
+        if (knownStationEntity.IpAddress == remoteIpAddress)
+        {
+            return Ok(knownStationEntity.ToDto());
+        }
+
+        StationEntity? updatedStationEntity = await _stationsRepository.UpdateStationAsync(
+            knownStationEntity.MacAddress,
+            updateIpAddress: true,
+            ipAddress: remoteIpAddress);
+
+        return Ok(updatedStationEntity?.ToDto());
     }
 
     /// <summary>
@@ -89,7 +91,7 @@ public class StationsController : ControllerBase
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
-    [HttpGet("{id:long}")]
+    [HttpGet("{id:long:min(1)}")]
     public async Task<IActionResult> GetStation(long id)
     {
         StationEntity? stationEntity = await _stationsRepository.GetSingleStationAsync(filterById: true, id: id);

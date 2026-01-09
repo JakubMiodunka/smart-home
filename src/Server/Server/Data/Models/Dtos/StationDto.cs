@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Dtos;
 
@@ -9,4 +10,5 @@ namespace SmartHome.Server.Data.Models.Dtos;
 /// <param name="MacAddress">
 /// The unique physical MAC address of the station, used as a primary identifier in the network.
 /// </param>
-public sealed record StationDto(PhysicalAddress MacAddress);
+public sealed record StationDto(
+    [Required] PhysicalAddress MacAddress);
