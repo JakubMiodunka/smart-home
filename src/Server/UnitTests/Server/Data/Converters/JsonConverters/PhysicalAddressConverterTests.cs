@@ -2,7 +2,6 @@
 using SmartHome.Server.Data.Converters.JsonConverters;
 using System.Net.NetworkInformation;
 using System.Text.Json;
-using UnitTests;
 
 namespace SmartHome.UnitTests.Server.Data.Converters.JsonConverters;
 

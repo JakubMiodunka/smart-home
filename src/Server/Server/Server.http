@@ -6,12 +6,12 @@ POST {{Server_HostAddress}}/api/v1/stations
 Accept: application/json
 CONTENT-TYPE: application/json
 {
-    "macAddress": "001A2B3C4D5F"
+    "macAddress": "001A2B3C4D4B"
 }
 
 ### Get station
 
-GET {{Server_HostAddress}}/api/v1/stations/4
+GET {{Server_HostAddress}}/api/v1/stations/10002
 Accept: application/json
 CONTENT-TYPE: application/json
 

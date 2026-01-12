@@ -27,5 +27,5 @@ public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddres
     /// Data Transfer Object (DTO) corresponding to this entity.
     /// </returns>
     public StationDto ToDto() =>
-        new StationDto(MacAddress);
+        new StationDto(MacAddress, Id);
 }

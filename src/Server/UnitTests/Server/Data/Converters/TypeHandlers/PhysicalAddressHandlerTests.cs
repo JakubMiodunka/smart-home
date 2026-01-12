@@ -3,7 +3,6 @@ using NUnit.Framework.Internal;
 using SmartHome.Server.Data.Converters.TypeHandlers;
 using System.Data;
 using System.Net.NetworkInformation;
-using UnitTests;
 
 namespace SmartHome.UnitTests.Server.Data.Converters.TypeHandlers;
 

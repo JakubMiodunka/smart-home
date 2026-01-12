@@ -11,4 +11,5 @@ namespace SmartHome.Server.Data.Models.Dtos;
 /// The unique physical MAC address of the station, used as a primary identifier in the network.
 /// </param>
 public sealed record StationDto(
-    [Required] PhysicalAddress MacAddress);
+    [Required] PhysicalAddress MacAddress,
+    [Range(1, long.MaxValue)] long? Id = null);

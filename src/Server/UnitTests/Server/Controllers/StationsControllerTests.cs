@@ -8,11 +8,9 @@ using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 using System.Net;
 using System.Net.NetworkInformation;
-using UnitTests;
 
 namespace SmartHome.UnitTests.Server.Controllers;
 
-// TODO: Add tests for HTTP responses.
 [Category("UnitTest")]
 [TestOf(typeof(StationsController))]
 [Author("Jakub Miodunka")]
@@ -53,7 +51,7 @@ public sealed class StationsControllerTests
     }
 
     [Test]
-    public async Task ControllerCreatesNewStationEntityInRepository()
+    public async Task ControllerCreatesNewStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -86,27 +84,13 @@ public sealed class StationsControllerTests
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(stationMacAddress, stationIpAddress), Times.Once);
 
-        // TODO: Maybe lets create universal set of methods to test IActionResult objects?
-        Assert.Multiple(() =>
-        {
-            Assert.That(registrationResult, Is.Not.Null);
-            Assert.That(registrationResult, Is.InstanceOf<CreatedAtActionResult>());
-        });
-
-        var specificResult = (CreatedAtActionResult)registrationResult;
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(specificResult.StatusCode, Is.EqualTo(201));
-            Assert.That(specificResult.ControllerName, Is.AnyOf(null, nameof(StationsController)));
-            Assert.That(specificResult.ActionName, Is.EqualTo(nameof(StationsController.GetStation)));
-            Assert.That(specificResult.Value, Is.InstanceOf<StationDto>());
-            Assert.That(specificResult.Value as StationDto, Is.EqualTo(stationDto));
-        });
+        registrationResult.AssertCreatedAtActionResult(
+            expectedActionName: nameof(StationsController.GetStation),
+            expectedValue: newStationEntity.ToDto());
     }
 
     [Test]
-    public async Task ControllerUpdatesExistingStationEntityInRepository()
+    public async Task ControllerUpdatesExistingStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -119,31 +103,33 @@ public sealed class StationsControllerTests
         long stationId = randomizer.NextInt64(1, long.MaxValue);
         PhysicalAddress stationMacAddress = randomizer.NextMacAddress();
         IPAddress stationOldIpAddress = randomizer.NextIpAddress();
-        var oldStationEntity = new StationEntity(stationId, stationMacAddress, stationOldIpAddress);
+        var stationEntityBeforeUpdate = new StationEntity(stationId, stationMacAddress, stationOldIpAddress);
 
         stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
             filterById: false, id: It.IsAny<long?>(),
             filterByMacAddress: true, macAddress: stationMacAddress))
-            .ReturnsAsync(oldStationEntity);
+            .ReturnsAsync(stationEntityBeforeUpdate);
 
-        var newStationEntity = new StationEntity(stationId, stationMacAddress, stationNewIpAddress);
+        var updatedStationEntity = new StationEntity(stationId, stationMacAddress, stationNewIpAddress);
 
         stationsRepositoryMock.Setup(mock => mock
             .UpdateStationAsync(stationMacAddress, updateIpAddress: true, ipAddress: stationNewIpAddress))
-            .ReturnsAsync(newStationEntity);
+            .ReturnsAsync(updatedStationEntity);
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object);
 
-        var newStationDto = new StationDto(stationMacAddress);
-        await controllerUnderTest.RegisterStation(newStationDto);
+        var updatedStationDto = new StationDto(stationMacAddress);
+        IActionResult registrationResult = await controllerUnderTest.RegisterStation(updatedStationDto);
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(stationMacAddress, updateIpAddress: true, ipAddress: stationNewIpAddress), Times.Once);
+
+        registrationResult.AssertOkObjectResult(expectedValue: updatedStationEntity.ToDto());
     }
     
-    public async Task ControllerRetrievesExistingStation()
+    public async Task ControllerRetrievesExistingStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -167,6 +153,8 @@ public sealed class StationsControllerTests
 
         stationsRepositoryMock.Verify(mock => mock
             .GetSingleStationAsync(filterById: true, id: stationEntity.Id), Times.Once);
+
+        retrievalResult.AssertOkObjectResult(expectedValue: stationEntity.ToDto());
     }
     #endregion
 }

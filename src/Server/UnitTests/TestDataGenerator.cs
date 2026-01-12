@@ -4,7 +4,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 
-namespace UnitTests;
+namespace SmartHome.UnitTests;
 
 internal static class TestDataGenerator
 {

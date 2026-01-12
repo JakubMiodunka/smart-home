@@ -3,7 +3,7 @@ using SmartHome.Server.Data.Models.Entities;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace UnitTests;
+namespace SmartHome.UnitTests;
 
 internal static class RandomizerExtensions
 {
@@ -13,15 +13,17 @@ internal static class RandomizerExtensions
 
         var macAddress = new byte[6];
         randomizer.NextBytes(macAddress);
+
         return new PhysicalAddress(macAddress);
     }
 
-    public static IPAddress NextIpAddress(this Randomizer randomizer)
+    public static IPAddress NextIpAddress(this Randomizer randomizer, bool isIpV6 = false)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
-        var ipAddress = new byte[4];
+        var ipAddress = new byte[isIpV6 ? 16 : 4];
         randomizer.NextBytes(ipAddress);
+
         return new IPAddress(ipAddress);
     }
 
