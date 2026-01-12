@@ -1,5 +1,4 @@
 ﻿using SmartHome.Server.Data.Models.Dtos;
-using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Entities;
 
@@ -23,6 +22,12 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// </param>
 public sealed record ElectricalSwitchEntity(long Id, long StationId, byte LocalId, bool? IsClosed)
 {
-    public ElectricalSwitchDto ToDto(PhysicalAddress stationMacAddress) =>
-        new ElectricalSwitchDto(stationMacAddress, LocalId, IsClosed);
+    /// <summary>
+    /// Creates a Data Transfer Object (DTO) corresponding to this entity.
+    /// </summary>
+    /// <returns>
+    /// Data Transfer Object (DTO) corresponding to this entity.
+    /// </returns>
+    public ElectricalSwitchDto ToDto() =>
+        new ElectricalSwitchDto(StationId, LocalId, IsClosed, Id);
 }

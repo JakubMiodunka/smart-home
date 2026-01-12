@@ -63,6 +63,7 @@ public interface IStationsRepository
     /// </returns>
     Task<StationEntity[]> GetMultipleStationsAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
 
+    // TODO: Update stations basing on ID, not by MAC address.
     /// <summary>
     /// Updates properties of specified station.
     /// </summary>
