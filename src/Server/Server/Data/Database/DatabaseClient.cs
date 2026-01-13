@@ -218,7 +218,7 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <summary>
     /// Updates properties of specified station.
     /// </summary>
-    /// <param name="macAddress">
+    /// <param name="id">
     /// Specifies which station shall be updated.
     /// </param>
     /// <param name="updateIpAddress">
@@ -232,15 +232,10 @@ public sealed class DatabaseClient : IDatabaseClient
     /// The updated station model saved within the database.
     /// If the specified station does not exist, <see langword="null"/> reference is returned.
     /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown, when at least one non-nullable reference-type argument is a null reference.
-    /// </exception>
-    public async Task<StationEntity?> UpdateStationAsync(PhysicalAddress macAddress, bool updateIpAddress = false, IPAddress? ipAddress = null)
+    public async Task<StationEntity?> UpdateStationAsync(long id, bool updateIpAddress = false, IPAddress? ipAddress = null)
     {
-        ArgumentNullException.ThrowIfNull(macAddress, nameof(macAddress));
-
         var parameters = new DynamicParameters();
-        parameters.Add("@mac_address", macAddress);
+        parameters.Add("@id", id);
         parameters.Add("@update_ip_address", updateIpAddress);
         parameters.Add("@ip_address", ipAddress);
 

@@ -113,7 +113,7 @@ public sealed class StationsControllerTests
         var updatedStationEntity = new StationEntity(stationId, stationMacAddress, stationNewIpAddress);
 
         stationsRepositoryMock.Setup(mock => mock
-            .UpdateStationAsync(stationMacAddress, updateIpAddress: true, ipAddress: stationNewIpAddress))
+            .UpdateStationAsync(stationId, updateIpAddress: true, ipAddress: stationNewIpAddress))
             .ReturnsAsync(updatedStationEntity);
 
         var controllerUnderTest = new StationsController(
@@ -124,7 +124,7 @@ public sealed class StationsControllerTests
         IActionResult registrationResult = await controllerUnderTest.RegisterStation(updatedStationDto);
 
         stationsRepositoryMock.Verify(mock => mock
-            .UpdateStationAsync(stationMacAddress, updateIpAddress: true, ipAddress: stationNewIpAddress), Times.Once);
+            .UpdateStationAsync(stationId, updateIpAddress: true, ipAddress: stationNewIpAddress), Times.Once);
 
         registrationResult.AssertOkObjectResult(expectedValue: updatedStationEntity.ToDto());
     }

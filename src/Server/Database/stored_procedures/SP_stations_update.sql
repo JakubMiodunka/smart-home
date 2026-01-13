@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE SP_stations_update
-    @mac_address CHAR(12),  -- Specifies which station shall be updated.
+    @id BIGINT,  -- Specifies which station shall be updated.
     @update_ip_address BIT = 0,
     @ip_address VARCHAR(39) = NULL
 AS
@@ -14,5 +14,5 @@ BEGIN
         INSERTED.mac_address,
         INSERTED.ip_address
     WHERE 
-        mac_address = @mac_address
+        id = @id
 END

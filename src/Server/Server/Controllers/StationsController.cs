@@ -75,7 +75,7 @@ public class StationsController : SmartHomeController
         }
 
         StationEntity? updatedStationEntity = await _stationsRepository.UpdateStationAsync(
-            knownStationEntity.MacAddress,
+            knownStationEntity.Id,
             updateIpAddress: true,
             ipAddress: remoteIpAddress);
 
