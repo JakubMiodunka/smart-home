@@ -49,21 +49,6 @@ public interface IStationsRepository
         bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
 
     /// <summary>
-    /// Retrieves stations from the repository basing on provided criteria.
-    /// </summary>
-    /// <param name="filterByMacAddress">
-    /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
-    /// Ignored if value of <paramref name="filterByMacAddress"/> is set to <see langword="false"/>.
-    /// </param>
-    /// <param name="macAddress">
-    /// Value of MAC address by which stations shall be filtered.
-    /// </param>
-    /// <returns>
-    /// Collection of stations that match the provided criteria.
-    /// </returns>
-    Task<StationEntity[]> GetMultipleStationsAsync(bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
-
-    /// <summary>
     /// Updates properties of specified station.
     /// </summary>
     /// <param name="id">

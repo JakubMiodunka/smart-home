@@ -13,6 +13,7 @@ BEGIN
         ip_address 
     FROM stations
     WHERE
+        -- TODO Something is wrong with this filtering logic...
         (@filter_by_id = 1 AND id = @id) OR
         (@filter_by_mac_address = 1 AND mac_address = @mac_address)
     ORDER BY id ASC

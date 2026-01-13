@@ -9,4 +9,4 @@ namespace SmartHome.Server.Data.Database;
 /// This interface is primarily created to support repository classes whose capabilities 
 /// may exceed pure SQL execution. Such classes shall interact with the database through this interface.
 /// </remarks>
-public interface IDatabaseClient : IStationsRepository;
+public interface IDatabaseClient : IStationsRepository, IElectricalSwitchesRepository;
