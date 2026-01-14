@@ -1,8 +1,10 @@
-﻿CREATE PROCEDURE SP_electrical_switches_get
+﻿/*
+    Currently filtering by ID is needed, but procedure is already prepared
+    to support more filtering criteria if it will be needed in the future.
+*/
+CREATE PROCEDURE SP_electrical_switches_get
     @filter_by_id BIT = 0,
-    @id BIGINT = NULL,
-    @filter_by_station_id BIT = 0,
-    @station_id BIGINT = NULL
+    @id BIGINT = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -14,8 +16,6 @@ BEGIN
         is_closed
     FROM electrical_switches
     WHERE
-        -- TODO Something is wrong with this filtering logic...
-        (@filter_by_id = 1 AND id = @id) OR
-        (@filter_by_station_id = 1 AND station_id = @station_id)
+        (@filter_by_id = 0 OR id = @id)
     ORDER BY id ASC
 END

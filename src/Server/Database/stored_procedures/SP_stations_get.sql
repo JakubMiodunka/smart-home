@@ -1,8 +1,10 @@
-﻿CREATE PROCEDURE SP_stations_get
+﻿/*
+    Currently filtering by ID is needed, but procedure is already prepared
+    to support more filtering criteria if it will be needed in the future.
+*/
+CREATE PROCEDURE SP_stations_get
     @filter_by_id BIT = 0,
-    @id BIGINT = NULL,
-    @filter_by_mac_address BIT = 0,
-    @mac_address CHAR(12) = NULL
+    @id BIGINT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -13,8 +15,6 @@ BEGIN
         ip_address 
     FROM stations
     WHERE
-        -- TODO Something is wrong with this filtering logic...
-        (@filter_by_id = 1 AND id = @id) OR
-        (@filter_by_mac_address = 1 AND mac_address = @mac_address)
+        (@filter_by_id = 0 OR id = @id)
     ORDER BY id ASC
 END

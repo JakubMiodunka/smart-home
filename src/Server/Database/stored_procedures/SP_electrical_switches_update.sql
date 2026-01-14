@@ -1,5 +1,5 @@
 ﻿/*
-    Currently updating electrical switch state is needed, but method is already prepared
+    Currently updating electrical switch state is needed, but procedure is already prepared
     to support multiple properties update if it will be needed in the future.
 */
 CREATE PROCEDURE SP_electrical_switches_update

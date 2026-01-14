@@ -27,30 +27,29 @@ public interface IStationsRepository
     /// <summary>
     /// Retrieves single station from the repository basing on provided criteria.
     /// </summary>
+    /// <remarks>
+    /// Currently filtering by ID is needed, but method is already prepared
+    /// to support more filtering criteria if it will be needed in the future.
+    /// </remarks>
     /// <param name="filterById">
     /// <see langword="true"/>, if filtering by ID shall be applied, <see langword="false"/> otherwise.
     /// </param>
-    /// <param name="macAddress">
+    /// <param name="id">
     /// Value of ID by which stations shall be filtered.
     /// Ignored if value of <paramref name="filterById"/> is set to <see langword="false"/>.
-    /// </param>
-    /// <param name="filterByMacAddress">
-    /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
-    /// </param>
-    /// <param name="macAddress">
-    /// Value of MAC address by which stations shall be filtered.
-    /// Ignored if value of <paramref name="filterByMacAddress"/> is set to <see langword="false"/>.
     /// </param>
     /// <returns>
     /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    Task<StationEntity?> GetSingleStationAsync(
-        bool filterById = false, long? id = null,
-        bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
+    Task<StationEntity?> GetSingleStationAsync(bool filterById = false, long? id = null);
 
     /// <summary>
     /// Updates properties of specified station.
     /// </summary>
+    /// <remarks>
+    /// Currently updating station IP address is needed, but method is already prepared
+    /// to support multiple properties update if it will be needed in the future.
+    /// </remarks>
     /// <param name="id">
     /// Specifies which station shall be updated.
     /// </param>

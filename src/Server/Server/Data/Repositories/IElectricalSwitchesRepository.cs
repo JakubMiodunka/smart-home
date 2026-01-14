@@ -46,26 +46,6 @@ public interface IElectricalSwitchesRepository
     Task<ElectricalSwitchEntity?> GetSingleElectricalSwitchAsync(bool filterById = false, long? id = null);
 
     /// <summary>
-    /// Retrieves electrical switches from the repository basing on provided criteria.
-    /// </summary>
-    /// <remarks>
-    /// Currently filtering by station ID is needed, but method is already prepared
-    /// to support more filtering criteria if it will be needed in the future.
-    /// </remarks>
-    /// <param name="filterByStationId">
-    /// <see langword="true"/>, if filtering by ID of station that controls the switch
-    /// shall be applied, <see langword="false"/> otherwise.
-    /// </param>
-    /// <param name="stationId">
-    /// Value of station ID by which switches shall be filtered.
-    /// Ignored if value of <paramref name="filterByStationId"/> is set to <see langword="false"/>.
-    /// </param>
-    /// <returns>
-    /// Collection of electrical switches that matches the provided criteria.
-    /// </returns>
-    Task<ElectricalSwitchEntity[]> GetMultipleElectricalSwitchesAsync(bool filterByStationId = false, long? stationId = null);
-
-    /// <summary>
     /// Updates properties of specified electrical switch.
     /// </summary>
     /// <remarks>
