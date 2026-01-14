@@ -1,6 +1,6 @@
 @Server_HostAddress = http://localhost:5236
 
-### Station registration
+### StationsController.RegisterStation
 
 POST {{Server_HostAddress}}/api/v1/stations
 Accept: application/json
@@ -9,9 +9,26 @@ CONTENT-TYPE: application/json
     "macAddress": "001A2B3C4D4B"
 }
 
-### Get station
+### StationsController.GetStation
 
 GET {{Server_HostAddress}}/api/v1/stations/10002
+Accept: application/json
+CONTENT-TYPE: application/json
+
+### StationsController.RegisterStation
+
+POST {{Server_HostAddress}}/api/v1/electrical-switches
+Accept: application/json
+CONTENT-TYPE: application/json
+{
+    "stationId": 10002,
+    "localId" : 1,
+    "isClosed": null
+}
+
+### StationsController.GetStation
+
+GET {{Server_HostAddress}}/api/v1/electrical-switches/1
 Accept: application/json
 CONTENT-TYPE: application/json
 

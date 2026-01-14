@@ -12,7 +12,7 @@ BEGIN
 
 	UPDATE electrical_switches
     SET 
-        is_closed = CASE WHEN @is_closed = 1 THEN @is_closed ELSE is_closed END
+        is_closed = CASE WHEN @update_state = 1 THEN @is_closed ELSE is_closed END
     OUTPUT 
 		INSERTED.id,
 		INSERTED.station_id,

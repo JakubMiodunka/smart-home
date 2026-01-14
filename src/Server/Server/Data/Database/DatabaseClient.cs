@@ -133,7 +133,7 @@ public sealed class DatabaseClient : IDatabaseClient
     }
     #endregion
 
-    #region Interactions
+    #region Stations
     /// <inheritdoc cref="IStationsRepository"/>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
@@ -150,11 +150,15 @@ public sealed class DatabaseClient : IDatabaseClient
     }
 
     /// <inheritdoc cref="IStationsRepository"/>
-    public async Task<StationEntity?> GetSingleStationAsync(bool filterById = false, long? id = null)
+    public async Task<StationEntity?> GetSingleStationAsync(
+        bool filterById = false, long? id = null,
+        bool filterByMacAddress = false, PhysicalAddress? macAddress = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@filter_by_id", filterById);
         parameters.Add("@id", id);
+        parameters.Add("@filter_by_mac_address", filterByMacAddress);
+        parameters.Add("@mac_address", macAddress);
 
         return await GetSingleEntityAsync<StationEntity>("SP_stations_get", parameters);
     }
@@ -169,24 +173,33 @@ public sealed class DatabaseClient : IDatabaseClient
 
         return await GetSingleEntityAsync<StationEntity>("SP_stations_update", parameters);
     }
+    #endregion
 
+    #region Electrical switches
     /// <inheritdoc cref="IElectricalSwitchesRepository"/>
     public async Task<ElectricalSwitchEntity> CreateElectricalSwitchAsync(long stationId, byte localId, bool? isClosed)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@station_id", stationId);
-        parameters.Add("@ip_address", localId);
+        parameters.Add("@local_id", localId);
         parameters.Add("@is_closed", isClosed);
 
         return await CreateEntityAsync<ElectricalSwitchEntity>("SP_electrical_switches_create", parameters);
     }
 
     /// <inheritdoc cref="IElectricalSwitchesRepository"/>
-    public async  Task<ElectricalSwitchEntity?> GetSingleElectricalSwitchAsync(bool filterById = false, long? id = null)
+    public async  Task<ElectricalSwitchEntity?> GetSingleElectricalSwitchAsync(
+        bool filterById = false, long? id = null,
+        bool filterByStationId = false, long? stationId = null,
+        bool filterByLocalId = false, byte? localId = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@filter_by_id", filterById);
         parameters.Add("@id", id);
+        parameters.Add("@filter_by_station_id", filterByStationId);
+        parameters.Add("@station_id", stationId);
+        parameters.Add("@filter_by_local_id", filterByLocalId);
+        parameters.Add("@local_id", localId);
 
         return await GetSingleEntityAsync<ElectricalSwitchEntity>("SP_electrical_switches_get", parameters);
     }

@@ -22,6 +22,6 @@ namespace SmartHome.Server.Data.Models.Dtos;
 /// </param>
 public sealed record ElectricalSwitchDto(
     [Range(1, long.MaxValue)] long StationId,
-    [Required] byte LocalId,
+    [Range(1, byte.MaxValue)] byte LocalId,
     bool? IsClosed,
     [Range(1, long.MaxValue)] long? Id = null);

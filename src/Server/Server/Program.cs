@@ -24,6 +24,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
+builder.Services.AddSingleton<IElectricalSwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 
 builder.Services.AddControllers();
 

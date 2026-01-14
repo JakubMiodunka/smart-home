@@ -29,10 +29,6 @@ public interface IElectricalSwitchesRepository
     /// <summary>
     /// Retrieves single electrical switch from the repository basing on provided criteria.
     /// </summary>
-    /// <remarks>
-    /// Currently filtering by ID is needed, but method is already prepared
-    /// to support more filtering criteria if it will be needed in the future.
-    /// </remarks>
     /// <param name="filterById">
     /// <see langword="true"/>, if filtering by electrical switch ID shall be applied, <see langword="false"/> otherwise.
     /// </param>
@@ -40,10 +36,27 @@ public interface IElectricalSwitchesRepository
     /// Value of ID by which switches shall be filtered.
     /// Ignored if value of <paramref name="filterById"/> is set to <see langword="false"/>.
     /// </param>
+    /// <param name="filterByStationId">
+    /// <see langword="true"/>, if filtering by station ID shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="stationId">
+    /// Value of station ID by which switches shall be filtered.
+    /// Ignored if value of <paramref name="filterByStationId"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <param name="filterByLocalId">
+    /// <see langword="true"/>, if filtering by local ID shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="localId">
+    /// Value of local ID by which switches shall be filtered.
+    /// Ignored if value of <paramref name="filterByLocalId"/> is set to <see langword="false"/>.
+    /// </param>
     /// <returns>
     /// The electrical switch that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    Task<ElectricalSwitchEntity?> GetSingleElectricalSwitchAsync(bool filterById = false, long? id = null);
+    Task<ElectricalSwitchEntity?> GetSingleElectricalSwitchAsync(
+        bool filterById = false, long? id = null,
+        bool filterByStationId = false, long? stationId = null,
+        bool filterByLocalId = false, byte? localId = null);
 
     /// <summary>
     /// Updates properties of specified electrical switch.
