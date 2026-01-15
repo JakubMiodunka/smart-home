@@ -13,7 +13,7 @@ BEGIN
         ip_address 
     FROM stations
     WHERE
-        (@filter_by_id = 0 OR id = @id) AND
-        (@filter_by_mac_address = 0 OR mac_address = @mac_address)
+        (@filter_by_id = 0 OR id IS NOT DISTINCT FROM @id) AND
+        (@filter_by_mac_address = 0 OR mac_address IS NOT DISTINCT FROM @mac_address)
     ORDER BY id ASC
 END

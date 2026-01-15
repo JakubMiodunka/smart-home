@@ -43,4 +43,16 @@ internal static class IActionResultExtensions
         Assert.That(specificActionResult.Value, Is.InstanceOf<T>());
         Assert.That(specificActionResult.Value, Is.EqualTo(expectedValue));
     }
+
+    public static void AssertBadRequestObjectResult(
+        this IActionResult actionResultUnderTest,
+        int expectedStatusCode = StatusCodes.Status400BadRequest)
+    {
+        Assert.That(actionResultUnderTest, Is.Not.Null);
+        Assert.That(actionResultUnderTest, Is.InstanceOf<BadRequestObjectResult>());
+
+        var specificActionResult = (BadRequestObjectResult)actionResultUnderTest;
+
+        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
+    }
 }

@@ -16,8 +16,8 @@ BEGIN
         is_closed
     FROM electrical_switches
     WHERE
-        (@filter_by_id = 0 OR id = @id) AND
-        (@filter_by_station_id = 0 OR station_id = @station_id) AND
-        (@filter_by_local_id = 0 OR local_id = @local_id)
+        (@filter_by_id = 0 OR id IS NOT DISTINCT FROM @id) AND
+        (@filter_by_station_id = 0 OR station_id IS NOT DISTINCT FROM @station_id) AND
+        (@filter_by_local_id = 0 OR local_id IS NOT DISTINCT FROM @local_id)
     ORDER BY id ASC
 END

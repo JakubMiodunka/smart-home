@@ -10,8 +10,6 @@ internal static class TestDataGenerator
 {
     public static Mock<IHttpContextAccessor> CreateHttpContextAccessorFake(IPAddress? remoteIpAddress = null)
     {
-        ArgumentNullException.ThrowIfNull(remoteIpAddress, nameof(remoteIpAddress));
-
         var httpContext = new DefaultHttpContext();
         httpContext.Connection.RemoteIpAddress = remoteIpAddress;
 
@@ -23,7 +21,7 @@ internal static class TestDataGenerator
 
     public static Utf8JsonReader CreateJsonReader(string readerContent)
     {
-        ArgumentNullException.ThrowIfNull(readerContent, nameof(readerContent));
+        ArgumentException.ThrowIfNullOrWhiteSpace(readerContent, nameof(readerContent));
 
         string jsonString = JsonSerializer.Serialize(readerContent);
         byte[] encodedJsonString = Encoding.UTF8.GetBytes(jsonString);

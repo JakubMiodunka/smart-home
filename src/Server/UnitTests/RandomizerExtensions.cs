@@ -7,6 +7,16 @@ namespace SmartHome.UnitTests;
 
 internal static class RandomizerExtensions
 {
+    public static bool? NextNullableBool(this Randomizer randomizer)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        var values = new bool?[] { true, false, null };
+        randomizer.Shuffle(values);
+
+        return values.First();
+    }
+
     public static PhysicalAddress NextMacAddress(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
@@ -31,10 +41,22 @@ internal static class RandomizerExtensions
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
-        long Id = randomizer.NextInt64(1, long.MaxValue);
+        long id = randomizer.NextInt64(1, long.MaxValue);
         PhysicalAddress macAddress = randomizer.NextMacAddress();
         IPAddress ipAddress = randomizer.NextIpAddress();
 
-        return new StationEntity(Id, macAddress, ipAddress);
+        return new StationEntity(id, macAddress, ipAddress);
+    }
+
+    public static ElectricalSwitchEntity NextElectricalSwitchEntity(this Randomizer randomizer, long? stationId = null)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        long id = randomizer.NextInt64(1, long.MaxValue);
+        stationId = stationId ?? randomizer.NextInt64(1, long.MaxValue);
+        byte localId = randomizer.NextByte();
+        bool? isClosed = randomizer.NextNullableBool();
+
+        return new ElectricalSwitchEntity(id, stationId.Value, localId, isClosed);
     }
 }

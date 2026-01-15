@@ -9,11 +9,11 @@ namespace SmartHome.Server.Controllers;
 /// <summary>
 /// Controller dedicated to managing electrical switches.
 /// </summary>
+[ApiController]
 [Route("api/v1/electrical-switches")]
 public class ElectricalSwitchesController : ControllerBase
 {
     #region Properties
-    private readonly IStationsRepository _stationsRepository;
     private readonly IElectricalSwitchesRepository _electricalSwitchesRepository;
     #endregion
 
@@ -30,16 +30,15 @@ public class ElectricalSwitchesController : ControllerBase
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    public ElectricalSwitchesController(IElectricalSwitchesRepository electricalSwitchesRepository, IStationsRepository stationsRepository)
+    public ElectricalSwitchesController(IElectricalSwitchesRepository electricalSwitchesRepository)
     {
-        ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
         ArgumentNullException.ThrowIfNull(electricalSwitchesRepository, nameof(electricalSwitchesRepository));
 
         _electricalSwitchesRepository = electricalSwitchesRepository;
-        _stationsRepository = stationsRepository;
     }
     #endregion
 
+    /// TODO Return ex. bad request if station with is specified in request body does not exist in database.
     /// <summary>
     /// Registers an electrical switch within the system using details provided in request body.
     /// </summary>

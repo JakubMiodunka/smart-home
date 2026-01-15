@@ -55,34 +55,30 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        IPAddress stationIpAddress = randomizer.NextIpAddress();
+        var newStationEntity = randomizer.NextStationEntity();
+
         Mock<IHttpContextAccessor> httpContextAccessorStub = 
-            TestDataGenerator.CreateHttpContextAccessorFake(stationIpAddress);
+            TestDataGenerator.CreateHttpContextAccessorFake(newStationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         
         stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
-            filterById: false, id: It.IsAny<long>(),
-            filterByMacAddress: true, macAddress: It.IsAny<PhysicalAddress>()))
+            filterById: false, id: It.IsAny<long?>(),
+            filterByMacAddress: true, macAddress: It.IsAny<PhysicalAddress?>()))
             .ReturnsAsync(null as StationEntity);
 
-        long stationId = randomizer.NextInt64(1, long.MaxValue);
-        PhysicalAddress stationMacAddress = randomizer.NextMacAddress();
-        var newStationEntity = new StationEntity(stationId, stationMacAddress, stationIpAddress);
-
         stationsRepositoryMock.Setup(mock => mock
-            .CreateStationAsync(stationMacAddress, stationIpAddress))
+            .CreateStationAsync(newStationEntity.MacAddress, newStationEntity.IpAddress))
             .ReturnsAsync(newStationEntity);
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object);
 
-        var stationDto = new StationDto(stationMacAddress);
-        IActionResult registrationResult = await controllerUnderTest.RegisterStation(stationDto);
+        IActionResult registrationResult = await controllerUnderTest.RegisterStation(newStationEntity.ToDto());
 
         stationsRepositoryMock.Verify(mock => mock
-            .CreateStationAsync(stationMacAddress, stationIpAddress), Times.Once);
+            .CreateStationAsync(newStationEntity.MacAddress, newStationEntity.IpAddress), Times.Once);
 
         registrationResult.AssertCreatedAtActionResult(
             expectedActionName: nameof(StationsController.GetStation),
@@ -94,51 +90,74 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
+        var stationEntityBeforeUpdate = randomizer.NextStationEntity();
+
         IPAddress stationNewIpAddress = randomizer.NextIpAddress();
+
+        var updatedStationEntity = new StationEntity(
+            stationEntityBeforeUpdate.Id,
+            stationEntityBeforeUpdate.MacAddress,
+            stationNewIpAddress);
+
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             TestDataGenerator.CreateHttpContextAccessorFake(stationNewIpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
 
-        long stationId = randomizer.NextInt64(1, long.MaxValue);
-        PhysicalAddress stationMacAddress = randomizer.NextMacAddress();
-        IPAddress stationOldIpAddress = randomizer.NextIpAddress();
-        var stationEntityBeforeUpdate = new StationEntity(stationId, stationMacAddress, stationOldIpAddress);
-
         stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
             filterById: false, id: It.IsAny<long?>(),
-            filterByMacAddress: true, macAddress: stationMacAddress))
+            filterByMacAddress: true, macAddress: stationEntityBeforeUpdate.MacAddress))
             .ReturnsAsync(stationEntityBeforeUpdate);
 
-        var updatedStationEntity = new StationEntity(stationId, stationMacAddress, stationNewIpAddress);
-
         stationsRepositoryMock.Setup(mock => mock
-            .UpdateStationAsync(stationId, updateIpAddress: true, ipAddress: stationNewIpAddress))
+            .UpdateStationAsync(stationEntityBeforeUpdate.Id, updateIpAddress: true, ipAddress: stationNewIpAddress))
             .ReturnsAsync(updatedStationEntity);
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object);
 
-        var updatedStationDto = new StationDto(stationMacAddress);
-        IActionResult registrationResult = await controllerUnderTest.RegisterStation(updatedStationDto);
+        IActionResult registrationResult = await controllerUnderTest.RegisterStation(updatedStationEntity.ToDto());
 
         stationsRepositoryMock.Verify(mock => mock
-            .UpdateStationAsync(stationId, updateIpAddress: true, ipAddress: stationNewIpAddress), Times.Once);
+            .UpdateStationAsync(updatedStationEntity.Id, updateIpAddress: true, ipAddress: stationNewIpAddress), Times.Once);
 
         registrationResult.AssertOkObjectResult(expectedValue: updatedStationEntity.ToDto());
     }
-    
+
+    [Test]
+    public async Task ControllerValidatesBodyOfRegistrationRequest()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        var invalidStationDto = new StationDto(MacAddress: null!);
+
+        var controllerUnderTest = new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryMock.Object);
+
+        IActionResult registrationResult = await controllerUnderTest.RegisterStation(invalidStationDto);
+
+        stationsRepositoryMock.Verify(mock => mock
+            .CreateStationAsync(It.IsAny<PhysicalAddress>(), It.IsAny<IPAddress?>()), Times.Never);
+
+        registrationResult.AssertBadRequestObjectResult();
+    }
+
+    [Test]
     public async Task ControllerRetrievesExistingStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
+        StationEntity stationEntity = randomizer.NextStationEntity();
+
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake();
+            TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
-
-        StationEntity stationEntity = randomizer.NextStationEntity();
 
         stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
             filterById: true, id: stationEntity.Id,
@@ -150,9 +169,6 @@ public sealed class StationsControllerTests
             stationsRepositoryMock.Object);
 
         IActionResult retrievalResult = await controllerUnderTest.GetStation(stationEntity.Id);
-
-        stationsRepositoryMock.Verify(mock => mock
-            .GetSingleStationAsync(filterById: true, id: stationEntity.Id), Times.Once);
 
         retrievalResult.AssertOkObjectResult(expectedValue: stationEntity.ToDto());
     }

@@ -9,6 +9,7 @@ namespace SmartHome.Server.Controllers;
 /// <summary>
 /// Controller dedicated to managing stations.
 /// </summary>
+[ApiController]
 [Route("api/v1/stations")]
 public class StationsController : ControllerBase
 {
