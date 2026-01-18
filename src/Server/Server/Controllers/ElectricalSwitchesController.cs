@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartHome.Server.Managers.Factories;
 using SmartHome.Server.Data.Models.Dtos;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Controllers;
 
-/// TODO Add manager to be able to change electrical switch state.
 /// <summary>
 /// Controller dedicated to managing electrical switches.
 /// </summary>
@@ -14,76 +14,83 @@ namespace SmartHome.Server.Controllers;
 public class ElectricalSwitchesController : ControllerBase
 {
     #region Properties
-    private readonly IElectricalSwitchesRepository _electricalSwitchesRepository;
+    private readonly IElectricalSwitchesRepository _switchesRepository;
+    private readonly IElectricalSwitchManagerFactory _switchManagersFactory;
     #endregion
 
     #region Instationation
     /// <summary>
     /// Creates an new controller instance.
     /// </summary>
-    /// <param name="electricalSwitchesRepository">
+    /// <param name="switchesRepository">
     /// Stations repository which shall be used by this controller.
     /// </param>
-    /// <param name="stationsRepository">
-    /// Electrical switches repository which shall be used by this controller.
+    /// <param name="switchManagerFactory">
+    /// Factory which shall be used to obtain managers required to to control electrical switches.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    public ElectricalSwitchesController(IElectricalSwitchesRepository electricalSwitchesRepository)
+    public ElectricalSwitchesController(
+        IElectricalSwitchesRepository switchesRepository,
+        IElectricalSwitchManagerFactory switchManagerFactory)
     {
-        ArgumentNullException.ThrowIfNull(electricalSwitchesRepository, nameof(electricalSwitchesRepository));
+        ArgumentNullException.ThrowIfNull(switchesRepository, nameof(switchesRepository));
+        ArgumentNullException.ThrowIfNull(switchManagerFactory, nameof(switchManagerFactory));
 
-        _electricalSwitchesRepository = electricalSwitchesRepository;
+        _switchesRepository = switchesRepository;
+        _switchManagersFactory = switchManagerFactory;
     }
     #endregion
 
-    /// TODO Return ex. bad request if station with is specified in request body does not exist in database.
     /// <summary>
     /// Registers an electrical switch within the system using details provided in request body.
     /// </summary>
-    /// <param name="electricalSwitchDto">
+    /// <remarks>
+    /// TODO: Return ex. bad request if station with is specified in request body does not exist in database.
+    /// </remarks>
+    /// <param name="switchDto">
     /// Data transfer object (DTO) containing details about electrical switch which shall be registered within the system.
     /// </param>
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPost]
-    public async Task<IActionResult> RegisterElectricalSwitch([FromBody] ElectricalSwitchDto electricalSwitchDto)
+    public async Task<IActionResult> RegisterElectricalSwitch([FromBody] ElectricalSwitchDto switchDto)
     {
-        ElectricalSwitchEntity? knownElectricalSwitchEntity = 
-            await _electricalSwitchesRepository.GetSingleElectricalSwitchAsync(
+        ElectricalSwitchEntity? knownSwitchEntity = 
+            await _switchesRepository.GetSingleElectricalSwitchAsync(
                 filterByStationId: true,
-                stationId: electricalSwitchDto.StationId,
+                stationId: switchDto.StationId,
                 filterByLocalId: true,
-                localId: electricalSwitchDto.LocalId);
+                localId: switchDto.LocalId);
 
-        if (knownElectricalSwitchEntity is null)
+        if (knownSwitchEntity is null)
         {
-            ElectricalSwitchEntity createdElectricalSwitchEntity =
-                await _electricalSwitchesRepository.CreateElectricalSwitchAsync(
-                    electricalSwitchDto.StationId,
-                    electricalSwitchDto.LocalId,
-                    electricalSwitchDto.IsClosed);
+            ElectricalSwitchEntity createdSwitchEntity =
+                await _switchesRepository.CreateElectricalSwitchAsync(
+                    switchDto.StationId,
+                    switchDto.LocalId,
+                    switchDto.IsClosed);
 
             return CreatedAtAction(
                 nameof(GetElectricalSwitch),
-                new { id = createdElectricalSwitchEntity.Id },
-                createdElectricalSwitchEntity.ToDto());
+                new { id = createdSwitchEntity.Id },
+                createdSwitchEntity.ToDto());
         }
 
-        if (knownElectricalSwitchEntity.IsClosed == electricalSwitchDto.IsClosed)
+        if (knownSwitchEntity.IsClosed == switchDto.IsClosed)
         {
-            return Ok(knownElectricalSwitchEntity.ToDto());
+            return Ok(knownSwitchEntity.ToDto());
         }
 
-        ElectricalSwitchEntity? updatedElectricalSwitchEntity =
-            await _electricalSwitchesRepository.UpdateElectricalSwitchAsync(
-                knownElectricalSwitchEntity.Id,
+        ElectricalSwitchEntity? updatedSwitchEntity =
+            await _switchesRepository.UpdateElectricalSwitchAsync(
+                knownSwitchEntity.Id,
                 updateState: true,
-                isClosed: electricalSwitchDto.IsClosed);
+                isClosed: switchDto.IsClosed);
 
-        return Ok(updatedElectricalSwitchEntity?.ToDto());
+        return Ok(updatedSwitchEntity?.ToDto());
     }
 
     /// <summary>
@@ -98,9 +105,40 @@ public class ElectricalSwitchesController : ControllerBase
     [HttpGet("{id:long:min(1)}")]
     public async Task<IActionResult> GetElectricalSwitch(long id)
     {
-        ElectricalSwitchEntity? electricalSwitchEntity =
-            await _electricalSwitchesRepository.GetSingleElectricalSwitchAsync(filterById: true, id: id);
+        ElectricalSwitchEntity? switchEntity =
+            await _switchesRepository.GetSingleElectricalSwitchAsync(filterById: true, id: id);
 
-        return electricalSwitchEntity is null ? NotFound() : Ok(electricalSwitchEntity.ToDto());
+        return switchEntity is null ? NotFound() : Ok(switchEntity.ToDto());
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <remarks>
+    /// TODO: Add docstring.
+    /// TODO: Add tests to this method.
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <param name="shallBeClosed"></param>
+    /// <returns></returns>
+    [HttpPut("{id:long:min(1)}/state/{shallBeClosed:bool}")]
+    public async Task<IActionResult> ChangeStateOfElectricalSwitch(long id, bool shallBeClosed)
+    {
+        ElectricalSwitchEntity? switchEntity = 
+            await _switchesRepository.GetSingleElectricalSwitchAsync(filterById: true, id: id);
+
+        if (switchEntity is null)
+        {
+            return NotFound();
+        }
+
+        if (_switchManagersFactory.CreateFor(switchEntity).TryChangeState(shallBeClosed))
+        {
+            ElectricalSwitchEntity? updatedSwitchEntity = 
+                await _switchesRepository.UpdateElectricalSwitchAsync(id, updateState: true, isClosed: shallBeClosed);
+
+            return Ok(updatedSwitchEntity?.ToDto());
+        }
+
+        return StatusCode(StatusCodes.Status503ServiceUnavailable, switchEntity);
     }
 }

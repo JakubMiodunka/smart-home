@@ -18,7 +18,12 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// The IP address assigned to the station within the network. 
 /// A <see langword="null"/> value indicates the address is unknown.
 /// </param>
-public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress)
+public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress);
+
+/// <summary>
+/// Extensions for <see cref="StationEntity"/>
+/// </summary>
+public static class StationEntityExtensions
 {
     /// <summary>
     /// Creates a Data Transfer Object (DTO) corresponding to this entity.
@@ -26,6 +31,13 @@ public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddres
     /// <returns>
     /// Data Transfer Object (DTO) corresponding to this entity.
     /// </returns>
-    public StationDto ToDto() =>
-        new StationDto(MacAddress, Id);
+
+    public static StationDto ToDto(this StationEntity stationEntity)
+    {
+        ArgumentNullException.ThrowIfNull(stationEntity, nameof(stationEntity));
+
+        return new StationDto(
+            Id: stationEntity.Id,
+            MacAddress: stationEntity.MacAddress);
+    }
 }

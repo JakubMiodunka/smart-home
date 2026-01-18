@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Controllers;
-using SmartHome.Server.Data.Models.Dtos;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
-using System.Net;
-using System.Net.NetworkInformation;
+using SmartHome.Server.Managers.Factories;
 
 namespace SmartHome.UnitTests.Server.Controllers;
 
@@ -20,10 +17,13 @@ public sealed class ElectricalSwitchesControllerTests
     [Test]
     public void InstantiationPossible()
     {
-        var electricalSwitchesRepositoryStub = new Mock<IElectricalSwitchesRepository>();
+        var switchesRepositoryStub = new Mock<IElectricalSwitchesRepository>();
+        var switchesManagerFactoryStub = new Mock<IElectricalSwitchManagerFactory>();
 
         TestDelegate actionUnderTest = 
-            () => new ElectricalSwitchesController(electricalSwitchesRepositoryStub.Object);
+            () => new ElectricalSwitchesController(
+                switchesRepositoryStub.Object,
+                switchesManagerFactoryStub.Object);
 
         Assert.DoesNotThrow(actionUnderTest);
     }
@@ -31,8 +31,25 @@ public sealed class ElectricalSwitchesControllerTests
     [Test]
     public void InstantiationImpossibleUsingNullReferenceAsStationsRepository()
     {
+        var switchManagerFactoryStub = new Mock<IElectricalSwitchManagerFactory>();
+
         TestDelegate actionUnderTest = 
-            () => new ElectricalSwitchesController(null!);
+            () => new ElectricalSwitchesController(
+                switchesRepository: null!,
+                switchManagerFactoryStub.Object);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+    }
+
+    [Test]
+    public void InstantiationImpossibleUsingNullReferenceAsElectricalSwitchManagerFactory()
+    {
+        var switchesRepositoryStub = new Mock<IElectricalSwitchesRepository>();
+
+        TestDelegate actionUnderTest =
+            () => new ElectricalSwitchesController(
+                switchesRepositoryStub.Object,
+                switchManagerFactory: null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -42,38 +59,41 @@ public sealed class ElectricalSwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var newElectricalSwitchEntity = randomizer.NextElectricalSwitchEntity();
+        var newSwitchEntity = randomizer.NextElectricalSwitchEntity();
 
-        var electricalSwitchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
+        var switchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
 
-        electricalSwitchesRepositoryMock.Setup(mock => mock.GetSingleElectricalSwitchAsync(
+        switchesRepositoryMock.Setup(mock => mock.GetSingleElectricalSwitchAsync(
             filterById: false, id: It.IsAny<long?>(),
-            filterByStationId: true, stationId: newElectricalSwitchEntity.StationId,
-            filterByLocalId: true, localId: newElectricalSwitchEntity.LocalId))
+            filterByStationId: true, stationId: newSwitchEntity.StationId,
+            filterByLocalId: true, localId: newSwitchEntity.LocalId))
             .ReturnsAsync(null as ElectricalSwitchEntity);
 
-        electricalSwitchesRepositoryMock.Setup(mock => mock
+        switchesRepositoryMock.Setup(mock => mock
             .CreateElectricalSwitchAsync(
-                newElectricalSwitchEntity.StationId,
-                newElectricalSwitchEntity.LocalId,
-                newElectricalSwitchEntity.IsClosed))
-            .ReturnsAsync(newElectricalSwitchEntity);
+                newSwitchEntity.StationId,
+                newSwitchEntity.LocalId,
+                newSwitchEntity.IsClosed))
+            .ReturnsAsync(newSwitchEntity);
 
-        var controllerUnderTest =
-            new ElectricalSwitchesController(electricalSwitchesRepositoryMock.Object);
+        var switchesManagerFactoryStub = new Mock<IElectricalSwitchManagerFactory>();
+
+        var controllerUnderTest = new ElectricalSwitchesController(
+                switchesRepositoryMock.Object,
+                switchesManagerFactoryStub.Object);
 
         IActionResult registrationResult =
-            await controllerUnderTest.RegisterElectricalSwitch(newElectricalSwitchEntity.ToDto());
+            await controllerUnderTest.RegisterElectricalSwitch(newSwitchEntity.ToDto());
 
-        electricalSwitchesRepositoryMock.Verify(mock => mock
+        switchesRepositoryMock.Verify(mock => mock
             .CreateElectricalSwitchAsync(
-                newElectricalSwitchEntity.StationId, 
-                newElectricalSwitchEntity.LocalId,
-                newElectricalSwitchEntity.IsClosed), Times.Once);
+                newSwitchEntity.StationId, 
+                newSwitchEntity.LocalId,
+                newSwitchEntity.IsClosed), Times.Once);
 
         registrationResult.AssertCreatedAtActionResult(
             expectedActionName: nameof(ElectricalSwitchesController.GetElectricalSwitch),
-            expectedValue: newElectricalSwitchEntity.ToDto());
+            expectedValue: newSwitchEntity.ToDto());
     }
 
     [Test]
@@ -81,41 +101,44 @@ public sealed class ElectricalSwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var electricalSwitchEntityBeforeUpdate = randomizer.NextElectricalSwitchEntity();
+        var switchEntityBeforeUpdate = randomizer.NextElectricalSwitchEntity();
 
-        var electricalSwitchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
+        var switchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
 
-        electricalSwitchesRepositoryMock.Setup(mock => mock.GetSingleElectricalSwitchAsync(
-            filterById: false, id: electricalSwitchEntityBeforeUpdate.Id,
+        switchesRepositoryMock.Setup(mock => mock.GetSingleElectricalSwitchAsync(
+            filterById: false, id: switchEntityBeforeUpdate.Id,
             filterByStationId: false, stationId: It.IsAny<long?>(),
             filterByLocalId: false, localId: It.IsAny<byte?>()))
-            .ReturnsAsync(electricalSwitchEntityBeforeUpdate);
+            .ReturnsAsync(switchEntityBeforeUpdate);
 
         bool? newSwitchState = randomizer.NextNullableBool();
-        while (electricalSwitchEntityBeforeUpdate.IsClosed == newSwitchState)
+        while (switchEntityBeforeUpdate.IsClosed == newSwitchState)
         {
             newSwitchState = randomizer.NextNullableBool();
         }
 
-        var updatedElectricalSwitchEntity =
-            electricalSwitchEntityBeforeUpdate with { IsClosed = newSwitchState };
+        var updatedSwitchEntity =
+            switchEntityBeforeUpdate with { IsClosed = newSwitchState };
 
-        electricalSwitchesRepositoryMock.Setup(mock => mock
-            .UpdateElectricalSwitchAsync(electricalSwitchEntityBeforeUpdate.Id,
-                updateState: true, isClosed: updatedElectricalSwitchEntity.IsClosed))
-            .ReturnsAsync(updatedElectricalSwitchEntity);
+        switchesRepositoryMock.Setup(mock => mock
+            .UpdateElectricalSwitchAsync(switchEntityBeforeUpdate.Id,
+                updateState: true, isClosed: updatedSwitchEntity.IsClosed))
+            .ReturnsAsync(updatedSwitchEntity);
 
-        var controllerUnderTest =
-            new ElectricalSwitchesController(electricalSwitchesRepositoryMock.Object);
+        var switchesManagerFactoryStub = new Mock<IElectricalSwitchManagerFactory>();
+
+        var controllerUnderTest = new ElectricalSwitchesController(
+            switchesRepositoryMock.Object,
+            switchesManagerFactoryStub.Object);
 
         IActionResult registrationResult = 
-            await controllerUnderTest.RegisterElectricalSwitch(updatedElectricalSwitchEntity.ToDto());
+            await controllerUnderTest.RegisterElectricalSwitch(updatedSwitchEntity.ToDto());
 
-        electricalSwitchesRepositoryMock.Verify(mock => mock
-            .UpdateElectricalSwitchAsync(updatedElectricalSwitchEntity.Id,
-            updateState: true, isClosed: updatedElectricalSwitchEntity.IsClosed), Times.Once);
+        switchesRepositoryMock.Verify(mock => mock
+            .UpdateElectricalSwitchAsync(updatedSwitchEntity.Id,
+            updateState: true, isClosed: updatedSwitchEntity.IsClosed), Times.Once);
 
-        registrationResult.AssertOkObjectResult(expectedValue: updatedElectricalSwitchEntity.ToDto());
+        registrationResult.AssertOkObjectResult(expectedValue: updatedSwitchEntity.ToDto());
     }
 
     [Test]
@@ -123,18 +146,21 @@ public sealed class ElectricalSwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var electricalSwitchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
+        var switchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
 
-        ElectricalSwitchEntity invalidElectricalSwitchEntity =
+        ElectricalSwitchEntity invalidSwitchEntity =
             randomizer.NextElectricalSwitchEntity() with { StationId = 0 };
 
-        var controllerUnderTest =
-            new ElectricalSwitchesController(electricalSwitchesRepositoryMock.Object);
+        var switchesManagerFactoryStub = new Mock<IElectricalSwitchManagerFactory>();
+
+        var controllerUnderTest = new ElectricalSwitchesController(
+            switchesRepositoryMock.Object,
+            switchesManagerFactoryStub.Object);
 
         IActionResult registrationResult =
-            await controllerUnderTest.RegisterElectricalSwitch(invalidElectricalSwitchEntity.ToDto());
+            await controllerUnderTest.RegisterElectricalSwitch(invalidSwitchEntity.ToDto());
 
-        electricalSwitchesRepositoryMock.Verify(mock => mock
+        switchesRepositoryMock.Verify(mock => mock
             .CreateElectricalSwitchAsync(It.IsAny<long>(), It.IsAny<byte>(), It.IsAny<bool?>()), Times.Never);
 
         registrationResult.AssertBadRequestObjectResult();
@@ -145,23 +171,26 @@ public sealed class ElectricalSwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        ElectricalSwitchEntity electricalSwitchEntity = randomizer.NextElectricalSwitchEntity();
+        ElectricalSwitchEntity switchEntity = randomizer.NextElectricalSwitchEntity();
 
-        var electricalSwitchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
+        var switchesRepositoryMock = new Mock<IElectricalSwitchesRepository>();
 
-        electricalSwitchesRepositoryMock.Setup(mock => mock.GetSingleElectricalSwitchAsync(
-            filterById: true, id: electricalSwitchEntity.Id,
+        switchesRepositoryMock.Setup(mock => mock.GetSingleElectricalSwitchAsync(
+            filterById: true, id: switchEntity.Id,
             filterByStationId: false, stationId: It.IsAny<long?>(),
             filterByLocalId: false, localId: It.IsAny<byte?>()))
-            .ReturnsAsync(electricalSwitchEntity);
+            .ReturnsAsync(switchEntity);
 
-        var controllerUnderTest =
-            new ElectricalSwitchesController(electricalSwitchesRepositoryMock.Object);
+        var switchesManagerFactoryStub = new Mock<IElectricalSwitchManagerFactory>();
+
+        var controllerUnderTest = new ElectricalSwitchesController(
+            switchesRepositoryMock.Object,
+            switchesManagerFactoryStub.Object);
 
         IActionResult retrievalResult = 
-            await controllerUnderTest.GetElectricalSwitch(electricalSwitchEntity.Id);
+            await controllerUnderTest.GetElectricalSwitch(switchEntity.Id);
 
-        retrievalResult.AssertOkObjectResult(expectedValue: electricalSwitchEntity.ToDto());
+        retrievalResult.AssertOkObjectResult(expectedValue: switchEntity.ToDto());
     }
     #endregion
 }

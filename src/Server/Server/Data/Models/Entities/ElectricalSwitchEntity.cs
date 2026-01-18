@@ -1,4 +1,5 @@
 ﻿using SmartHome.Server.Data.Models.Dtos;
+using SmartHome.Server.Managers;
 
 namespace SmartHome.Server.Data.Models.Entities;
 
@@ -20,7 +21,12 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// and current is flowing; <see langword="false"/> otherwise. 
 /// A <see langword="null"/> value indicates the state is unknown.
 /// </param>
-public sealed record ElectricalSwitchEntity(long Id, long StationId, byte LocalId, bool? IsClosed)
+public sealed record ElectricalSwitchEntity(long Id, long StationId, byte LocalId, bool? IsClosed);
+
+/// <summary>
+/// Extensions for <see cref="ElectricalSwitchEntity"/>
+/// </summary>
+public static class ElectricalSwitchEntityExtensions
 {
     /// <summary>
     /// Creates a Data Transfer Object (DTO) corresponding to this entity.
@@ -28,6 +34,17 @@ public sealed record ElectricalSwitchEntity(long Id, long StationId, byte LocalI
     /// <returns>
     /// Data Transfer Object (DTO) corresponding to this entity.
     /// </returns>
-    public ElectricalSwitchDto ToDto() =>
-        new ElectricalSwitchDto(StationId, LocalId, IsClosed, Id);
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
+    /// </exception>
+    public static ElectricalSwitchDto ToDto(this ElectricalSwitchEntity switchEntity)
+    {
+        ArgumentNullException.ThrowIfNull(switchEntity, nameof(switchEntity));
+
+        return new ElectricalSwitchDto(
+            Id: switchEntity.Id,
+            StationId: switchEntity.StationId,
+            LocalId: switchEntity.LocalId,
+            IsClosed: switchEntity.IsClosed);
+    }
 }

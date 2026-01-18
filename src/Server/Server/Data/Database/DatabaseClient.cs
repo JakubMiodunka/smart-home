@@ -12,6 +12,13 @@ namespace SmartHome.Server.Data.Database;
 /// Database client handling interactions with the database.
 /// </summary>
 /// <remarks>
+/// This interface is primarily created to support repository classes whose capabilities 
+/// may exceed pure SQL execution. Such classes shall interact with the database through this interface.
+/// </remarks>
+public interface IDatabaseClient : IStationsRepository, IElectricalSwitchesRepository;
+
+/// <inheritdoc cref="IDatabaseClient" path="/summary"/>
+/// <remarks>
 /// This class is dedicated solely to executing SQL code.
 /// If there is a need to introduce additional logic exceeding pure data access, 
 /// it must be implemented in a separate repository class dedicated to a specific entity type.

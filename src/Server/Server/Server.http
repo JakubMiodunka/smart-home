@@ -15,7 +15,7 @@ GET {{Server_HostAddress}}/api/v1/stations/10002
 Accept: application/json
 CONTENT-TYPE: application/json
 
-### StationsController.RegisterStation
+### ElectricalSwitchesController.RegisterElectricalSwitch
 
 POST {{Server_HostAddress}}/api/v1/electrical-switches
 Accept: application/json
@@ -26,9 +26,17 @@ CONTENT-TYPE: application/json
     "isClosed": null
 }
 
-### StationsController.GetStation
+### StationsController.GetElectricalSwitch
 
 GET {{Server_HostAddress}}/api/v1/electrical-switches/1
+Accept: application/json
+CONTENT-TYPE: application/json
+
+###
+
+### StationsController.ChangeStateOfElectricalSwitch
+
+PUT {{Server_HostAddress}}/api/v1/electrical-switches/1/state/true
 Accept: application/json
 CONTENT-TYPE: application/json
 
