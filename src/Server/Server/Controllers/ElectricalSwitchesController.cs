@@ -58,6 +58,7 @@ public class ElectricalSwitchesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> RegisterElectricalSwitch([FromBody] ElectricalSwitchDto switchDto)
     {
+        // TODO: Check if switch is known using station IP address and local ID specified in received DTO.
         ElectricalSwitchEntity? knownSwitchEntity = 
             await _switchesRepository.GetSingleElectricalSwitchAsync(
                 filterByStationId: true,

@@ -4,63 +4,50 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
-#include <stdarg.h>
 
-// Nice coding standard: https://users.ece.cmu.edu/~eno/coding/CCodingStandard.html
+#include "serial_logging.h"
+#include "station.h"
+#include "switches.h"
 
-//--- LOGGING ---
-enum LoggingLevel
+String mac_address;
+Switch switches[] = { {LED_BUILTIN, LOW} };
+constexpr size_t NUMBER_OF_SWITCHES = sizeof(switches)/sizeof(Switch);
+
+ESP8266WiFiMulti WiFiMulti;
+
+/// <summary>
+/// Serializes the provided JSON document into a minified string representation.
+/// </summary>
+/// <param name="document">
+/// A reference to the JSON document to be serialized.
+/// </param>
+/// <returns>
+/// A String containing the serialized JSON data.
+/// </returns>
+String serializeToString(const JsonDocument& document)
 {
-  UNKNOWN,
-  DEBUG,
-  INFO,
-  WARNING,
-  ERROR,
-  CRITICAL
-};
-
-void log_to_serial(LoggingLevel level, const char* format, ...)
-{
-  const char* level_names[] = {"UNKNOWN", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"};
-  const char* level_name = (0  <= level && level <= 5) ? level_names[level] : level_names[0];
-
-  char message_buffer[256];
-  va_list args;
-  va_start(args, format);
-  vsnprintf(message_buffer, sizeof(message_buffer), format, args);
-  va_end(args);
-
-  Serial.printf("[%s] %s\n", level_name, message_buffer);
-}
-
-//--- JSON ---
-
-String create_station_registration_request()
-{
-  JsonDocument document;
-  document["macAddress"] = WiFi.macAddress();
-
   String serialized_document;
   serializeJson(document, serialized_document);
   return serialized_document;
 }
 
-///---
-
-ESP8266WiFiMulti WiFiMulti;
 
 void setup() {
+  const char* SSID = "";      // Fill up accordingly.
+  const char* PASSWORD = "";  // Fill up accordingly.
+  
   Serial.begin(115200);
   Serial.println();
 
-  const char* SSID = "";        // Fill up accordingly.
-  const char* PASSWORD = "";  // Fill up accordingly.
-
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(SSID, PASSWORD);
+  mac_address = WiFi.macAddress();
+
+  initializeSwitches(switches, NUMBER_OF_SWITCHES);
 }
 
 void loop() {
+/*
   if (WiFiMulti.run() == WL_CONNECTED) {
     WiFiClient client;
     HTTPClient http;
@@ -92,4 +79,5 @@ void loop() {
   }
 
   delay(10000); // Wysylaj co 10 sekund
+  */
 }
