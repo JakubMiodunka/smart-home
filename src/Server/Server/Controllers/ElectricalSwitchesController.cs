@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SmartHome.Server.Managers.Factories;
 using SmartHome.Server.Data.Models.Dtos;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
+using SmartHome.Server.Managers.Factories;
+using System.Net;
 
 namespace SmartHome.Server.Controllers;
 
@@ -11,44 +12,53 @@ namespace SmartHome.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/electrical-switches")]
-public class ElectricalSwitchesController : ControllerBase
+public class ElectricalSwitchesController : SmartHomeController
 {
     #region Properties
     private readonly IElectricalSwitchesRepository _switchesRepository;
     private readonly IElectricalSwitchManagerFactory _switchManagersFactory;
+    private readonly IStationsRepository _stationsRepository;
     #endregion
 
     #region Instationation
     /// <summary>
     /// Creates an new controller instance.
     /// </summary>
+    /// <param name="httpContextAccessor">
+    /// Provides access to the <see cref="HttpContext"/> of the current request.
+    /// </param>
     /// <param name="switchesRepository">
     /// Stations repository which shall be used by this controller.
     /// </param>
     /// <param name="switchManagerFactory">
     /// Factory which shall be used to obtain managers required to to control electrical switches.
     /// </param>
+    /// <param name="stationsRepository">
+    /// Stations repository which shall be used by this controller.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
     public ElectricalSwitchesController(
+        IHttpContextAccessor httpContextAccessor,
         IElectricalSwitchesRepository switchesRepository,
-        IElectricalSwitchManagerFactory switchManagerFactory)
+        IElectricalSwitchManagerFactory switchManagerFactory,
+        IStationsRepository stationsRepository)
+        : base(httpContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(switchesRepository, nameof(switchesRepository));
         ArgumentNullException.ThrowIfNull(switchManagerFactory, nameof(switchManagerFactory));
+        ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
 
         _switchesRepository = switchesRepository;
         _switchManagersFactory = switchManagerFactory;
+        _stationsRepository = stationsRepository;
     }
     #endregion
 
     /// <summary>
     /// Registers an electrical switch within the system using details provided in request body.
     /// </summary>
-    /// <remarks>
-    /// TODO: Return ex. bad request if station with is specified in request body does not exist in database.
-    /// </remarks>
     /// <param name="switchDto">
     /// Data transfer object (DTO) containing details about electrical switch which shall be registered within the system.
     /// </param>
@@ -58,11 +68,25 @@ public class ElectricalSwitchesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> RegisterElectricalSwitch([FromBody] ElectricalSwitchDto switchDto)
     {
-        // TODO: Check if switch is known using station IP address and local ID specified in received DTO.
+        if (!TryGetRemoteIpAddress(out IPAddress? remoteIpAddress))
+        {
+            return BadRequest("Unable to determine remote IP address.");
+        }
+
+        StationEntity? parentStationEntity =
+            await _stationsRepository.GetSingleStationAsync(
+                filterByIpAddress: true,
+                ipAddress: remoteIpAddress);
+
+        if (parentStationEntity is null)
+        {
+            return BadRequest("Unable to determine electrical switch parent station.");
+        }
+
         ElectricalSwitchEntity? knownSwitchEntity = 
             await _switchesRepository.GetSingleElectricalSwitchAsync(
                 filterByStationId: true,
-                stationId: switchDto.StationId,
+                stationId: parentStationEntity.Id,
                 filterByLocalId: true,
                 localId: switchDto.LocalId);
 
@@ -70,7 +94,7 @@ public class ElectricalSwitchesController : ControllerBase
         {
             ElectricalSwitchEntity createdSwitchEntity =
                 await _switchesRepository.CreateElectricalSwitchAsync(
-                    switchDto.StationId,
+                    parentStationEntity.Id,
                     switchDto.LocalId,
                     switchDto.IsClosed);
 

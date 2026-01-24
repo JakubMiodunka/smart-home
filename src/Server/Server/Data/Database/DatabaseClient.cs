@@ -159,11 +159,14 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <inheritdoc cref="IStationsRepository"/>
     public async Task<StationEntity?> GetSingleStationAsync(
         bool filterById = false, long? id = null,
+        bool filterByIpAddress = false, IPAddress? ipAddress = null,
         bool filterByMacAddress = false, PhysicalAddress? macAddress = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@filter_by_id", filterById);
         parameters.Add("@id", id);
+        parameters.Add("@filter_by_ip_address", filterByIpAddress);
+        parameters.Add("@ip_address", ipAddress);
         parameters.Add("@filter_by_mac_address", filterByMacAddress);
         parameters.Add("@mac_address", macAddress);
 

@@ -1,5 +1,4 @@
 ﻿using SmartHome.Server.Data.Models.Dtos;
-using SmartHome.Server.Managers;
 
 namespace SmartHome.Server.Data.Models.Entities;
 
@@ -43,7 +42,6 @@ public static class ElectricalSwitchEntityExtensions
 
         return new ElectricalSwitchDto(
             Id: switchEntity.Id,
-            StationId: switchEntity.StationId,
             LocalId: switchEntity.LocalId,
             IsClosed: switchEntity.IsClosed);
     }

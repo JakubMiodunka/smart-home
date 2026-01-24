@@ -9,9 +9,6 @@ namespace SmartHome.Server.Data.Models.Dtos;
 /// <param name="Id">
 /// The unique global identifier for the electrical switch.
 /// </param>
-/// <param name="StationId">
-/// The unique identifier of the station that controls this switch.
-/// </param>
 /// <param name="LocalId">
 /// The identifier of the switch, unique only at the station level.
 /// </param>
@@ -21,7 +18,6 @@ namespace SmartHome.Server.Data.Models.Dtos;
 /// A <see langword="null"/> value indicates the state is unknown.
 /// </param>
 public sealed record ElectricalSwitchDto(
-    [Range(1, long.MaxValue)] long StationId,
     [Range(1, byte.MaxValue)] byte LocalId,
     bool? IsClosed,
     [Range(1, long.MaxValue)] long? Id = null);

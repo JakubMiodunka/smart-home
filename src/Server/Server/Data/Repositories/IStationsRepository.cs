@@ -38,6 +38,13 @@ public interface IStationsRepository
     /// Value of ID by which stations shall be filtered.
     /// Ignored if value of <paramref name="filterById"/> is set to <see langword="false"/>.
     /// </param>
+    /// <param name="filterByIpAddress">
+    /// <see langword="true"/>, if filtering by IP address shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="ipAddress">
+    /// Value of IP address by which stations shall be filtered.
+    /// Ignored if value of <paramref name="filterByIpAddress"/> is set to <see langword="false"/>.
+    /// </param>
     /// <param name="filterByMacAddress">
     /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
     /// </param>
@@ -50,6 +57,7 @@ public interface IStationsRepository
     /// </returns>
     Task<StationEntity?> GetSingleStationAsync(
         bool filterById = false, long? id = null,
+        bool filterByIpAddress = false, IPAddress? ipAddress = null,
         bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
 
     /// <summary>
