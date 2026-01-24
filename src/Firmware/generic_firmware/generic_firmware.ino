@@ -9,11 +9,11 @@
 #include "station.h"
 #include "switches.h"
 
-String mac_address;
-Switch switches[] = { {LED_BUILTIN, LOW} };
-constexpr size_t NUMBER_OF_SWITCHES = sizeof(switches)/sizeof(Switch);
-
 ESP8266WiFiMulti WiFiMulti;
+String g_macAddress;
+Switch g_switches[] = { {LED_BUILTIN, LOW} };
+constexpr size_t NUMBER_OF_SWITCHES = sizeof(g_switches)/sizeof(Switch);
+constexpr unsigned long RETRY_INTERVAL = 10000;
 
 /// <summary>
 /// Serializes the provided JSON document into a minified string representation.
@@ -31,6 +31,72 @@ String serializeToString(const JsonDocument& document)
   return serialized_document;
 }
 
+/// <summary>
+/// Attempts to register the station on the server.
+/// </summary>
+/// <param name="macAddress">
+/// The MAC address of the station.
+/// </param>
+/// <returns>
+/// True if the attempt was successful, false otherwise.
+/// </returns>
+boolean tryRegisterStation(String macAddress) {
+  if (WiFiMulti.run() != WL_CONNECTED) {
+    return false;
+  }
+
+  WiFiClient wifiClient;
+  HTTPClient httpClient;
+
+  if (!httpClient.begin(wifiClient, "http://192.168.0.199:5236/api/v1/stations")) {
+    return false;
+  }
+
+  JsonDocument registrationRequest;
+  populateStationRegistrationRequest(registrationRequest, macAddress);
+
+  httpClient.addHeader("Content-Type", "application/json");
+  int httpReturnCode = httpClient.POST(serializeToString(registrationRequest));
+
+  httpClient.end();
+
+  return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
+}
+
+/// <summary>
+/// Attempts to register a single switch on the server.
+/// </summary>
+/// <param name="switchToRegister">
+/// The switch object to be registered.
+/// </param>
+/// <param name="localId">
+/// The local identifier assigned to the switch.
+/// </param>
+/// <returns>
+/// True if the attempt was successful, false otherwise.
+/// </returns>
+boolean tryRegisterSwitch(const Switch& switchToRegister, int localId) {
+  if (WiFiMulti.run() != WL_CONNECTED) {
+    return false;
+  }
+
+  WiFiClient wifiClient;
+  HTTPClient httpClient;
+
+  if (!httpClient.begin(wifiClient, "http://192.168.0.199:5236/api/v1/stations")) {
+    return false;
+  }
+
+  JsonDocument registrationRequest;
+  populateSwitchRegistrationRequest(registrationRequest, localId, switchToRegister.pinState);
+
+  httpClient.addHeader("Content-Type", "application/json");
+  int httpReturnCode = httpClient.POST(serializeToString(registrationRequest));
+
+  httpClient.end();
+
+  return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
+}
 
 void setup() {
   const char* SSID = "";      // Fill up accordingly.
@@ -41,43 +107,24 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(SSID, PASSWORD);
-  mac_address = WiFi.macAddress();
+  g_macAddress = WiFi.macAddress();
 
-  initializeSwitches(switches, NUMBER_OF_SWITCHES);
-}
+  initializeSwitches(g_switches, NUMBER_OF_SWITCHES);
 
-void loop() {
-/*
-  if (WiFiMulti.run() == WL_CONNECTED) {
-    WiFiClient client;
-    HTTPClient http;
-
-    // Adres Twojego serwera ASP.NET Core
-    if (http.begin(client, "http://192.168.0.199:5236/api/v1/stations")) {
-      http.addHeader("Content-Type", "application/json");
-
-      String registration_request = create_station_registration_request();
-      int httpCode = http.POST(registration_request);
-
-      if (httpCode > 0) {
-        log_to_serial(INFO, "Returned HTTP code: %d", httpCode);
-        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
-          String payload = http.getString();
-          log_to_serial(INFO, "Odpowiedz serwera:");
-          Serial.println(payload);
-
-          JsonDocument ret;
-          deserializeJson(ret, payload);
-          log_to_serial(INFO, "Otrzymane ID: %ld", ret["id"].as<long>());
-        }
-      } else {
-        Serial.printf("[HTTP] Blad: %s\n", http.errorToString(httpCode).c_str());
-      }
-
-      http.end(); // Zawsze zamykaj polaczenie
-    }
+  while (!tryRegisterStation(g_macAddress)) {
+    delay(RETRY_INTERVAL);
   }
 
-  delay(10000); // Wysylaj co 10 sekund
-  */
+  for (int index = 0; index < NUMBER_OF_SWITCHES; index++) {
+    const Switch& currentSwitch = g_switches[index];
+
+    while (!tryRegisterSwitch(currentSwitch, index)) {
+      delay(RETRY_INTERVAL);
+    }
+  }
+}
+
+
+void loop() {
+
 }

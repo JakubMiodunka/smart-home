@@ -12,6 +12,6 @@ enum LoggingLevel {
   CRITICAL
 };
 
-void log_to_serial(LoggingLevel level, const char* format, ...);
+void logToSerial(LoggingLevel level, const char* format, ...);
 
 #endif
