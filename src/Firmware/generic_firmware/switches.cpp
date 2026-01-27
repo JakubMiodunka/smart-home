@@ -2,13 +2,11 @@
 #include <ArduinoJson.h>
 
 #include "switches.h"
+#include "serial_logging.h"
 
-void initializeSwitches(Switch* switches, int numberOfSwitches) {
-  for (int index = 0; index < numberOfSwitches; index++) {
-    const Switch& currentSwitch = switches[index];
-    pinMode(currentSwitch.pinNumber, OUTPUT);
-    digitalWrite(currentSwitch.pinNumber, currentSwitch.pinState);
-  }
+void initializeSwitch(const Switch& switchRef) {
+  pinMode(switchRef.pinNumber, OUTPUT);
+  digitalWrite(switchRef.pinNumber, switchRef.pinState);
 }
 
 void populateSwitchRegistrationRequest(JsonDocument& document, size_t localId, uint8_t pinState) {

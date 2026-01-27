@@ -13,15 +13,12 @@ struct Switch {
 };
 
 /// <summary>
-/// Configures digital pins according to the provided collection of switch representations.
+/// Configures digital pins according to the provided switch representations.
 /// </summary>
-/// <param name="switches">
-/// The collection of switch representations used to initialize the digital pins.
+/// <param name="switchRef">
+/// Switch representations used to initialize the digital pins.
 /// </param>
-/// <param name="numberOfSwitches">
-/// The total number of switches contained in the provided collection.
-/// </param>
-void initializeSwitches(Switch* switches, int numberOfSwitches);
+void initializeSwitch(const Switch& switchRef);
 
 /// <summary>
 /// Populates the provided JSON document with switch registration data.

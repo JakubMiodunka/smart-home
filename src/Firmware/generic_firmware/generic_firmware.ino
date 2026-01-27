@@ -14,6 +14,7 @@ String g_macAddress;
 Switch g_switches[] = { {LED_BUILTIN, LOW} };
 constexpr size_t NUMBER_OF_SWITCHES = sizeof(g_switches)/sizeof(Switch);
 constexpr unsigned long RETRY_INTERVAL = 10000;
+constexpr const char* SERVER_IP_ADDRESS = "192.168.0.199";
 
 /// <summary>
 /// Serializes the provided JSON document into a minified string representation.
@@ -52,12 +53,13 @@ boolean tryRegisterStation(String macAddress) {
     return false;
   }
 
-  JsonDocument registrationRequest;
-  populateStationRegistrationRequest(registrationRequest, macAddress);
+  JsonDocument request;
+  populateStationRegistrationRequest(request, macAddress);
 
   httpClient.addHeader("Content-Type", "application/json");
-  int httpReturnCode = httpClient.POST(serializeToString(registrationRequest));
-
+  String serializedRequest = serializeToString(request);
+  int httpReturnCode = httpClient.POST(serializedRequest);
+  
   httpClient.end();
 
   return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
@@ -83,7 +85,7 @@ boolean tryRegisterSwitch(const Switch& switchToRegister, int localId) {
   WiFiClient wifiClient;
   HTTPClient httpClient;
 
-  if (!httpClient.begin(wifiClient, "http://192.168.0.199:5236/api/v1/stations")) {
+  if (!httpClient.begin(wifiClient, "http://192.168.0.199:5236/api/v1/electrical-switches")) {
     return false;
   }
 
@@ -105,23 +107,57 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
+  logToSerial(INFO, "Attempting to connect to %s WiFi network.", SSID);
+
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(SSID, PASSWORD);
   g_macAddress = WiFi.macAddress();
 
-  initializeSwitches(g_switches, NUMBER_OF_SWITCHES);
+  while (WiFiMulti.run() != WL_CONNECTED) {
+    delay(500);
+  }
+
+  logToSerial(INFO, "Connection established successfully.");
+
+  logToSerial(DEBUG, "IP addressassigned to station: %s", WiFi.localIP().toString().c_str());
+  logToSerial(DEBUG, "Network signal strength: %d dBm", WiFi.RSSI());
+
+  logToSerial(INFO, "Attempting to register station on the server.");
+  logToSerial(DEBUG, "Server IP address: %s", SERVER_IP_ADDRESS);
+  logToSerial(DEBUG, "MAC address used during registration process: %s", g_macAddress.c_str());
 
   while (!tryRegisterStation(g_macAddress)) {
+    logToSerial(WARNING, "Registration attempt failed. Retrying in %lu ms.", RETRY_INTERVAL);
     delay(RETRY_INTERVAL);
   }
 
+  logToSerial(INFO, "Station registration successful.");
+
+  logToSerial(INFO, "Attempting to register switches on the server.");
+
+  // TODO: Local ID of a switch shall be greather than 0.
   for (int index = 0; index < NUMBER_OF_SWITCHES; index++) {
     const Switch& currentSwitch = g_switches[index];
 
-    while (!tryRegisterSwitch(currentSwitch, index)) {
+    logToSerial(INFO, "Attempting to register switch with ID %d.", index + 1);
+
+    while (!tryRegisterSwitch(currentSwitch, index + 1)) {
+      logToSerial(WARNING, "Registration attempt failed. Retrying in %lu ms.", RETRY_INTERVAL);
       delay(RETRY_INTERVAL);
     }
+
+    logToSerial(INFO, "Switch registration successful.");
   }
+
+  logToSerial(INFO, "All switches registered successfully.");
+
+/*
+  TODO: Initialize switches according to DTOs returned by server.
+  for (int index = 0; index < NUMBER_OF_SWITCHES; index++) {
+    const Switch& currentSwitch = g_switches[index];
+    initializeSwitch(currentSwitch);
+  }
+*/
 }
 
 
