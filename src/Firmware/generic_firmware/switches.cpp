@@ -2,7 +2,6 @@
 #include <ArduinoJson.h>
 
 #include "switches.h"
-#include "serial_logging.h"
 
 void initializeSwitch(const Switch& switchRef) {
   pinMode(switchRef.pinNumber, OUTPUT);

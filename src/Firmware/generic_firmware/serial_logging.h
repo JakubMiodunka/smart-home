@@ -12,6 +12,7 @@ enum LoggingLevel {
   CRITICAL
 };
 
+/// TODO: Add doc string.
 void logToSerial(LoggingLevel level, const char* format, ...);
 
 #endif

@@ -4,12 +4,29 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+#include "switches.h"
+
 /// <summary>
 /// Representation of a single electrical switch.
 /// </summary>
 struct Switch {
+  /// <summary>
+  /// GPIO pin number the switch is connected to.
+  /// </summary>
   uint8_t pinNumber;
-  uint8_t pinState;  // According to Arduino.h, either LOW (0x00) or HIGH (0x01).
+  
+  /// <summary>
+  /// Current physical state of the pin - according to Arduino.h,
+  /// either LOW (0x00) or HIGH (0x01).
+  /// </summary>
+  uint8_t pinState;
+
+  /// <summary>
+  /// Switch logic indicator.
+  /// True if LOW GPIO pin state closes the switch and current is flowing,
+  /// false otherwise.
+  /// </summary>
+  boolean reversedLogic;
 };
 
 /// <summary>

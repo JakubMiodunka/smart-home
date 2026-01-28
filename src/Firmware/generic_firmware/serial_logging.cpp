@@ -1,5 +1,7 @@
-#include "serial_logging.h"
+#include <Arduino.h>
 #include <stdarg.h>
+
+#include "serial_logging.h"
 
 void logToSerial(LoggingLevel level, const char* format, ...) {
   const char* levelNames[] = {"UNKNOWN", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"};
