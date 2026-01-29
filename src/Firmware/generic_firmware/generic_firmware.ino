@@ -63,7 +63,7 @@ void setup() {
       delay(RETRY_INTERVAL);
     }
 
-    logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d].");
+    logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d].", localId);
   }
 
   logToSerial(INFO, "All switches registered successfully.");

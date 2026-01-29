@@ -7,69 +7,133 @@
 #include "requests.h"
 #include "switches.h"
 #include "station.h"
+#include "serial_logging.h"
+
+static const String BASE_URL = "http://192.168.0.199:5236";
+static const String STATIONS_ENDPOINT = "/api/v1/stations";
+static const String SWITCHES_ENDPOINT = "/api/v1/electrical-switches";
 
 /// <summary>
-/// Serializes the provided JSON document into a minified string representation.
+/// Defines the HTTP methods supported in this library.
 /// </summary>
 /// <remarks>
-/// Function used internally - is not exposed in header file.
+/// Used internally - is not exposed in header file.
 /// </remarks>
-/// <param name="document">
-/// A reference to the JSON document to be serialized.
+enum HttpMethod {
+  GET,
+  PUT,
+  POST,
+  PATCH,
+  DELETE
+};
+
+/// <summary>
+/// Sends HTTP request using a specified method and handles the communication lifecycle.
+/// </summary>
+/// <remarks>
+/// Used internally - is not exposed in header file.
+/// </remarks>
+/// <param name="wiFiManager">
+/// Reference to the WiFi manager responsible for maintaining the network connection.
+/// </param>
+/// <param name="url">
+/// The target URL where the request shall be sent.
+/// </param>
+/// <param name="httpMethod">
+/// The <see cref="HttpMethod"/> to be used for the request.
+/// </param>
+/// <param name="request">
+/// The request body to be sent.
+/// Ignored when <paramref name="httpMethod"/> is set either to GET or DELETE.
+/// </param>
+/// <param name="response">
+/// An output container for the parsed response body.
+/// </param>
+/// <param name="httpReturnCode">
+/// The HTTP status code or internal error code returned from the remote server.
 /// </param>
 /// <returns>
-/// A String containing the serialized JSON data.
-/// </returns>
-static String serializeToString(const JsonDocument& document)
-{
-  String serialized_document;
-  serializeJson(document, serialized_document);
-  return serialized_document;
-}
-
-boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress) {
-  if (wiFiManager.run() != WL_CONNECTED) {
+/// <see langword="true"/> if operation was successful, <see langword="false"/> otherwise.
+///</returns>
+static bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode) {
+  wl_status_t connectionStatus = wiFiManager.run();
+  if (connectionStatus != WL_CONNECTED) {
+    logToSerial(ERROR, "WiFi connection failed: STATUS=[%d]", connectionStatus);
     return false;
   }
 
   WiFiClient wifiClient;
   HTTPClient httpClient;
-
-  if (!httpClient.begin(wifiClient, "http://192.168.0.199:5236/api/v1/stations")) {
+  
+  if (!httpClient.begin(wifiClient, url)) {
+    logToSerial(ERROR, "Failed to configure HTTP client: URL=[%s]", url.c_str());
     return false;
   }
 
-  JsonDocument request;
-  populateStationRegistrationRequest(request, macAddress);
+  String serializedRequest;
+  serializeJson(request, serializedRequest);
+
+  logToSerial(DEBUG, "Sending HTTP POST request: URL=[%s], REQUEST_BODY=[%s]", url.c_str(), serializedRequest.c_str());
 
   httpClient.addHeader("Content-Type", "application/json");
-  String serializedRequest = serializeToString(request);
-  int httpReturnCode = httpClient.POST(serializedRequest);
+  switch (httpMethod) {
+    case GET:
+      httpReturnCode = httpClient.GET();
+      break;
+    case PUT:
+      httpReturnCode = httpClient.PUT(serializedRequest);
+      break;
+    case POST:
+      httpReturnCode = httpClient.POST(serializedRequest);
+      break;
+    case PATCH:
+      httpReturnCode = httpClient.PATCH(serializedRequest);
+      break;
+    case DELETE:
+      httpReturnCode = httpClient.DELETE();
+      break;
+    default:
+      logToSerial(ERROR, "HTTP method not supported: HTTP_METHOD=[%d]", httpMethod);
+      return false;
+  }
   
+  if (httpReturnCode > 0) {
+    String serializedResponse = httpClient.getString();
+    logToSerial(DEBUG, "Received response: HTTP_RETURN_CODE=[%i], RESPONSE_BODY=[%s]", httpReturnCode, serializedResponse.c_str());
+  }
+  else {
+    String errorMessage = httpClient.errorToString(httpReturnCode);
+    logToSerial(DEBUG, "Received response: HTTP_RETURN_CODE=[%i], ERROR_MESSAGE=[%s]", httpReturnCode, errorMessage.c_str());
+  }
+
   httpClient.end();
+
+  return true;
+}
+
+boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress) {
+  const String url = BASE_URL + STATIONS_ENDPOINT;
+  const HttpMethod httpMethod = POST;
+  JsonDocument request;
+  JsonDocument response;
+  int httpReturnCode;
+
+  populateStationRegistrationRequest(request, macAddress);
+  sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
 
   return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
 }
 
+/// TODO: Modify state of GPIO pin according to received server response.
 boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegister, int localId) {
-  if (wiFiManager.run() != WL_CONNECTED) {
-    return false;
-  }
-
-  WiFiClient wifiClient;
-  HTTPClient httpClient;
-
-  if (!httpClient.begin(wifiClient, "http://192.168.0.199:5236/api/v1/electrical-switches")) {
-    return false;
-  }
-
-  JsonDocument registrationRequest;
-  populateSwitchRegistrationRequest(registrationRequest, localId, switchToRegister.pinState);
-
-  httpClient.addHeader("Content-Type", "application/json");
-  int httpReturnCode = httpClient.POST(serializeToString(registrationRequest));
-
-  httpClient.end();
+  const String url = BASE_URL + SWITCHES_ENDPOINT;
+  const HttpMethod httpMethod = POST;
+  JsonDocument request;
+  JsonDocument response;
+  int httpReturnCode;
+  
+  populateSwitchRegistrationRequest(request, localId, switchToRegister.pinState);
+  sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
 
   return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
 }

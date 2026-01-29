@@ -21,7 +21,6 @@
 /// </returns>
 boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress);
 
-/// TODO: Modify state of GPIO pin according to received server response.
 /// <summary>
 /// Attempts to register a single switch on the server.
 /// </summary>
