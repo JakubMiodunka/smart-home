@@ -24,6 +24,10 @@ boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress);
 /// <summary>
 /// Attempts to register a single switch on the server.
 /// </summary>
+/// <remarks>
+/// This function changes state of provided <paramref name="switchRef"/> instance
+/// according to received server response.
+/// </remarks>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.
 /// </param>

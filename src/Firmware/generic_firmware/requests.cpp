@@ -100,6 +100,12 @@ static bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, con
   if (httpReturnCode > 0) {
     String serializedResponse = httpClient.getString();
     logToSerial(DEBUG, "Received response: HTTP_RETURN_CODE=[%i], RESPONSE_BODY=[%s]", httpReturnCode, serializedResponse.c_str());
+
+    DeserializationError deserializationError = deserializeJson(response, serializedResponse);
+
+    if (deserializationError) {
+      logToSerial(ERROR, "Response deserialization failed: ERROR_MESSAGE=[%s]", deserializationError.c_str());
+    }
   }
   else {
     String errorMessage = httpClient.errorToString(httpReturnCode);
@@ -124,7 +130,6 @@ boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress) {
   return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
 }
 
-/// TODO: Modify state of GPIO pin according to received server response.
 boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegister, int localId) {
   const String url = BASE_URL + SWITCHES_ENDPOINT;
   const HttpMethod httpMethod = POST;
@@ -134,6 +139,9 @@ boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegiste
   
   populateSwitchRegistrationRequest(request, localId, switchToRegister.pinState);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+
+  boolean isClosed = response["isClosed"];
+  changeSwitchState(switchToRegister, isClosed);
 
   return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
 }

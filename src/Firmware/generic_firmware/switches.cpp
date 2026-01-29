@@ -8,6 +8,12 @@ void initializeSwitch(const Switch& switchRef) {
   digitalWrite(switchRef.pinNumber, switchRef.pinState);
 }
 
+void changeSwitchState(Switch& switchRef, const boolean isClosed) {
+  bool pinState = isClosed;
+  pinState = switchRef.reversedLogic ? !pinState : pinState;
+  switchRef.pinState = pinState ? HIGH : LOW;
+}
+
 void populateSwitchRegistrationRequest(JsonDocument& document, size_t localId, uint8_t pinState) {
   document["localId"] = localId;
 

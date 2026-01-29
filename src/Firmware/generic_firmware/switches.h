@@ -33,9 +33,24 @@ struct Switch {
 /// Configures digital pins according to the provided switch representations.
 /// </summary>
 /// <param name="switchRef">
-/// Switch representations used to initialize the digital pins.
+/// Switch representation used to initialize the digital pins.
 /// </param>
 void initializeSwitch(const Switch& switchRef);
+
+/// <summary>
+/// Changes the state of the provided switch according to its logic.
+/// </summary>
+/// <remarks>
+/// This function only updates the values within the provided <paramref name="switchRef"/> instance. 
+/// The physical state of the GPIO pin is not modified.
+/// </remarks>
+/// <param name="switchRef">
+/// The switch representation to be modified.
+/// </param>
+/// <param name="isClosed">
+/// <see langword="true"/> if the switch should be closed to allow current flow; otherwise, <see langword="false"/>.
+/// </param>
+void changeSwitchState(Switch& switchRef, const boolean isClosed);
 
 /// <summary>
 /// Populates the provided JSON document with switch registration data.

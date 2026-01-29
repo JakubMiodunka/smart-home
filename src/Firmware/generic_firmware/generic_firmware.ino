@@ -11,7 +11,7 @@
 #include "requests.h"
 
 ESP8266WiFiMulti WiFiManager;
-Switch Switches[] = { {LED_BUILTIN, HIGH, false} };
+Switch Switches[] = { {LED_BUILTIN, HIGH, true} };
 constexpr size_t NUMBER_OF_SWITCHES = sizeof(Switches)/sizeof(Switch);
 constexpr unsigned long RETRY_INTERVAL = 10000;
 
@@ -36,8 +36,9 @@ void setup() {
 
   logToSerial(INFO, "Connection established successfully.");
 
-  logToSerial(DEBUG, "DHCP server assigned IP address to station: IP_ADDRESS=[%s]", WiFi.localIP().toString().c_str());
-  logToSerial(DEBUG, "Measured WiFi signal strength: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
+  String ipAddress = WiFi.localIP().toString();
+  logToSerial(DEBUG, "DHCP server assigned IP address to station: IP_ADDRESS=[%s]", ipAddress.c_str());
+  logToSerial(DEBUG, "Measuring WiFi signal strength: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
 
   logToSerial(INFO, "Attempting to register station on the server.");
 
