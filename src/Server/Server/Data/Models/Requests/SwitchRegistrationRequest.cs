@@ -4,8 +4,7 @@ using System.Net.NetworkInformation;
 namespace SmartHome.Server.Data.Models.Requests;
 
 /// <summary>
-/// Data transfer object (DTO) representing a request to update
-/// the current state of an electrical switch on the server side.
+/// Data transfer object (DTO) representing a request to register a switch within the system.
 /// </summary>
 /// <remarks>
 /// Used for data exchange between the server and station firmware.
@@ -16,12 +15,6 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <param name="SwitchLocalId">
 /// The identifier of the switch, unique only at the station level.
 /// </param>
-/// <param name="SwitchState">
-/// Current state of the electrical switch.
-/// <see langword="true"/> if the circuit is closed and current is flowing;
-/// <see langword="false"/> otherwise.
-/// </param>
-public sealed record UpdateSwitchStateRequest(
+public sealed record SwitchRegistrationRequest(
     [Required] PhysicalAddress StationMacAddress,
-    [Range(1, byte.MaxValue)] byte SwitchLocalId,
-    [Required] bool SwitchState);
+    [Range(1, byte.MaxValue)] byte SwitchLocalId);
