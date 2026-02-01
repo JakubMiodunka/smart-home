@@ -15,7 +15,7 @@ namespace SmartHome.Server.Data.Database;
 /// This interface is primarily created to support repository classes whose capabilities 
 /// may exceed pure SQL execution. Such classes shall interact with the database through this interface.
 /// </remarks>
-public interface IDatabaseClient : IStationsRepository, IElectricalSwitchesRepository;
+public interface IDatabaseClient : IStationsRepository, ISwitchesRepository;
 
 /// <inheritdoc cref="IDatabaseClient" path="/summary"/>
 /// <remarks>
@@ -185,20 +185,21 @@ public sealed class DatabaseClient : IDatabaseClient
     }
     #endregion
 
-    #region Electrical switches
-    /// <inheritdoc cref="IElectricalSwitchesRepository"/>
-    public async Task<ElectricalSwitchEntity> CreateElectricalSwitchAsync(long stationId, byte localId, bool? isClosed)
+    #region Switches
+    /// <inheritdoc cref="ISwitchesRepository"/>
+    public async Task<SwitchEntity> CreateSwitchAsync(long stationId, byte localId, bool expectedState, bool? actualState)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@station_id", stationId);
         parameters.Add("@local_id", localId);
-        parameters.Add("@is_closed", isClosed);
+        parameters.Add("@expected_state", expectedState);
+        parameters.Add("@actual_state", actualState);
 
-        return await CreateEntityAsync<ElectricalSwitchEntity>("SP_electrical_switches_create", parameters);
+        return await CreateEntityAsync<SwitchEntity>("SP_switches_create", parameters);
     }
 
-    /// <inheritdoc cref="IElectricalSwitchesRepository"/>
-    public async  Task<ElectricalSwitchEntity?> GetSingleElectricalSwitchAsync(
+    /// <inheritdoc cref="ISwitchesRepository"/>
+    public async  Task<SwitchEntity?> GetSingleSwitchAsync(
         bool filterById = false, long? id = null,
         bool filterByStationId = false, long? stationId = null,
         bool filterByLocalId = false, byte? localId = null)
@@ -211,18 +212,23 @@ public sealed class DatabaseClient : IDatabaseClient
         parameters.Add("@filter_by_local_id", filterByLocalId);
         parameters.Add("@local_id", localId);
 
-        return await GetSingleEntityAsync<ElectricalSwitchEntity>("SP_electrical_switches_get", parameters);
+        return await GetSingleEntityAsync<SwitchEntity>("SP_switches_get", parameters);
     }
 
-    /// <inheritdoc cref="IElectricalSwitchesRepository"/>
-    public async Task<ElectricalSwitchEntity?> UpdateElectricalSwitchAsync(long id, bool updateState = false, bool? isClosed = null)
+    /// <inheritdoc cref="ISwitchesRepository"/>
+    public async Task<SwitchEntity?> UpdateSwitchAsync(
+        long id,
+        bool updateExpectedState = false, bool? expectedState = null,
+        bool updateActualState = false, bool? actualState = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@id", id);
-        parameters.Add("@update_state", updateState);
-        parameters.Add("@is_closed", isClosed);
+        parameters.Add("@update_expected_state", updateExpectedState);
+        parameters.Add("@expected_state", expectedState);
+        parameters.Add("@update_actual_state", updateActualState);
+        parameters.Add("@actual_state", actualState);
 
-        return await GetSingleEntityAsync<ElectricalSwitchEntity>("SP_electrical_switches_update", parameters);
+        return await GetSingleEntityAsync<SwitchEntity>("SP_switches_update", parameters);
     }
     #endregion
 }

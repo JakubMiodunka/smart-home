@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SmartHome.Server.Data.Repositories;
 using System.Net;
 
-namespace SmartHome.Server.Controllers;
+namespace SmartHome.Server.Controllers.Firmware;
 
 /// <summary>
-/// Basic controller dedicated to smart home system.
+/// Base class for controllers that handle requests from station firmware.
 /// </summary>
-public abstract class SmartHomeController : ControllerBase
+public abstract class FirmwareController : ControllerBase
 {
     #region Properties
     protected readonly IHttpContextAccessor _httpContextAccessor;
@@ -15,7 +14,7 @@ public abstract class SmartHomeController : ControllerBase
 
     #region Instantiation
     /// <summary>
-    /// Initializes basic smart home controller functionalities.
+    /// Initializes basic functionalities of the <see cref="FirmwareController"/>.
     /// </summary>
     /// <param name="httpContextAccessor">
     /// Provides access to the <see cref="HttpContext"/> of the current request.
@@ -23,7 +22,7 @@ public abstract class SmartHomeController : ControllerBase
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    protected SmartHomeController(IHttpContextAccessor httpContextAccessor)
+    protected FirmwareController(IHttpContextAccessor httpContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(httpContextAccessor, nameof(httpContextAccessor));
 

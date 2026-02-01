@@ -1,5 +1,4 @@
-﻿using SmartHome.Server.Data.Models.Dtos;
-using System.Net;
+﻿using System.Net;
 using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Entities;
@@ -19,25 +18,3 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// A <see langword="null"/> value indicates the address is unknown.
 /// </param>
 public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress);
-
-/// <summary>
-/// Extensions for <see cref="StationEntity"/>
-/// </summary>
-public static class StationEntityExtensions
-{
-    /// <summary>
-    /// Creates a Data Transfer Object (DTO) corresponding to this entity.
-    /// </summary>
-    /// <returns>
-    /// Data Transfer Object (DTO) corresponding to this entity.
-    /// </returns>
-
-    public static StationDto ToDto(this StationEntity stationEntity)
-    {
-        ArgumentNullException.ThrowIfNull(stationEntity, nameof(stationEntity));
-
-        return new StationDto(
-            Id: stationEntity.Id,
-            MacAddress: stationEntity.MacAddress);
-    }
-}

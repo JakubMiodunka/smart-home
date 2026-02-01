@@ -48,15 +48,16 @@ internal static class RandomizerExtensions
         return new StationEntity(id, macAddress, ipAddress);
     }
 
-    public static ElectricalSwitchEntity NextElectricalSwitchEntity(this Randomizer randomizer, long? stationId = null)
+    public static SwitchEntity NextSwitchEntity(this Randomizer randomizer, long? stationId = null)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
         long id = randomizer.NextInt64(1, long.MaxValue);
         stationId = stationId ?? randomizer.NextInt64(1, long.MaxValue);
         byte localId = randomizer.NextByte();
-        bool? isClosed = randomizer.NextNullableBool();
+        bool expectedState = randomizer.NextBool();
+        bool? actualState = randomizer.NextNullableBool();
 
-        return new ElectricalSwitchEntity(id, stationId.Value, localId, isClosed);
+        return new SwitchEntity(id, stationId.Value, localId, expectedState, actualState);
     }
 }

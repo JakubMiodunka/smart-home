@@ -25,8 +25,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
-builder.Services.AddSingleton<IElectricalSwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
-builder.Services.AddSingleton<IElectricalSwitchManagerFactory>(new ElectricalSwitchManagerFactory());
+builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
+builder.Services.AddSingleton<ISwitchManagerFactory>(new SwitchManagerFactory());
 
 builder.Services.AddControllers();
 

@@ -21,6 +21,18 @@ internal static class IActionResultExtensions
         Assert.That(specificActionResult.Value, Is.EqualTo(expectedValue));
     }
 
+    public static void AssertNoContentResult(
+        this IActionResult actionResultUnderTest,
+        int expectedStatusCode = StatusCodes.Status204NoContent)
+    {
+        Assert.That(actionResultUnderTest, Is.Not.Null);
+        Assert.That(actionResultUnderTest, Is.InstanceOf<NoContentResult>());
+
+        var specificActionResult = (NoContentResult)actionResultUnderTest;
+
+        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
+    }
+
     public static void AssertCreatedAtActionResult<T>(
         this IActionResult actionResultUnderTest,
         int expectedStatusCode = StatusCodes.Status201Created,

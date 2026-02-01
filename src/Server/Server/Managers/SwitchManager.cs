@@ -5,7 +5,7 @@ namespace SmartHome.Server.Managers;
 /// <summary>
 /// Manager, which is able to control an electrical switch.
 /// </summary>
-public interface IElectricalSwitchManager
+public interface ISwitchManager
 {
     /// <summary>
     /// Changes state of managed electrical switch.
@@ -22,23 +22,23 @@ public interface IElectricalSwitchManager
 /// <summary>
 /// Provides logic to communicate with and control an electrical switch via its associated station.
 /// </summary>
-public sealed class ElectricalSwitchManager : IElectricalSwitchManager
+public sealed class SwitchManager : ISwitchManager
 {
     #region Properties
-    public ElectricalSwitchEntity ManagedSwitch { get; init; }
+    public SwitchEntity ManagedSwitch { get; init; }
     #endregion
 
     #region Instantiation
     /// <summary>
-    /// Creates new manager instance.
+    /// Creates new instance of <see cref="SwitchManager"/>.
     /// </summary>
     /// <param name="managedElectricalSwitch">
-    /// Entity of electrical switch which shall be controlled by the manager.
+    /// Entity of switch which shall be controlled by the manager.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
+    /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
-    public ElectricalSwitchManager(ElectricalSwitchEntity managedElectricalSwitch)
+    public SwitchManager(SwitchEntity managedElectricalSwitch)
     {
         ArgumentNullException.ThrowIfNull(managedElectricalSwitch);
 
@@ -53,16 +53,14 @@ public sealed class ElectricalSwitchManager : IElectricalSwitchManager
     /// <remarks>
     /// TODO: Implement the actual communication with the station.
     /// </remarks>
-    /// <param name="shallBeClosed">
+    /// <param name="expectedState">
     /// Desired state of electrical switch - <see langword="true"/> if the circuit shall be closed 
     /// and current shall be flowing; <see langword="false"/> otherwise. 
     /// </param>
     /// <see langword="true"/> if the command was successfully delivered and acknowledged by the station, 
     /// <see langword="false"/>otherwise.
     /// </returns>
-    public bool TryChangeState(bool shallBeClosed)
-    {
-        return true;
-    }
+    public bool TryChangeState(bool expectedState) =>
+        true;
     #endregion
 }
