@@ -43,6 +43,7 @@ void setup() {
   logToSerial(INFO, "Attempting to register station on the server.");
 
   String macAddress = WiFi.macAddress();
+  macAddress.replace(":", "");
 
   while (!tryRegisterStation(WiFiManager, macAddress)) {
     logToSerial(WARNING, "Registration attempt failed: RETRY_INTERVAL=[%lu][ms].", RETRY_INTERVAL);
@@ -59,7 +60,7 @@ void setup() {
 
     logToSerial(INFO, "Attempting to register switch: LOCAL_ID=[%d]", localId);
 
-    while (!tryRegisterSwitch(WiFiManager, currentSwitch, localId)) {
+    while (!tryRegisterSwitch(WiFiManager, currentSwitch, macAddress, localId)) {
       logToSerial(WARNING, "Registration attempt failed. RETRY_INTERVAL=[%lu][ms].", RETRY_INTERVAL);
       delay(RETRY_INTERVAL);
     }

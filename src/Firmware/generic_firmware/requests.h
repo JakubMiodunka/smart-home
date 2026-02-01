@@ -35,12 +35,15 @@ boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress);
 /// The switch object to be registered.
 /// State of GPIO pin will be updated according to received server response.
 /// </param>
+/// <param name="macAddress">
+/// Station MAC address.
+/// </param>
 /// <param name="localId">
 /// The local identifier assigned to the switch.
 /// </param>
 /// <returns>
 /// True if the attempt was successful, false otherwise.
 /// </returns>
-boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegister, int localId);
+boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegister, const String macAddress, int localId);
 
 #endif

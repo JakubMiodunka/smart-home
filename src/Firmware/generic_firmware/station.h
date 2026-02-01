@@ -11,7 +11,7 @@
 /// The JSON document to be populated with registration data.
 /// </param>
 /// <param name="macAddress">
-/// The MAC address to be included in the registration request.
+/// Station MAC address.
 /// </param>
 void populateStationRegistrationRequest(JsonDocument& document, String macAddress);
 

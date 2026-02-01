@@ -58,12 +58,12 @@ void changeSwitchState(Switch& switchRef, const boolean isClosed);
 /// <param name="document">
 /// The JSON document to be populated with registration data.
 /// </param>
+/// <param name="macAddress">
+/// Station MAC address.
+/// </param>
 /// <param name="localId">
-/// The local identifier of the switch.
+/// The identifier of the switch, unique at the station level.
 /// </param>
-/// <param name="pinState">
-/// The current hardware state of the switch pin.
-/// </param>
-void populateSwitchRegistrationRequest(JsonDocument& document, size_t localId, uint8_t pinState);
+void populateSwitchRegistrationRequest(JsonDocument& document, const String macAddress, byte localId);
 
 #endif

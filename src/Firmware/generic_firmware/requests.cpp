@@ -10,8 +10,8 @@
 #include "serial_logging.h"
 
 static const String BASE_URL = "http://192.168.0.199:5236";
-static const String STATIONS_ENDPOINT = "/api/v1/stations";
-static const String SWITCHES_ENDPOINT = "/api/v1/electrical-switches";
+static const String STATION_REGISTRATION_ENDPOINT = "/firmware-api/v1/stations";
+static const String SWITCHES_REGISTRATION_ENDPOINT = "/firmware-api/v1/switches";
 
 /// <summary>
 /// Defines the HTTP methods supported in this library.
@@ -118,7 +118,7 @@ static bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, con
 }
 
 boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress) {
-  const String url = BASE_URL + STATIONS_ENDPOINT;
+  const String url = BASE_URL + STATION_REGISTRATION_ENDPOINT;
   const HttpMethod httpMethod = POST;
   JsonDocument request;
   JsonDocument response;
@@ -127,21 +127,18 @@ boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress) {
   populateStationRegistrationRequest(request, macAddress);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
 
-  return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
+  return httpReturnCode == HTTP_CODE_NO_CONTENT;
 }
 
-boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegister, int localId) {
-  const String url = BASE_URL + SWITCHES_ENDPOINT;
+boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegister, const String macAddress, int localId) {
+  const String url = BASE_URL + SWITCHES_REGISTRATION_ENDPOINT;
   const HttpMethod httpMethod = POST;
   JsonDocument request;
   JsonDocument response;
   int httpReturnCode;
   
-  populateSwitchRegistrationRequest(request, localId, switchToRegister.pinState);
+  populateSwitchRegistrationRequest(request, macAddress, localId);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
 
-  boolean isClosed = response["isClosed"];
-  changeSwitchState(switchToRegister, isClosed);
-
-  return httpReturnCode == HTTP_CODE_OK || httpReturnCode == HTTP_CODE_CREATED;
+  return httpReturnCode == HTTP_CODE_NO_CONTENT;
 }
