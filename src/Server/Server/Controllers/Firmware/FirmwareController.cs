@@ -6,6 +6,7 @@ namespace SmartHome.Server.Controllers.Firmware;
 /// <summary>
 /// Base class for controllers that handle requests from station firmware.
 /// </summary>
+[ApiController]
 public abstract class FirmwareController : ControllerBase
 {
     #region Properties

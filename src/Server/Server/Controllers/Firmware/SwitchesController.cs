@@ -10,8 +10,7 @@ namespace SmartHome.Server.Controllers.Firmware;
 /// <summary>
 /// Controller dedicated to managing electrical switches.
 /// </summary>
-[ApiController]
-[Route("api/v1/firmware/switches")]
+[Route("firmware-api/v1/switches")]
 public class SwitchesController : FirmwareController
 {
     #region Constraints
@@ -62,7 +61,7 @@ public class SwitchesController : FirmwareController
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
-    [HttpPost]
+    [HttpPut("registration")]
     public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationRequest request)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? remoteIpAddress))
@@ -103,6 +102,16 @@ public class SwitchesController : FirmwareController
         return Ok(new SwitchRegistrationResponse(knownSwitchEntity.ExpectedSwitchState));
     }
 
+    /// <summary>
+    /// Updates the actual state of an electrical switch according to details provided in request body.
+    /// </summary>
+    /// <param name="request">
+    /// Data transfer object (DTO) containing details about the switch which shall be updated along with its current state.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> that represents the result of the performed operation.
+    /// </returns>
+    [HttpPatch("state")]
     public async Task<IActionResult> UpdateSwitchState([FromBody] UpdateSwitchStateRequest request)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? remoteIpAddress))

@@ -9,8 +9,7 @@ namespace SmartHome.Server.Controllers.Firmware;
 /// <summary>
 /// Controller providing endpoints for firmware to manage stations.
 /// </summary>
-[ApiController]
-[Route("api/v1/firmware/stations")]
+[Route("firmware-api/v1/stations")]
 public class StationsController : FirmwareController
 {
     #region Properties
@@ -49,7 +48,7 @@ public class StationsController : FirmwareController
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
-    [HttpPut]
+    [HttpPut("registration")]
     public async Task<IActionResult> RegisterStation([FromBody] StationRegistrationRequest request)
     {       
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
