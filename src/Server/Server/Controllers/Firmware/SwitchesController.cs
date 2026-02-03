@@ -99,7 +99,7 @@ public class SwitchesController : FirmwareController
             return Ok(new SwitchRegistrationResponse(DefaultSwitchState));
         }
 
-        return Ok(new SwitchRegistrationResponse(knownSwitchEntity.ExpectedSwitchState));
+        return Ok(new SwitchRegistrationResponse(knownSwitchEntity.ExpectedState));
     }
 
     /// <summary>

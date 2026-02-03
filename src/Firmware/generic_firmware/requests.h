@@ -8,42 +8,41 @@
 #include "switches.h"
 
 /// <summary>
-/// Attempts to register the station on the server.
+/// Defines the HTTP methods supported in this library.
 /// </summary>
-/// <param name="wiFiManager">
-/// Reference to the WiFi manager responsible for maintaining the network connection.
-/// </param>
-/// <param name="macAddress">
-/// The MAC address of the station.
-/// </param>
-/// <returns>
-/// True if the attempt was successful, false otherwise.
-/// </returns>
-boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, String macAddress);
+enum HttpMethod {
+  GET,
+  PUT,
+  POST,
+  PATCH,
+  DELETE
+};
 
 /// <summary>
-/// Attempts to register a single switch on the server.
+/// Sends HTTP request using a specified method and handles the communication lifecycle.
 /// </summary>
-/// <remarks>
-/// This function changes state of provided <paramref name="switchRef"/> instance
-/// according to received server response.
-/// </remarks>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.
 /// </param>
-/// <param name="switchToRegister">
-/// The switch object to be registered.
-/// State of GPIO pin will be updated according to received server response.
+/// <param name="url">
+/// The target URL where the request shall be sent.
 /// </param>
-/// <param name="macAddress">
-/// Station MAC address.
+/// <param name="httpMethod">
+/// The <see cref="HttpMethod"/> to be used for the request.
 /// </param>
-/// <param name="localId">
-/// The local identifier assigned to the switch.
+/// <param name="request">
+/// The request body to be sent.
+/// Ignored when <paramref name="httpMethod"/> is set either to GET or DELETE.
+/// </param>
+/// <param name="response">
+/// An output container for the parsed response body.
+/// </param>
+/// <param name="httpReturnCode">
+/// The HTTP status code or internal error code returned from the remote server.
 /// </param>
 /// <returns>
-/// True if the attempt was successful, false otherwise.
-/// </returns>
-boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchToRegister, const String macAddress, int localId);
+/// <see langword="true"/> if operation was successful, <see langword="false"/> otherwise.
+///</returns>
+boolean sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode);
 
 #endif

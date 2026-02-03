@@ -112,8 +112,8 @@ public sealed class SwitchesControllerTests
             .CreateSwitchAsync(
                 newSwitchEntity.StationId,
                 newSwitchEntity.LocalId,
-                newSwitchEntity.ExpectedSwitchState,
-                newSwitchEntity.ActualSwitchState))
+                newSwitchEntity.ExpectedState,
+                newSwitchEntity.ActualState))
             .ReturnsAsync(newSwitchEntity);
 
         var controllerUnderTest = new SwitchesController(
@@ -131,7 +131,7 @@ public sealed class SwitchesControllerTests
                 expectedState: false,
                 actualState: null), Times.Once);
 
-        var expectedResponse = new SwitchRegistrationResponse(newSwitchEntity.ExpectedSwitchState);
+        var expectedResponse = new SwitchRegistrationResponse(newSwitchEntity.ExpectedState);
         registrationResult.AssertOkObjectResult(expectedValue: expectedResponse);
     }
 
@@ -166,21 +166,21 @@ public sealed class SwitchesControllerTests
             .ReturnsAsync(switchEntityBeforeUpdate);
 
         bool newSwitchState = randomizer.NextBool();
-        while (switchEntityBeforeUpdate.ActualSwitchState == newSwitchState)
+        while (switchEntityBeforeUpdate.ActualState == newSwitchState)
         {
             newSwitchState = randomizer.NextBool();
         }
 
         SwitchEntity switchEntityAfterUpdate = switchEntityBeforeUpdate with
         {
-            ActualSwitchState = newSwitchState
+            ActualState = newSwitchState
         };
 
         switchesRepositoryMock.Setup(mock => mock
             .UpdateSwitchAsync(
                 switchEntityAfterUpdate.Id,
                 updateExpectedState: It.IsAny<bool>(), expectedState: It.IsAny<bool?>(),
-                updateActualState: true, actualState: switchEntityAfterUpdate.ActualSwitchState))
+                updateActualState: true, actualState: switchEntityAfterUpdate.ActualState))
             .ReturnsAsync(switchEntityAfterUpdate);
 
         var controllerUnderTest = new SwitchesController(
@@ -191,7 +191,7 @@ public sealed class SwitchesControllerTests
         var request = new UpdateSwitchStateRequest(
             parentStationEntity.MacAddress,
             switchEntityBeforeUpdate.LocalId,
-            switchEntityAfterUpdate.ActualSwitchState.Value);
+            switchEntityAfterUpdate.ActualState.Value);
 
         IActionResult registrationResult = await controllerUnderTest.UpdateSwitchState(request);
 
@@ -199,7 +199,7 @@ public sealed class SwitchesControllerTests
             .UpdateSwitchAsync(
                 switchEntityAfterUpdate.Id,
                 updateExpectedState: It.IsAny<bool>(), expectedState: It.IsAny<bool?>(),
-                updateActualState: true, actualState: switchEntityAfterUpdate.ActualSwitchState),
+                updateActualState: true, actualState: switchEntityAfterUpdate.ActualState),
             Times.Once);
 
         registrationResult.AssertNoContentResult();

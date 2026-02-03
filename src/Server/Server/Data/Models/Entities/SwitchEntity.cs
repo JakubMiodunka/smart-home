@@ -13,12 +13,12 @@
 /// <param name="LocalId">
 /// The identifier of the switch, unique only at the station level.
 /// </param>
-/// <param name="ExpectedSwitchState">
+/// <param name="ExpectedState">
 /// Expected state of the electrical switch.
 /// <see langword="true"/> if the circuit shall be closed 
 /// and current shall flow; <see langword="false"/> otherwise.
 /// </param>
-/// <param name="ActualSwitchState">
+/// <param name="ActualState">
 /// Actual state of the electrical switch. <see langword="true"/> if the circuit is closed 
 /// and current is flowing; <see langword="false"/> otherwise.
 /// <see langword="null"/> indicates the state is unknown.
@@ -27,5 +27,5 @@ public sealed record SwitchEntity(
     long Id,
     long StationId,
     byte LocalId,
-    bool ExpectedSwitchState,
-    bool? ActualSwitchState);
+    bool ExpectedState,
+    bool? ActualState);
