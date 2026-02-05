@@ -19,10 +19,13 @@ public interface IStationsRepository
     /// <param name="ipAddress">
     /// IP address of the station.
     /// </param>
+    /// <param name="lastHeartbeat">
+    /// Timestamp of the last heartbeat signal received from the station.
+    /// </param>
     /// <returns>
     /// Station model saved within the repository.
     /// </returns>
-    Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress);
+    Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTime lastHeartbeat);
 
     /// <summary>
     /// Retrieves single station from the repository basing on provided criteria.
@@ -77,9 +80,18 @@ public interface IStationsRepository
     /// New IP address of the station.
     /// Ignored if value of <paramref name="updateIpAddress"/> is set to <see langword="false"/>.
     /// </param>
+    /// <param name="updateLastHeartbeat">
+    /// <see langword="true"/> if timestamp of last heartbeat signal shall be updated, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="lastHeartbeat">
+    /// Updated value of last heartbeat signal timestamp.
+    /// Ignored if value of <paramref name="updateLastHeartbeat"/> is set to <see langword="false"/>.
+    /// </param>
     /// <returns>
     /// The updated station model saved within the repository.
     /// If the specified station does not exist, <see langword="null"/> reference is returned.
     /// </returns>
-    Task<StationEntity?> UpdateStationAsync(long id, bool updateIpAddress = false, IPAddress? ipAddress = null);
+    Task<StationEntity?> UpdateStationAsync(long id,
+        bool updateIpAddress = false, IPAddress? ipAddress = null,
+        bool updateLastHeartbeat = false, DateTime? lastHeartbeat = null);
 }

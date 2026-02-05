@@ -12,7 +12,8 @@ BEGIN
     SELECT
         id,
         mac_address,
-        ip_address 
+        ip_address,
+        last_heartbeat
     FROM stations
     WHERE
         (@filter_by_id = 0 OR id IS NOT DISTINCT FROM @id) AND

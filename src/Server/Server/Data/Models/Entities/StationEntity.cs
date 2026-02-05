@@ -15,6 +15,9 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// </param>
 /// <param name="IpAddress">
 /// The IP address assigned to the station within the network. 
-/// A <see langword="null"/> value indicates the address is unknown.
+/// A <see langword="null"/> value indicates that station is offline and address is unknown.
 /// </param>
-public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress);
+/// <param name="LastHeartbeat">
+/// Timestamp of the last heartbeat signal received from the station.
+/// </param>
+public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress, DateTime LastHeartbeat);

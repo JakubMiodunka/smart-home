@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartHome.Server.Data;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
@@ -14,6 +15,7 @@ public class StationsController : FirmwareController
 {
     #region Properties
     private readonly IStationsRepository _stationsRepository;
+    private readonly ITimestampProvider _timestampProvider;
     #endregion
 
     #region Instationation
@@ -26,15 +28,23 @@ public class StationsController : FirmwareController
     /// <param name="stationsRepository">
     /// Stations repository which shall be used by this controller.
     /// </param>
+    /// <param name="timestampProvider">
+    /// Timestamp source which shall be used by this controller.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    public StationsController(IHttpContextAccessor httpContextAccessor, IStationsRepository stationsRepository)
+    public StationsController(
+        IHttpContextAccessor httpContextAccessor,
+        IStationsRepository stationsRepository,
+        ITimestampProvider timestampProvider)
         : base(httpContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
+        ArgumentNullException.ThrowIfNull(timestampProvider, nameof(timestampProvider));
 
         _stationsRepository = stationsRepository;
+        _timestampProvider = timestampProvider;
     }
     #endregion
 
@@ -65,14 +75,17 @@ public class StationsController : FirmwareController
         {
             await _stationsRepository.CreateStationAsync(
                 request.MacAddress,
-                stationIpAddress);
+                stationIpAddress,
+                _timestampProvider.GetUtcNow());
         }
         else
         {
             await _stationsRepository.UpdateStationAsync(
                knownStationEntity.Id,
                updateIpAddress: true,
-               ipAddress: stationIpAddress);
+               ipAddress: stationIpAddress,
+               updateLastHeartbeat: true,
+               lastHeartbeat: _timestampProvider.GetUtcNow());
         }
 
         return NoContent();

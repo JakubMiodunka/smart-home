@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Controllers.Firmware;
+using SmartHome.Server.Data;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
@@ -24,10 +25,12 @@ public sealed class StationsControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var timestampProviderStub = new Mock<ITimestampProvider>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryStub.Object);
+            stationsRepositoryStub.Object,
+            timestampProviderStub.Object);
 
         Assert.DoesNotThrow(actionUnderTest);
     }
@@ -36,8 +39,12 @@ public sealed class StationsControllerTests
     public void InstantiationImpossibleUsingNullReferenceAsHttpContextAccessor()
     {
         var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var timestampProviderStub = new Mock<ITimestampProvider>();
 
-        TestDelegate actionUnderTest = () => new StationsController(null!, stationsRepositoryStub.Object);
+        TestDelegate actionUnderTest = () => new StationsController(
+            null!,
+            stationsRepositoryStub.Object,
+            timestampProviderStub.Object);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -46,14 +53,33 @@ public sealed class StationsControllerTests
     public void InstantiationImpossibleUsingNullReferenceAsStationsRepository()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
+        var timestampProviderStub = new Mock<ITimestampProvider>();
 
-        TestDelegate actionUnderTest = () => new StationsController(httpContextAccessorStub.Object, null!);
+        TestDelegate actionUnderTest = () => new StationsController(
+            httpContextAccessorStub.Object,
+            null!,
+            timestampProviderStub.Object);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
 
     [Test]
-    public async Task ControllerCreatesNewStationEntity()
+    public void InstantiationImpossibleUsingNullReferenceAsTimestampProvider()
+    {
+        var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+
+        TestDelegate actionUnderTest = () => new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryStub.Object,
+            null!);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+    }
+
+
+    [Test]
+    public async Task RegistrationCausesCreationOfNewStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -72,22 +98,37 @@ public sealed class StationsControllerTests
             .ReturnsAsync(null as StationEntity);
 
         stationsRepositoryMock.Setup(mock => mock
-            .CreateStationAsync(newStationEntity.MacAddress, newStationEntity.IpAddress))
+            .CreateStationAsync(
+                newStationEntity.MacAddress,
+                newStationEntity.IpAddress,
+                newStationEntity.LastHeartbeat))
             .ReturnsAsync(newStationEntity);
+
+        var timestampProviderStub = new Mock<ITimestampProvider>();
+
+        timestampProviderStub.Setup(stub => stub
+            .GetUtcNow())
+            .Returns(newStationEntity.LastHeartbeat);
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryMock.Object);
+            stationsRepositoryMock.Object,
+            timestampProviderStub.Object);
 
         var registrationRequest = new StationRegistrationRequest(newStationEntity.MacAddress);
         IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
 
         stationsRepositoryMock.Verify(mock => mock
-            .CreateStationAsync(newStationEntity.MacAddress, newStationEntity.IpAddress), Times.Once);
+            .CreateStationAsync(
+                newStationEntity.MacAddress,
+                newStationEntity.IpAddress,
+                newStationEntity.LastHeartbeat),
+            Times.Once);
 
         registrationResult.AssertNoContentResult();
     }
 
+    // TODO: Conrinue adjusting tests here.
     [Test]
     public async Task ControllerUpdatesExistingStationEntity()
     {

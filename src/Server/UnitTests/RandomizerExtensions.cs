@@ -17,6 +17,12 @@ internal static class RandomizerExtensions
         return values.First();
     }
 
+    public static DateTime NextDateTime(this Randomizer randomizer)
+    {
+        long randomTimestamp = randomizer.NextInt64(DateTime.MinValue.Ticks, DateTime.MaxValue.Ticks);
+        return new DateTime(randomTimestamp).ToUniversalTime();
+    }
+
     public static PhysicalAddress NextMacAddress(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
@@ -37,15 +43,16 @@ internal static class RandomizerExtensions
         return new IPAddress(ipAddress);
     }
 
-    public static StationEntity NextStationEntity(this Randomizer randomizer)
+    public static StationEntity NextStationEntity(this Randomizer randomizer, DateTime? lastHeartbeat = null)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
         long id = randomizer.NextInt64(1, long.MaxValue);
         PhysicalAddress macAddress = randomizer.NextMacAddress();
         IPAddress ipAddress = randomizer.NextIpAddress();
+        lastHeartbeat = lastHeartbeat ?? randomizer.NextDateTime();
 
-        return new StationEntity(id, macAddress, ipAddress);
+        return new StationEntity(id, macAddress, ipAddress, lastHeartbeat.Value);
     }
 
     public static SwitchEntity NextSwitchEntity(this Randomizer randomizer, long? stationId = null)

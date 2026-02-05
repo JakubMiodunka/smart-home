@@ -145,41 +145,83 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    public async Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress)
+    public async Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTime lastHeartbeat)
     {
         ArgumentNullException.ThrowIfNull(macAddress, nameof(macAddress));
 
         var parameters = new DynamicParameters();
         parameters.Add("@mac_address", macAddress);
         parameters.Add("@ip_address", ipAddress);
+        parameters.Add("@last_heartbeat", lastHeartbeat);
 
         return await CreateEntityAsync<StationEntity>("SP_stations_create", parameters);
     }
 
     /// <inheritdoc cref="IStationsRepository"/>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one required argument is a <see langword="null"/> reference.
+    /// </exception>
     public async Task<StationEntity?> GetSingleStationAsync(
         bool filterById = false, long? id = null,
         bool filterByIpAddress = false, IPAddress? ipAddress = null,
         bool filterByMacAddress = false, PhysicalAddress? macAddress = null)
     {
         var parameters = new DynamicParameters();
-        parameters.Add("@filter_by_id", filterById);
-        parameters.Add("@id", id);
-        parameters.Add("@filter_by_ip_address", filterByIpAddress);
-        parameters.Add("@ip_address", ipAddress);
-        parameters.Add("@filter_by_mac_address", filterByMacAddress);
-        parameters.Add("@mac_address", macAddress);
+
+        if (filterById)
+        {
+            ArgumentNullException.ThrowIfNull(id, nameof(id));
+
+            parameters.Add("@filter_by_id", filterById);
+            parameters.Add("@id", id);
+        }
+
+        if (filterByIpAddress)
+        {
+            ArgumentNullException.ThrowIfNull(ipAddress, nameof(ipAddress));
+
+            parameters.Add("@filter_by_ip_address", filterByIpAddress);
+            parameters.Add("@ip_address", ipAddress);
+        }
+
+        if (filterByMacAddress)
+        {
+            ArgumentNullException.ThrowIfNull(macAddress, nameof(macAddress));
+
+            parameters.Add("@filter_by_mac_address", filterByMacAddress);
+            parameters.Add("@mac_address", macAddress);
+        }
 
         return await GetSingleEntityAsync<StationEntity>("SP_stations_get", parameters);
     }
 
     /// <inheritdoc cref="IStationsRepository"/>
-    public async Task<StationEntity?> UpdateStationAsync(long id, bool updateIpAddress = false, IPAddress? ipAddress = null)
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one required argument is a <see langword="null"/> reference.
+    /// </exception>
+    public async Task<StationEntity?> UpdateStationAsync(
+        long id,
+        bool updateIpAddress = false, IPAddress? ipAddress = null,
+        bool updateLastHeartbeat = false, DateTime? lastHeartbeat = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@id", id);
-        parameters.Add("@update_ip_address", updateIpAddress);
-        parameters.Add("@ip_address", ipAddress);
+
+        if (updateIpAddress)
+        {
+            ArgumentNullException.ThrowIfNull(ipAddress, nameof(ipAddress));
+
+            parameters.Add("@update_ip_address", updateIpAddress);
+            parameters.Add("@ip_address", ipAddress);
+        }
+
+        if (updateLastHeartbeat)
+        {
+            ArgumentNullException.ThrowIfNull(lastHeartbeat, nameof(lastHeartbeat));
+
+            parameters.Add("@update_last_heartbeat", updateLastHeartbeat);
+            parameters.Add("@last_heartbeat", lastHeartbeat);
+        }
 
         return await GetSingleEntityAsync<StationEntity>("SP_stations_update", parameters);
     }
@@ -199,23 +241,47 @@ public sealed class DatabaseClient : IDatabaseClient
     }
 
     /// <inheritdoc cref="ISwitchesRepository"/>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one required argument is a <see langword="null"/> reference.
+    /// </exception>
     public async  Task<SwitchEntity?> GetSingleSwitchAsync(
         bool filterById = false, long? id = null,
         bool filterByStationId = false, long? stationId = null,
         bool filterByLocalId = false, byte? localId = null)
     {
         var parameters = new DynamicParameters();
-        parameters.Add("@filter_by_id", filterById);
-        parameters.Add("@id", id);
-        parameters.Add("@filter_by_station_id", filterByStationId);
-        parameters.Add("@station_id", stationId);
-        parameters.Add("@filter_by_local_id", filterByLocalId);
-        parameters.Add("@local_id", localId);
+
+        if (filterById)
+        {
+            ArgumentNullException.ThrowIfNull(id, nameof(id));
+
+            parameters.Add("@filter_by_id", filterById);
+            parameters.Add("@id", id);
+        }
+
+        if (filterByStationId)
+        {
+            ArgumentNullException.ThrowIfNull(stationId, nameof(stationId));
+
+            parameters.Add("@filter_by_station_id", filterByStationId);
+            parameters.Add("@station_id", stationId);
+        }
+
+        if (filterByLocalId)
+        {
+            ArgumentNullException.ThrowIfNull(localId, nameof(localId));
+
+            parameters.Add("@filter_by_local_id", filterByLocalId);
+            parameters.Add("@local_id", localId);
+        }
 
         return await GetSingleEntityAsync<SwitchEntity>("SP_switches_get", parameters);
     }
 
     /// <inheritdoc cref="ISwitchesRepository"/>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one required argument is a <see langword="null"/> reference.
+    /// </exception>
     public async Task<SwitchEntity?> UpdateSwitchAsync(
         long id,
         bool updateExpectedState = false, bool? expectedState = null,
@@ -223,10 +289,22 @@ public sealed class DatabaseClient : IDatabaseClient
     {
         var parameters = new DynamicParameters();
         parameters.Add("@id", id);
-        parameters.Add("@update_expected_state", updateExpectedState);
-        parameters.Add("@expected_state", expectedState);
-        parameters.Add("@update_actual_state", updateActualState);
-        parameters.Add("@actual_state", actualState);
+
+        if (updateExpectedState)
+        {
+            ArgumentNullException.ThrowIfNull(expectedState, nameof(expectedState));
+
+            parameters.Add("@update_expected_state", updateExpectedState);
+            parameters.Add("@expected_state", expectedState);
+        }
+
+        if (updateActualState)
+        {
+            ArgumentNullException.ThrowIfNull(actualState, nameof(actualState));
+
+            parameters.Add("@update_actual_state", updateActualState);
+            parameters.Add("@actual_state", actualState);
+        }
 
         return await GetSingleEntityAsync<SwitchEntity>("SP_switches_update", parameters);
     }
