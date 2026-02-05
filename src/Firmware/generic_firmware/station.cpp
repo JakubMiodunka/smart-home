@@ -3,15 +3,34 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFiMulti.h>
 
+#include "config.h"
+#include "serial_logging.h"
 #include "station.h"
 #include "requests.h"
 
-void populateStationRegistrationRequest(JsonDocument& request, String macAddress) {
+/// <summary>
+/// Populates the provided JSON document with station registration data.
+/// </summary>
+/// <remarks>
+/// Used internally - is not exposed in header file.
+/// </remarks>
+/// <param name="request">
+/// The JSON document to be populated with registration data.
+/// </param>
+/// <param name="macAddress">
+/// Station MAC address.
+/// </param>
+static void populateStationRegistrationRequest(JsonDocument& request, const String macAddress) {
   request["macAddress"] = macAddress;
 }
 
-boolean tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String baseUrl, const String macAddress) {
-  const String url = baseUrl + "/stations/registration";
+bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) {
+  if (SERVER_API_VERSION != 1) {
+    logToSerial(ERROR, "Station registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+    return false;
+  }
+
+  const String url = getBaseUrl() + "/stations/registration";
   const HttpMethod httpMethod = PUT;
   JsonDocument request;
   JsonDocument response;

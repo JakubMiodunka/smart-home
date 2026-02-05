@@ -19,6 +19,14 @@ enum HttpMethod {
 };
 
 /// <summary>
+/// Generates base URL for the smart home API dedicated to handling firmware requests.
+/// </summary>
+/// <returns>
+/// The base URL for the smart home API dedicated to handling firmware requests.
+/// </returns>
+String getBaseUrl();
+
+/// <summary>
 /// Sends HTTP request using a specified method and handles the communication lifecycle.
 /// </summary>
 /// <param name="wiFiManager">
@@ -43,6 +51,6 @@ enum HttpMethod {
 /// <returns>
 /// <see langword="true"/> if operation was successful, <see langword="false"/> otherwise.
 ///</returns>
-boolean sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode);
+bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode);
 
 #endif

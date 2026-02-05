@@ -1,9 +1,14 @@
 #include <Arduino.h>
 #include <stdarg.h>
 
+#include "config.h"
 #include "serial_logging.h"
 
-void logToSerial(LoggingLevel level, const char* format, ...) {
+void logToSerial(const LoggingLevel level, const char* format, ...) {
+  if (!SERIAL_PORT_LOGGING) {
+    return;
+  }
+
   const char* levelNames[] = {"UNKNOWN", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"};
   const char* levelName = (0  <= level && level <= 5) ? levelNames[level] : levelNames[0];
 

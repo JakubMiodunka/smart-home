@@ -39,16 +39,6 @@ struct Switch {
 void initializeSwitch(const Switch& switchRef);
 
 /// <summary>
-/// Deterines the logical state of provided switch
-/// </summary>
-/// <param name="switchRef">
-/// The switch representation to be inspected.
-/// </param>
-/// <param name="desiredState">
-/// logical state of provided switch - <see langword="true"/> if the switch is be closed and current is flowwing, <see langword="false"/> otherwise.
-/// </param>
-
-/// <summary>
 /// Determines the logical state of the provided switch.
 /// </summary>
 /// <param name="switchRef">
@@ -58,7 +48,7 @@ void initializeSwitch(const Switch& switchRef);
 /// Logical state of provided switch - <see langword="true"/> 
 /// if the switch is closed and current is flowing, <see langword="false"/> otherwise.
 /// </param>
-boolean getSwitchState(const Switch& switchRef);
+bool getSwitchState(const Switch& switchRef);
 
 /// <summary>
 /// Changes the state of the provided switch according to its logic.
@@ -73,21 +63,7 @@ boolean getSwitchState(const Switch& switchRef);
 /// <param name="desiredState">
 /// <see langword="true"/> if the switch should be closed to allow current flow, <see langword="false"/> otherwise.
 /// </param>
-void setSwitchState(Switch& switchRef, const boolean desiredState);
-
-/// <summary>
-/// Populates the provided JSON document with switch registration data.
-/// </summary>
-/// <param name="request">
-/// The JSON document to be populated with registration data.
-/// </param>
-/// <param name="macAddress">
-/// Station MAC address.
-/// </param>
-/// <param name="localId">
-/// The identifier of the switch, unique at the station level.
-/// </param>
-void populateSwitchRegistrationRequest(JsonDocument& request, const String macAddress, byte localId);
+void setSwitchState(Switch& switchRef, const bool desiredState);
 
 /// <summary>
 /// Attempts to register a single switch on the server.
@@ -98,9 +74,6 @@ void populateSwitchRegistrationRequest(JsonDocument& request, const String macAd
 /// </remarks>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.
-/// </param>
-/// <param name="baseUrl">
-/// The base URL for the smart home API dedicated to handling firmware requests.
 /// </param>
 /// <param name="switchRef">
 /// The switch object to be registered.
@@ -115,16 +88,13 @@ void populateSwitchRegistrationRequest(JsonDocument& request, const String macAd
 /// <returns>
 /// True if the attempt was successful, false otherwise.
 /// </returns>
-boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, const String baseUrl, Switch& switchRef, const String macAddress, int localId);
+bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const String macAddress, const int localId);
 
 /// <summary>
 /// Attempts to update state of a single switch on the server.
 /// </summary>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.
-/// </param>
-/// <param name="baseUrl">
-/// The base URL for the smart home API dedicated to handling firmware requests.
 /// </param>
 /// <param name="switchRef">
 /// The switch object which state shall be updated.
@@ -138,6 +108,6 @@ boolean tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, const String baseUrl, S
 /// <returns>
 /// True if the attempt was successful, false otherwise.
 /// </returns>
-boolean tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const String baseUrl, const Switch& switchRef, const String macAddress, int localId);
+bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef, const String macAddress, const int localId);
 
 #endif

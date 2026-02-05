@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 
+// TODO: Add doc-string.
 enum LoggingLevel {
   UNKNOWN,
   DEBUG,
@@ -13,6 +14,6 @@ enum LoggingLevel {
 };
 
 /// TODO: Add doc string.
-void logToSerial(LoggingLevel level, const char* format, ...);
+void logToSerial(const LoggingLevel level, const char* format, ...);
 
 #endif

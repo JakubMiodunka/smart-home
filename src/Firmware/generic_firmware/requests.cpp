@@ -4,18 +4,19 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
-#include "requests.h"
+#include "config.h"
 #include "serial_logging.h"
+#include "requests.h"
 
 /// <summary>
 /// Converts the specified HTTP method to its string representation.
 /// </summary>
 /// <remarks>
+/// Used internally - is not exposed in header file.
+/// </remarks>
 /// <param name="httpMethod">
 /// The HTTP method enum value to convert.
 /// </param>
-/// Used internally - is not exposed in header file.
-/// </remarks>
 /// <returns>
 /// Name of provided HTTP method.
 /// Returns "UNKNOWN" if provided HTTP method is invalid.
@@ -25,7 +26,11 @@ static const char* toHttpMethodName(const HttpMethod httpMethod) {
   return (0  <= httpMethod && httpMethod <= 4) ? names[httpMethod] : "UNKNOWN";
 }
 
-boolean sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode) {
+String getBaseUrl() {
+  return String(PROTOCOL) + "://" + SERVER_IP_ADDRESS + ":" + String(SERVER_PORT) + "/firmware-api/v" + String(SERVER_API_VERSION);
+}
+
+bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode) {
   wl_status_t connectionStatus = wiFiManager.run();
   if (connectionStatus != WL_CONNECTED) {
     logToSerial(ERROR, "WiFi connection failed: STATUS=[%d]", connectionStatus);

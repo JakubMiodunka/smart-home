@@ -5,23 +5,19 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h> // TODO: Not sure if required here.
 
+#include "config.h"
+#include "secrets.h"
 #include "serial_logging.h"
 #include "station.h"
 #include "switches.h"
 #include "requests.h"
 
 ESP8266WiFiMulti WiFiManager;
-static const String BASE_URL = "http://192.168.0.199:5236/firmware-api/v1";
 
 Switch Switches[] = { {LED_BUILTIN, HIGH, true} };
 constexpr size_t NUMBER_OF_SWITCHES = sizeof(Switches)/sizeof(Switch);
-constexpr unsigned long RETRY_INTERVAL = 10000;
 
 void setup() {
-  constexpr const char* SSID = "";      // Fill up accordingly.
-  constexpr const char* PASSWORD = "";  // Fill up accordingly.
-  constexpr unsigned long SERIAL_PORT_BAUD_RATE = 115200;
-
   logToSerial(INFO, "Attempting to initialize serial port: BAUD_RATE=[%ul]", SERIAL_PORT_BAUD_RATE);
 
   Serial.begin(SERIAL_PORT_BAUD_RATE);
@@ -43,10 +39,10 @@ void setup() {
 
   logToSerial(INFO, "All switches initialized successfully.");
 
-  logToSerial(INFO, "Attempting to connect to WiFi network: SSID=[%s]", SSID);
+  logToSerial(INFO, "Attempting to connect to WiFi network: WIFI_SSID=[%s]", WIFI_SSID);
 
   WiFi.mode(WIFI_STA);
-  WiFiManager.addAP(SSID, PASSWORD);
+  WiFiManager.addAP(WIFI_SSID, WIFI_PASSWORD);
   
   while (WiFiManager.run() != WL_CONNECTED) {
     delay(500);
@@ -63,9 +59,9 @@ void setup() {
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
 
-  while (!tryRegisterStation(WiFiManager, BASE_URL, macAddress)) {
-    logToSerial(WARNING, "Registration attempt failed: RETRY_INTERVAL=[%lu][ms]", RETRY_INTERVAL);
-    delay(RETRY_INTERVAL);
+  while (!tryRegisterStation(WiFiManager, macAddress)) {
+    logToSerial(WARNING, "Registration attempt failed: REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+    delay(REQUESTS_RETRY_INTERVAL);
   }
 
   logToSerial(INFO, "Station registration successful.");
@@ -78,9 +74,9 @@ void setup() {
 
     logToSerial(INFO, "Attempting to register switch: LOCAL_ID=[%d]", localId);
 
-    while (!tryRegisterSwitch(WiFiManager, BASE_URL, currentSwitch, macAddress, localId)) {
-      logToSerial(WARNING, "Registration attempt failed. RETRY_INTERVAL=[%lu][ms]", RETRY_INTERVAL);
-      delay(RETRY_INTERVAL);
+    while (!tryRegisterSwitch(WiFiManager, currentSwitch, macAddress, localId)) {
+      logToSerial(WARNING, "Registration attempt failed. REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+      delay(REQUESTS_RETRY_INTERVAL);
     }
 
     logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d]", localId);
@@ -96,9 +92,9 @@ void setup() {
 
     logToSerial(INFO, "Attempting to update switch state: LOCAL_ID=[%d]", localId);
 
-    while (!tryUpdateSwitchState(WiFiManager, BASE_URL, currentSwitch, macAddress, localId)) {
-      logToSerial(WARNING, "Update attempt failed. RETRY_INTERVAL=[%lu][ms]", RETRY_INTERVAL);
-      delay(RETRY_INTERVAL);
+    while (!tryUpdateSwitchState(WiFiManager, currentSwitch, macAddress, localId)) {
+      logToSerial(WARNING, "Update attempt failed. REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+      delay(REQUESTS_RETRY_INTERVAL);
     }
 
     logToSerial(INFO, "Switch state updated successfully: LOCAL_ID=[%d]", localId);
