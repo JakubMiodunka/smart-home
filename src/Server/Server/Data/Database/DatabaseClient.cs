@@ -4,6 +4,7 @@ using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 using System.Data;
 using System.Net;
+using System.Net.Mail;
 using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Database;
@@ -193,6 +194,14 @@ public sealed class DatabaseClient : IDatabaseClient
         }
 
         return await GetSingleEntityAsync<StationEntity>("SP_stations_get", parameters);
+    }
+
+    /// <inheritdoc cref="IStationsRepository"/>
+    public async Task<StationEntity[]> GetMultipleStationsAsync()
+    {
+        var parameters = new DynamicParameters();
+
+        return await GetMultipleEntitiesAsync<StationEntity>("SP_stations_get", parameters);
     }
 
     /// <inheritdoc cref="IStationsRepository"/>

@@ -30,10 +30,6 @@ public interface IStationsRepository
     /// <summary>
     /// Retrieves single station from the repository basing on provided criteria.
     /// </summary>
-    /// <remarks>
-    /// Currently filtering by ID is needed, but method is already prepared
-    /// to support more filtering criteria if it will be needed in the future.
-    /// </remarks>
     /// <param name="filterById">
     /// <see langword="true"/>, if filtering by ID shall be applied, <see langword="false"/> otherwise.
     /// </param>
@@ -62,6 +58,18 @@ public interface IStationsRepository
         bool filterById = false, long? id = null,
         bool filterByIpAddress = false, IPAddress? ipAddress = null,
         bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
+
+    /// <summary>
+    /// Retrieves multiple stations from the repository basing on provided criteria.
+    /// </summary>
+    /// <remarks>
+    /// Currently there is no need to filter stations by any criteria,
+    /// but method is already prepared to introduce filtering.
+    /// </remarks>
+    /// <returns>
+    /// Collection of stations that matches the provided criteria.
+    /// </returns>
+    Task<StationEntity[]> GetMultipleStationsAsync();
 
     /// <summary>
     /// Updates properties of specified station.

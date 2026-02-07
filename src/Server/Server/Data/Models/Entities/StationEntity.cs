@@ -21,3 +21,27 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// Timestamp of the last heartbeat signal received from the station.
 /// </param>
 public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress, DateTime LastHeartbeat);
+
+/// <summary>
+/// Defines logic for <see cref="StationEntity"/> that are not persisted directly in the database.
+/// </summary>
+public static class StationEntityExtensions
+{
+    /// <summary>
+    /// Determines whether the station is considered online.
+    /// </summary>
+    /// <remarks>
+    /// A station is defined as online only if it has an assigned IP address. 
+    /// The <see cref="HeartbeatMonitoringService"> is responsible 
+    /// for nullifying the IP address if a heartbeat timeout occurs.
+    /// </remarks>
+    /// <param name="stationEntity">T
+    /// he station entity to check.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the station is considered online.
+    /// <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsOnline(this StationEntity stationEntity) =>
+        stationEntity.IpAddress is not null;
+}

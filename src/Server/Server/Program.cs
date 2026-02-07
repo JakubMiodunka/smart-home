@@ -5,6 +5,7 @@ using SmartHome.Server.Data.Converters.TypeHandlers;
 using SmartHome.Server.Data.Database;
 using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Managers.Factories;
+using SmartHome.Server.Services;
 
 const string ConnectionString = "Server=127.0.0.1;Database=smart_home;User Id=smart_home_controller;Password=1234; Encrypt=True; TrustServerCertificate=True";
 
@@ -29,6 +30,8 @@ builder.Services.AddSingleton<IStationsRepository>(serviceProvider => servicePro
 builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<ISwitchManagerFactory>(new SwitchManagerFactory());
 builder.Services.AddSingleton<ITimestampProvider, TimestampProvider>();
+
+builder.Services.AddHostedService<HeartbeatMonitoringService>();
 
 builder.Services.AddControllers();
 
