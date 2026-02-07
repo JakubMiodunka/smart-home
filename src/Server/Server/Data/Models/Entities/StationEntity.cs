@@ -3,6 +3,7 @@ using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Entities;
 
+/// TODO: Concider adding timestamp of entity creation to avoid potential issues with processing outdated data.
 /// <summary>
 /// Entity representing the general details of a station functioning within the system.
 /// Used for data exchange between the server and the database.
