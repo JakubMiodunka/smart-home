@@ -79,7 +79,7 @@ public sealed class SwitchesControllerTests
     }
 
     [Test]
-    public async Task ControllerCreatesNewElectricalSwitchEntity()
+    public async Task RegistrationCausesCreationOfNewSwitchEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -136,7 +136,7 @@ public sealed class SwitchesControllerTests
     }
 
     [Test]
-    public async Task ControllerUpdatesExistingElectricalSwitchEntity()
+    public async Task RegistrationCausesUpdateOfExistingSwitchEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 

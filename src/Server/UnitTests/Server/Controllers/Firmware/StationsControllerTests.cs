@@ -90,11 +90,14 @@ public sealed class StationsControllerTests
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         
-        stationsRepositoryMock.Setup(mock => 
-            mock.GetSingleStationAsync(
-                filterById: It.IsAny<bool>(), id: It.IsAny<long?>(),
-                filterByIpAddress: It.IsAny<bool>(), ipAddress: It.IsAny<IPAddress?>(),
-                filterByMacAddress: It.IsAny<bool>(), macAddress: It.IsAny<PhysicalAddress?>()))
+        stationsRepositoryMock.Setup(mock => mock
+            .GetSingleStationAsync(
+                filterById: It.IsAny<bool>(),
+                id: It.IsAny<long?>(),
+                filterByIpAddress: It.IsAny<bool>(),
+                ipAddress: It.IsAny<IPAddress?>(),
+                filterByMacAddress: It.IsAny<bool>(),
+                macAddress: It.IsAny<PhysicalAddress?>()))
             .ReturnsAsync(null as StationEntity);
 
         stationsRepositoryMock.Setup(mock => mock
@@ -128,45 +131,63 @@ public sealed class StationsControllerTests
         registrationResult.AssertNoContentResult();
     }
 
-    // TODO: Conrinue adjusting tests here.
     [Test]
-    public async Task ControllerUpdatesExistingStationEntity()
+    public async Task RegistrationCausesUpdateOfExistingStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         var stationEntityBeforeUpdate = randomizer.NextStationEntity();
 
-        IPAddress stationNewIpAddress = randomizer.NextIpAddress();
-
-        var updatedStationEntity = new StationEntity(
-            stationEntityBeforeUpdate.Id,
-            stationEntityBeforeUpdate.MacAddress,
-            stationNewIpAddress);
+        var updatedStationEntity = stationEntityBeforeUpdate with
+        {
+            IpAddress = randomizer.NextIpAddress(),
+            LastHeartbeat = randomizer.NextDateTime()
+        };
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(stationNewIpAddress);
+            TestDataGenerator.CreateHttpContextAccessorFake(updatedStationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
 
-        stationsRepositoryMock.Setup(mock => mock.GetSingleStationAsync(
-            filterById: false, id: It.IsAny<long?>(),
-            filterByIpAddress: false, ipAddress: It.IsAny<IPAddress?>(),
-            filterByMacAddress: true, macAddress: stationEntityBeforeUpdate.MacAddress))
+        stationsRepositoryMock.Setup(mock => mock
+            .GetSingleStationAsync(
+                filterById: false,
+                id: It.IsAny<long?>(),
+                filterByIpAddress: false,
+                ipAddress: It.IsAny<IPAddress?>(),
+                filterByMacAddress: true,
+                macAddress: stationEntityBeforeUpdate.MacAddress))
             .ReturnsAsync(stationEntityBeforeUpdate);
 
         stationsRepositoryMock.Setup(mock => mock
-            .UpdateStationAsync(stationEntityBeforeUpdate.Id, updateIpAddress: true, ipAddress: stationNewIpAddress))
+            .UpdateStationAsync(
+                stationEntityBeforeUpdate.Id,
+                updateIpAddress: true,
+                ipAddress: updatedStationEntity.IpAddress))
             .ReturnsAsync(updatedStationEntity);
+
+        var timestampProviderStub = new Mock<ITimestampProvider>();
+
+        timestampProviderStub.Setup(stub => stub
+            .GetUtcNow())
+            .Returns(updatedStationEntity.LastHeartbeat);
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryMock.Object);
+            stationsRepositoryMock.Object,
+            timestampProviderStub.Object);
 
         var registrationRequest = new StationRegistrationRequest(updatedStationEntity.MacAddress);
         IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
 
         stationsRepositoryMock.Verify(mock => mock
-            .UpdateStationAsync(updatedStationEntity.Id, updateIpAddress: true, ipAddress: stationNewIpAddress), Times.Once);
+            .UpdateStationAsync(
+                updatedStationEntity.Id, 
+                updateIpAddress: true,
+                ipAddress: updatedStationEntity.IpAddress,
+                updateLastHeartbeat: true,
+                lastHeartbeat: updatedStationEntity.LastHeartbeat),
+            Times.Once);
 
         registrationResult.AssertNoContentResult();
     }
