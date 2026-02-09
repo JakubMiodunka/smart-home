@@ -137,7 +137,7 @@ public sealed class SwitchesControllerTests
                 expectedState: false,
                 actualState: null), Times.Once);
 
-        // TODO: SOmethimes this test fails. It is probably related to fact that default switch state is off (false).
+        // TODO: Sometimes this test fails. It is probably related to fact that default switch state is off (false).
         var expectedResponse = new SwitchRegistrationResponse(newSwitchEntity.ExpectedState);
         registrationResult.AssertOkObjectResult(expectedValue: expectedResponse);
     }
