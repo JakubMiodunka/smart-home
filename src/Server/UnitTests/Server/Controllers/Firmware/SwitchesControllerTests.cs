@@ -97,15 +97,21 @@ public sealed class SwitchesControllerTests
                 filterByMacAddress: true, macAddress: parentStationEntity.MacAddress))
             .ReturnsAsync(parentStationEntity);
 
-        var newSwitchEntity = randomizer.NextSwitchEntity(stationId: parentStationEntity.Id);
+        SwitchEntity newSwitchEntity = randomizer.NextSwitchEntity() with
+        {
+            StationId = parentStationEntity.Id
+        };
 
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
 
         switchesRepositoryMock.Setup(mock =>
             mock.GetSingleSwitchAsync(
-                filterById: It.IsAny<bool>(), id: It.IsAny<long?>(),
-                filterByStationId: It.IsAny<bool>(), stationId: It.IsAny<long?>(),
-                filterByLocalId: It.IsAny<bool>(), localId: It.IsAny<byte?>()))
+                filterById: It.IsAny<bool>(),
+                id: It.IsAny<long?>(),
+                filterByStationId: It.IsAny<bool>(),
+                stationId: It.IsAny<long?>(),
+                filterByLocalId: It.IsAny<bool>(),
+                localId: It.IsAny<byte?>()))
             .ReturnsAsync(null as SwitchEntity);
 
         switchesRepositoryMock.Setup(mock => mock
@@ -131,6 +137,7 @@ public sealed class SwitchesControllerTests
                 expectedState: false,
                 actualState: null), Times.Once);
 
+        // TODO: SOmethimes this test fails. It is probably related to fact that default switch state is off (false).
         var expectedResponse = new SwitchRegistrationResponse(newSwitchEntity.ExpectedState);
         registrationResult.AssertOkObjectResult(expectedValue: expectedResponse);
     }

@@ -55,6 +55,7 @@ internal static class RandomizerExtensions
         return new StationEntity(id, macAddress, ipAddress, lastHeartbeat.Value);
     }
 
+    // TODO: remove arguments which overrides the values of record properties - there is 'with' statemetn for this.
     public static SwitchEntity NextSwitchEntity(this Randomizer randomizer, long? stationId = null)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));

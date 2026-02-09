@@ -67,4 +67,16 @@ internal static class IActionResultExtensions
 
         Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
     }
+
+    public static void AssertNotFoundObjectResult(
+        this IActionResult actionResultUnderTest,
+        int expectedStatusCode = StatusCodes.Status404NotFound)
+    {
+        Assert.That(actionResultUnderTest, Is.Not.Null);
+        Assert.That(actionResultUnderTest, Is.InstanceOf<NotFoundObjectResult>());
+
+        var specificActionResult = (NotFoundObjectResult)actionResultUnderTest;
+
+        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
+    }
 }

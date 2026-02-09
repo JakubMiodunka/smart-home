@@ -138,10 +138,10 @@ public sealed class StationsControllerTests
 
         var stationEntityBeforeUpdate = randomizer.NextStationEntity();
 
-        var updatedStationEntity = stationEntityBeforeUpdate with
+        StationEntity updatedStationEntity = stationEntityBeforeUpdate with
         {
             IpAddress = randomizer.NextIpAddress(),
-            LastHeartbeat = randomizer.NextDateTime()
+            LastHeartbeat = randomizer.NextDateTime()   // Successive heartbeat timestamps do not need to be chronological.
         };
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
@@ -190,6 +190,101 @@ public sealed class StationsControllerTests
             Times.Once);
 
         registrationResult.AssertNoContentResult();
+    }
+
+    [Test]
+    public async Task HeartbeatSignalOfRegisteredStationUpdatesTimestamp()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationEntityBeforeUpdate = randomizer.NextStationEntity();
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(stationEntityBeforeUpdate.IpAddress);
+
+        StationEntity updatedStationEntity = stationEntityBeforeUpdate with
+        {
+            LastHeartbeat = randomizer.NextDateTime()   // Successive heartbeat timestamps do not need to be chronological.
+        };
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        stationsRepositoryMock.Setup(mock => mock
+            .GetSingleStationAsync(
+                filterById: It.IsAny<bool>(),
+                id: It.IsAny<long?>(),
+                filterByIpAddress: true,
+                ipAddress: stationEntityBeforeUpdate.IpAddress,
+                filterByMacAddress: It.IsAny<bool>(),
+                macAddress: It.IsAny<PhysicalAddress?>()))
+            .ReturnsAsync(stationEntityBeforeUpdate);
+
+        stationsRepositoryMock.Setup(mock => mock
+            .UpdateStationAsync(
+                updatedStationEntity.Id,
+                updateIpAddress: false,
+                ipAddress: null,
+                updateLastHeartbeat: true,
+                lastHeartbeat: updatedStationEntity.LastHeartbeat))
+            .ReturnsAsync(updatedStationEntity);
+
+        var timestampProviderStub = new Mock<ITimestampProvider>();
+
+        timestampProviderStub.Setup(stub => stub
+            .GetUtcNow())
+            .Returns(updatedStationEntity.LastHeartbeat);
+
+        var controllerUnderTest = new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryMock.Object,
+            timestampProviderStub.Object);
+
+        IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
+
+        stationsRepositoryMock.Verify(mock => mock
+            .UpdateStationAsync(
+                updatedStationEntity.Id,
+                updateIpAddress: false,
+                ipAddress: null,
+                updateLastHeartbeat: true,
+                lastHeartbeat: updatedStationEntity.LastHeartbeat),
+            Times.Once);
+
+        updateResult.AssertNoContentResult();
+    }
+
+    [Test]
+    public async Task HeartbeatSignalOfUnregisteredStationReturnsNotFound()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var unregisteredStationEntity = randomizer.NextStationEntity();
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(unregisteredStationEntity.IpAddress);
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        stationsRepositoryMock.Setup(mock => mock
+            .GetSingleStationAsync(
+                filterById: It.IsAny<bool>(),
+                id: It.IsAny<long?>(),
+                filterByIpAddress: It.IsAny<bool>(),
+                ipAddress: It.IsAny<IPAddress?>(),
+                filterByMacAddress: It.IsAny<bool>(),
+                macAddress: It.IsAny<PhysicalAddress?>()))
+            .ReturnsAsync(null as StationEntity);
+
+        var timestampProviderStub = new Mock<ITimestampProvider>();
+
+        var controllerUnderTest = new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryMock.Object,
+            timestampProviderStub.Object);
+
+        IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
+
+        updateResult.AssertNotFoundObjectResult();
     }
     #endregion
 }

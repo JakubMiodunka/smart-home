@@ -90,4 +90,38 @@ public class StationsController : FirmwareController
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Updates timestamp of the last heartbeat received from the station calling the endpoint.
+    /// </summary>
+    /// <returns>
+    /// An <see cref="IActionResult"/> that represents the result of the performed operation.
+    /// </returns>
+    [HttpPut("heartbeat")]
+    public async Task<IActionResult> UpdateHeartbeatTimestamp()
+    {
+        if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
+        {
+            return BadRequest("Unable to determine station IP address.");
+        }
+
+        StationEntity? knownStationEntity =
+            await _stationsRepository.GetSingleStationAsync(
+                filterByIpAddress: true,
+                ipAddress: stationIpAddress);
+
+        if (knownStationEntity is null)
+        {
+            return NotFound("Station with provided IP address is not registered.");
+        }
+
+        StationEntity? updatedStationEntity =
+            await _stationsRepository.UpdateStationAsync(
+                knownStationEntity.Id,
+                updateLastHeartbeat: true,
+                lastHeartbeat: _timestampProvider.GetUtcNow());
+
+        // TODO: Add mote details to HTTP 500 response.
+        return updatedStationEntity is null ? Problem() : NoContent();
+    }
 }
