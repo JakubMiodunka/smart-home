@@ -13,7 +13,6 @@ using System.Net.NetworkInformation;
 
 namespace UnitTests.Server.Controllers.Firmware;
 
-// TODO: Add more tests for eadge cases and error handling.
 [Category("UnitTest")]
 [TestOf(typeof(StationsController))]
 [Author("Jakub Miodunka")]
@@ -77,9 +76,8 @@ public sealed class StationsControllerTests
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
 
-
     [Test]
-    public async Task RegistrationCausesCreationOfNewStationEntity()
+    public async Task RegistrationOfUnknownStationCausesCreationOfNewStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -89,16 +87,6 @@ public sealed class StationsControllerTests
             TestDataGenerator.CreateHttpContextAccessorFake(newStationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
-        
-        stationsRepositoryMock.Setup(mock => mock
-            .GetSingleStationAsync(
-                filterById: It.IsAny<bool>(),
-                id: It.IsAny<long?>(),
-                filterByIpAddress: It.IsAny<bool>(),
-                ipAddress: It.IsAny<IPAddress?>(),
-                filterByMacAddress: It.IsAny<bool>(),
-                macAddress: It.IsAny<PhysicalAddress?>()))
-            .ReturnsAsync(null as StationEntity);
 
         stationsRepositoryMock.Setup(mock => mock
             .CreateStationAsync(
@@ -132,7 +120,7 @@ public sealed class StationsControllerTests
     }
 
     [Test]
-    public async Task RegistrationCausesUpdateOfExistingStationEntity()
+    public async Task RegistrationOfKnownStationCausesUpdateOfExistingStationEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -193,7 +181,34 @@ public sealed class StationsControllerTests
     }
 
     [Test]
-    public async Task HeartbeatSignalOfRegisteredStationUpdatesTimestamp()
+    public async Task RegistrationReturnsBadRequestIfStationIpAddressCannotBeDetermined()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        StationEntity newStationEntity = randomizer.NextStationEntity() with
+        {
+            IpAddress = null
+        };
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(newStationEntity.IpAddress);
+
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var timestampProviderStub = new Mock<ITimestampProvider>();
+
+        var controllerUnderTest = new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryStub.Object,
+            timestampProviderStub.Object);
+
+        var registrationRequest = new StationRegistrationRequest(newStationEntity.MacAddress);
+        IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
+
+        registrationResult.AssertBadRequestObjectResult();
+    }
+
+    [Test]
+    public async Task UpdateOfHeartbeatSignalCausesUpdatesOfHeartbeatTimestampIfStationIsRegistered()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -254,7 +269,38 @@ public sealed class StationsControllerTests
     }
 
     [Test]
-    public async Task HeartbeatSignalOfUnregisteredStationReturnsNotFound()
+    public async Task UpdateOfHeartbeatSignalReturnsBadRequestIfStationIpAddressCannotBeDetermined()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationEntity = randomizer.NextStationEntity() with
+        {
+            IpAddress = null
+        };
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
+
+        StationEntity updatedStationEntity = stationEntity with
+        {
+            LastHeartbeat = randomizer.NextDateTime()   // Successive heartbeat timestamps do not need to be chronological.
+        };
+
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var timestampProviderStub = new Mock<ITimestampProvider>();
+
+        var controllerUnderTest = new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryStub.Object,
+            timestampProviderStub.Object);
+
+        IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
+
+        updateResult.AssertBadRequestObjectResult();
+    }
+
+    [Test]
+    public async Task UpdateOfHeartbeatSignalReturnsNotFoundIfStationIsUnregistered()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -264,16 +310,6 @@ public sealed class StationsControllerTests
             TestDataGenerator.CreateHttpContextAccessorFake(unregisteredStationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
-
-        stationsRepositoryMock.Setup(mock => mock
-            .GetSingleStationAsync(
-                filterById: It.IsAny<bool>(),
-                id: It.IsAny<long?>(),
-                filterByIpAddress: It.IsAny<bool>(),
-                ipAddress: It.IsAny<IPAddress?>(),
-                filterByMacAddress: It.IsAny<bool>(),
-                macAddress: It.IsAny<PhysicalAddress?>()))
-            .ReturnsAsync(null as StationEntity);
 
         var timestampProviderStub = new Mock<ITimestampProvider>();
 

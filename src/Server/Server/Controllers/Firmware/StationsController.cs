@@ -10,7 +10,7 @@ namespace SmartHome.Server.Controllers.Firmware;
 /// <summary>
 /// Controller providing endpoints for firmware to manage stations.
 /// </summary>
-[Route("firmware-api/v1/stations")]
+[Route("api/firmware/v1/stations")]
 public class StationsController : FirmwareController
 {
     #region Properties
@@ -115,13 +115,11 @@ public class StationsController : FirmwareController
             return NotFound("Station with provided IP address is not registered.");
         }
 
-        StationEntity? updatedStationEntity =
-            await _stationsRepository.UpdateStationAsync(
-                knownStationEntity.Id,
-                updateLastHeartbeat: true,
-                lastHeartbeat: _timestampProvider.GetUtcNow());
+        await _stationsRepository.UpdateStationAsync(
+            knownStationEntity.Id,
+            updateLastHeartbeat: true,
+            lastHeartbeat: _timestampProvider.GetUtcNow());
 
-        // TODO: Add mote details to HTTP 500 response.
-        return updatedStationEntity is null ? Problem() : NoContent();
+        return NoContent();
     }
 }

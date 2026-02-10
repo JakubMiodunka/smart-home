@@ -10,7 +10,7 @@ namespace SmartHome.Server.Controllers.Firmware;
 /// <summary>
 /// Controller dedicated to managing electrical switches.
 /// </summary>
-[Route("firmware-api/v1/switches")]
+[Route("api/firmware/v1/switches")]
 public class SwitchesController : FirmwareController
 {
     #region Constraints

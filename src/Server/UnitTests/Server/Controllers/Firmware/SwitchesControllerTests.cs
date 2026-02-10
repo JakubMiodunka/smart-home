@@ -11,7 +11,6 @@ using SmartHome.UnitTests;
 
 namespace UnitTests.Server.Controllers.Firmware;
 
-// TODO: Add more tests for eadge cases and error handling.
 [Category("UnitTest")]
 [TestOf(typeof(SwitchesController))]
 [Author("Jakub Miodunka")]
@@ -64,6 +63,7 @@ public sealed class SwitchesControllerTests
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
 
+    [Test]
     public void InstantiationImpossibleUsingNullReferenceAsStationsRepository()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
@@ -79,7 +79,7 @@ public sealed class SwitchesControllerTests
     }
 
     [Test]
-    public async Task RegistrationCausesCreationOfNewSwitchEntity()
+    public async Task RegistrationOfUnknownSwitchCausesCreationOfNewSwitchEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -92,27 +92,22 @@ public sealed class SwitchesControllerTests
 
         stationsRepositoryStub.Setup(mock =>
             mock.GetSingleStationAsync(
-                filterById: It.IsAny<bool>(), id: It.IsAny<long?>(),
-                filterByIpAddress: true, ipAddress: parentStationEntity.IpAddress,
-                filterByMacAddress: true, macAddress: parentStationEntity.MacAddress))
+                filterById: It.IsAny<bool>(),
+                id: It.IsAny<long?>(),
+                filterByIpAddress: true,
+                ipAddress: parentStationEntity.IpAddress,
+                filterByMacAddress: true,
+                macAddress: parentStationEntity.MacAddress))
             .ReturnsAsync(parentStationEntity);
 
         SwitchEntity newSwitchEntity = randomizer.NextSwitchEntity() with
         {
-            StationId = parentStationEntity.Id
+            StationId = parentStationEntity.Id,
+            ExpectedState = false,   // By default, every switch should be open, ensuring that current does not flow.
+            ActualState = null  // During entity creation actual state of the switch is unknown.
         };
 
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-
-        switchesRepositoryMock.Setup(mock =>
-            mock.GetSingleSwitchAsync(
-                filterById: It.IsAny<bool>(),
-                id: It.IsAny<long?>(),
-                filterByStationId: It.IsAny<bool>(),
-                stationId: It.IsAny<long?>(),
-                filterByLocalId: It.IsAny<bool>(),
-                localId: It.IsAny<byte?>()))
-            .ReturnsAsync(null as SwitchEntity);
 
         switchesRepositoryMock.Setup(mock => mock
             .CreateSwitchAsync(
@@ -137,13 +132,12 @@ public sealed class SwitchesControllerTests
                 expectedState: false,
                 actualState: null), Times.Once);
 
-        // TODO: Sometimes this test fails. It is probably related to fact that default switch state is off (false).
         var expectedResponse = new SwitchRegistrationResponse(newSwitchEntity.ExpectedState);
         registrationResult.AssertOkObjectResult(expectedValue: expectedResponse);
     }
 
     [Test]
-    public async Task RegistrationCausesUpdateOfExistingSwitchEntity()
+    public async Task RegistrationOfKnownSwitchCausesUpdateOfExistingSwitchEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -161,7 +155,10 @@ public sealed class SwitchesControllerTests
                 filterByMacAddress: true, macAddress: parentStationEntity.MacAddress))
             .ReturnsAsync(parentStationEntity);
 
-        var switchEntityBeforeUpdate = randomizer.NextSwitchEntity(stationId: parentStationEntity.Id);
+        SwitchEntity switchEntityBeforeUpdate = randomizer.NextSwitchEntity() with
+        {
+            StationId = parentStationEntity.Id
+        };
 
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
 
@@ -210,6 +207,69 @@ public sealed class SwitchesControllerTests
             Times.Once);
 
         registrationResult.AssertNoContentResult();
+    }
+
+    [Test]
+    public async Task RegistrationReturnsBadRequestIfStationIpAddressCannotBeDetermined()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        StationEntity parentStationEntity = randomizer.NextStationEntity() with
+        {
+            IpAddress = null
+        };
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+
+        SwitchEntity newSwitchEntity = randomizer.NextSwitchEntity() with
+        {
+            StationId = parentStationEntity.Id
+        };
+
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+
+        var controllerUnderTest = new SwitchesController(
+            httpContextAccessorStub.Object,
+            switchesRepositoryStub.Object,
+            stationsRepositoryStub.Object);
+
+        var registrationRequest = new SwitchRegistrationRequest(parentStationEntity.MacAddress, newSwitchEntity.LocalId);
+        IActionResult registrationResult = await controllerUnderTest.RegisterSwitch(registrationRequest);
+
+        registrationResult.AssertBadRequestObjectResult();
+    }
+
+    [Test]
+    public async Task RegistrationReturnsNotFoundIfStationIsNotRegistered()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        StationEntity parentStationEntity = randomizer.NextStationEntity();
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+
+        SwitchEntity newSwitchEntity = randomizer.NextSwitchEntity() with
+        {
+            StationId = parentStationEntity.Id,
+            ExpectedState = false,   // By default, every switch should be open, ensuring that current does not flow.
+            ActualState = null  // During entity creation actual state of the switch is unknown.
+        };
+
+        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+
+        var controllerUnderTest = new SwitchesController(
+            httpContextAccessorStub.Object,
+            switchesRepositoryStub.Object,
+            stationsRepositoryStub.Object);
+
+        var registrationRequest = new SwitchRegistrationRequest(parentStationEntity.MacAddress, newSwitchEntity.LocalId);
+        IActionResult registrationResult = await controllerUnderTest.RegisterSwitch(registrationRequest);
+
+        registrationResult.AssertNotFoundObjectResult();
     }
     #endregion
 }

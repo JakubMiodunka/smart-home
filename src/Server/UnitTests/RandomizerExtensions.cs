@@ -43,29 +43,28 @@ internal static class RandomizerExtensions
         return new IPAddress(ipAddress);
     }
 
-    public static StationEntity NextStationEntity(this Randomizer randomizer, DateTime? lastHeartbeat = null)
+    public static StationEntity NextStationEntity(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
         long id = randomizer.NextInt64(1, long.MaxValue);
         PhysicalAddress macAddress = randomizer.NextMacAddress();
         IPAddress ipAddress = randomizer.NextIpAddress();
-        lastHeartbeat = lastHeartbeat ?? randomizer.NextDateTime();
+        DateTime lastHeartbeat = randomizer.NextDateTime();
 
-        return new StationEntity(id, macAddress, ipAddress, lastHeartbeat.Value);
+        return new StationEntity(id, macAddress, ipAddress, lastHeartbeat);
     }
 
-    // TODO: remove arguments which overrides the values of record properties - there is 'with' statemetn for this.
-    public static SwitchEntity NextSwitchEntity(this Randomizer randomizer, long? stationId = null)
+    public static SwitchEntity NextSwitchEntity(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
         long id = randomizer.NextInt64(1, long.MaxValue);
-        stationId = stationId ?? randomizer.NextInt64(1, long.MaxValue);
+        long stationId = randomizer.NextInt64(1, long.MaxValue);
         byte localId = randomizer.NextByte();
         bool expectedState = randomizer.NextBool();
         bool? actualState = randomizer.NextNullableBool();
 
-        return new SwitchEntity(id, stationId.Value, localId, expectedState, actualState);
+        return new SwitchEntity(id, stationId, localId, expectedState, actualState);
     }
 }
