@@ -31,8 +31,6 @@ builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => servicePro
 builder.Services.AddSingleton<ISwitchManagerFactory>(new SwitchManagerFactory());
 builder.Services.AddSingleton<ITimestampProvider, TimestampProvider>();
 
-builder.Services.AddHostedService<HeartbeatMonitoringService>();
-
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
