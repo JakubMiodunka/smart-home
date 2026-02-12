@@ -21,7 +21,7 @@ public abstract class FirmwareController : ControllerBase
     /// Provides access to the <see cref="HttpContext"/> of the current request.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
+    /// Thrown, when at least one required reference-type argument is a <see langword="null"/> reference.
     /// </exception>
     protected FirmwareController(IHttpContextAccessor httpContextAccessor)
     {

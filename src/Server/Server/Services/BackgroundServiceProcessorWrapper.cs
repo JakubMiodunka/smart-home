@@ -2,7 +2,6 @@
 
 namespace SmartHome.Server.Services;
 
-/// TODO: Hearbeat seignal shall be checked in 35s interval.
 /// TODO: Find out a better name for this calss.
 /// TODO: Add unit tests to this class.
 /// <summary>

@@ -1,4 +1,5 @@
 using Dapper;
+using Microsoft.Extensions.DependencyInjection;
 using SmartHome.Server.Data;
 using SmartHome.Server.Data.Converters.JsonConverters;
 using SmartHome.Server.Data.Converters.TypeHandlers;
@@ -6,6 +7,7 @@ using SmartHome.Server.Data.Database;
 using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Managers.Factories;
 using SmartHome.Server.Services;
+using SmartHome.Server.Services.Processors;
 
 const string ConnectionString = "Server=127.0.0.1;Database=smart_home;User Id=smart_home_controller;Password=1234; Encrypt=True; TrustServerCertificate=True";
 
@@ -30,6 +32,20 @@ builder.Services.AddSingleton<IStationsRepository>(serviceProvider => servicePro
 builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<ISwitchManagerFactory>(new SwitchManagerFactory());
 builder.Services.AddSingleton<ITimestampProvider, TimestampProvider>();
+
+builder.Services.AddHostedService(serviceProvider =>
+{  
+    var serviceProcessor = new HeartbeatMonitoringServiceProcessor(
+            serviceProvider.GetRequiredService<IStationsRepository>(),
+            serviceProvider.GetRequiredService<ITimestampProvider>(),
+            TimeSpan.FromSeconds(60),   // TODO: Move this value to some configuration file.
+            serviceProvider.GetRequiredService<ILogger<HeartbeatMonitoringServiceProcessor>>());
+
+    return new BackgroundServiceProcessorWrapper(
+        serviceProcessor, 
+        TimeSpan.FromSeconds(65),   // TODO: Move this value to some configuration file.
+        serviceProvider.GetRequiredService<ILogger<BackgroundServiceProcessorWrapper>>());
+});
 
 builder.Services.AddControllers();
 

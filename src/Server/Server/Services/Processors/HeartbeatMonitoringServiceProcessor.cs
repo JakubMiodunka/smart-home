@@ -4,7 +4,6 @@ using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Services.Processors;
 
-/// TODO: Add launching hearbeat monitoring serrvice to DI configuration.
 /// TODO: Add unit tests to this calss.
 /// <summary>
 /// A processor responsible for monitoring station heartbeats and marking inactive stations as offline.
@@ -15,11 +14,6 @@ namespace SmartHome.Server.Services.Processors;
 /// </remarks>
 public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProcessor
 {
-    #region Constraints
-    // TODO: Move these values to some configuration file.
-    private const int MaxHeartbeatInterval = 30_000;    // Given in milliseconds.
-    #endregion
-
     #region Properties
     private readonly IStationsRepository _stationsRepository;
     private readonly ITimestampProvider _timestampProvider;
@@ -43,20 +37,27 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <param name="logger">
     /// Logger which shall be used by created instance.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one required reference-type argument is a <see langword="null"/> reference.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the value of at least one argument is outside its valid range.
+    /// </exception>
     public HeartbeatMonitoringServiceProcessor(
         IStationsRepository stationsRepository,
         ITimestampProvider timestampProvider,
+        TimeSpan maxHeartbeatInterval,
         ILogger<HeartbeatMonitoringServiceProcessor> logger)
     {
         ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
         ArgumentNullException.ThrowIfNull(timestampProvider, nameof(timestampProvider));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxHeartbeatInterval, TimeSpan.Zero);
 
         _stationsRepository = stationsRepository;
         _timestampProvider = timestampProvider;
+        _maxHeartbeatInterval = maxHeartbeatInterval;
         _logger = logger;
-
-        _maxHeartbeatInterval = TimeSpan.FromMilliseconds(MaxHeartbeatInterval);
     }
     #endregion
 
