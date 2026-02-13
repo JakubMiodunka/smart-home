@@ -1,82 +1,84 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Newtonsoft.Json.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SmartHome.UnitTests;
 
 internal static class IActionResultExtensions
 {
-    public static void AssertOkObjectResult<T>(
+    #region Generic assertions
+    private static void AssertStatusCodeActionResult<TResult>(
+        IActionResult actionResultUnderTest,
+        int expectedStatusCode)
+        where TResult : IStatusCodeActionResult
+    {
+        Assert.That(actionResultUnderTest, Is.Not.Null);
+        Assert.That(actionResultUnderTest, Is.InstanceOf<TResult>());
+
+        var specificActionResult = (IStatusCodeActionResult)actionResultUnderTest;
+
+        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
+    }
+
+    private static void AssertObjectResult<TResult, TValue>(
+        IActionResult actionResultUnderTest,
+        int expectedStatusCode,
+        TValue? expectedValue)
+        where TResult : ObjectResult
+        where TValue : IEquatable<TValue>
+    {
+        AssertStatusCodeActionResult<TResult>(actionResultUnderTest, expectedStatusCode);
+
+        var objectResult = (ObjectResult)actionResultUnderTest;
+
+        Assert.That(objectResult.Value, Is.InstanceOf<TValue>());
+        Assert.That(objectResult.Value, Is.EqualTo(expectedValue));
+    }
+    #endregion
+
+    #region Specific assertions
+    public static void AssertOkObjectResult<TValue>(
         this IActionResult actionResultUnderTest,
         int expectedStatusCode = StatusCodes.Status200OK,
-        T? expectedValue = null) where T : class, IEquatable<T>
-    {
-        Assert.That(actionResultUnderTest, Is.Not.Null);
-        Assert.That(actionResultUnderTest, Is.InstanceOf<OkObjectResult>());
+        TValue? expectedValue = null)
+        where TValue : class, IEquatable<TValue> =>
+        AssertObjectResult<OkObjectResult, TValue>(actionResultUnderTest, expectedStatusCode, expectedValue);
 
-        var specificActionResult = (OkObjectResult)actionResultUnderTest;
+    public static void AssertNoContentResult(this IActionResult actionResultUnderTest, int expectedStatusCode = StatusCodes.Status204NoContent) => 
+        AssertStatusCodeActionResult<NoContentResult>(actionResultUnderTest, expectedStatusCode);
 
-        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
-
-        Assert.That(specificActionResult.Value, Is.InstanceOf<T>());
-        Assert.That(specificActionResult.Value, Is.EqualTo(expectedValue));
-    }
-
-    public static void AssertNoContentResult(
-        this IActionResult actionResultUnderTest,
-        int expectedStatusCode = StatusCodes.Status204NoContent)
-    {
-        Assert.That(actionResultUnderTest, Is.Not.Null);
-        Assert.That(actionResultUnderTest, Is.InstanceOf<NoContentResult>());
-
-        var specificActionResult = (NoContentResult)actionResultUnderTest;
-
-        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
-    }
-
-    public static void AssertCreatedAtActionResult<T>(
+    public static void AssertCreatedAtActionResult<TValue>(
         this IActionResult actionResultUnderTest,
         int expectedStatusCode = StatusCodes.Status201Created,
         string? expectedControllerName = null,
         string? expectedActionName = null,
-        T? expectedValue = null) where T : class, IEquatable<T>
+        TValue? expectedValue = null)
+        where TValue : class, IEquatable<TValue>
     {
-        Assert.That(actionResultUnderTest, Is.Not.Null);
-        Assert.That(actionResultUnderTest, Is.InstanceOf<CreatedAtActionResult>());
+        AssertObjectResult<OkObjectResult, TValue>(actionResultUnderTest, expectedStatusCode, expectedValue);
 
-        var specificActionResult = (CreatedAtActionResult)actionResultUnderTest;
+        var createdAtActionResult = (CreatedAtActionResult)actionResultUnderTest;
 
         Assert.Multiple(() =>
         {
-            Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
-            Assert.That(specificActionResult.ControllerName, Is.EqualTo(expectedControllerName));
-            Assert.That(specificActionResult.ActionName, Is.EqualTo(expectedActionName));
+            Assert.That(createdAtActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
+            Assert.That(createdAtActionResult.ControllerName, Is.EqualTo(expectedControllerName));
+            Assert.That(createdAtActionResult.ActionName, Is.EqualTo(expectedActionName));
         });
-
-        Assert.That(specificActionResult.Value, Is.InstanceOf<T>());
-        Assert.That(specificActionResult.Value, Is.EqualTo(expectedValue));
     }
 
-    public static void AssertBadRequestObjectResult(
-        this IActionResult actionResultUnderTest,
-        int expectedStatusCode = StatusCodes.Status400BadRequest)
-    {
-        Assert.That(actionResultUnderTest, Is.Not.Null);
-        Assert.That(actionResultUnderTest, Is.InstanceOf<BadRequestObjectResult>());
+    public static void AssertBadRequestResult(this IActionResult actionResultUnderTest, int expectedStatusCode = StatusCodes.Status400BadRequest) =>
+        AssertStatusCodeActionResult<BadRequestResult>(actionResultUnderTest, expectedStatusCode);
 
-        var specificActionResult = (BadRequestObjectResult)actionResultUnderTest;
+    public static void AssertBadRequestObjectResult(this IActionResult actionResultUnderTest, int expectedStatusCode = StatusCodes.Status400BadRequest) =>
+        AssertStatusCodeActionResult<BadRequestObjectResult>(actionResultUnderTest, expectedStatusCode);
 
-        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
-    }
+    public static void AssertNotFoundObjectResult(this IActionResult actionResultUnderTest, int expectedStatusCode = StatusCodes.Status404NotFound) =>
+        AssertStatusCodeActionResult<NotFoundObjectResult>(actionResultUnderTest, expectedStatusCode);
 
-    public static void AssertNotFoundObjectResult(
-        this IActionResult actionResultUnderTest,
-        int expectedStatusCode = StatusCodes.Status404NotFound)
-    {
-        Assert.That(actionResultUnderTest, Is.Not.Null);
-        Assert.That(actionResultUnderTest, Is.InstanceOf<NotFoundObjectResult>());
-
-        var specificActionResult = (NotFoundObjectResult)actionResultUnderTest;
-
-        Assert.That(specificActionResult.StatusCode, Is.EqualTo(expectedStatusCode));
-    }
+    public static void AssertNotFoundResult(this IActionResult actionResultUnderTest, int expectedStatusCode = StatusCodes.Status404NotFound) =>
+        AssertStatusCodeActionResult<NotFoundResult>(actionResultUnderTest, expectedStatusCode);
+    #endregion
 }

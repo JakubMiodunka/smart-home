@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Controllers.Firmware;
@@ -25,11 +27,13 @@ public sealed class StationsControllerTests
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
         var timestampProviderStub = new Mock<ITimestampProvider>();
+        var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
     }
@@ -39,11 +43,13 @@ public sealed class StationsControllerTests
     {
         var stationsRepositoryStub = new Mock<IStationsRepository>();
         var timestampProviderStub = new Mock<ITimestampProvider>();
+        var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             null!,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -53,11 +59,13 @@ public sealed class StationsControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var timestampProviderStub = new Mock<ITimestampProvider>();
+        var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             null!,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -67,10 +75,28 @@ public sealed class StationsControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
+            null!,
+            loggerStub);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+    }
+
+    [Test]
+    public void InstantiationImpossibleUsingNullReferenceAsLogger()
+    {
+        var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var timestampProviderStub = new Mock<ITimestampProvider>();
+
+        TestDelegate actionUnderTest = () => new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryStub.Object,
+            timestampProviderStub.Object,
             null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
@@ -101,10 +127,13 @@ public sealed class StationsControllerTests
             .GetUtcNow())
             .Returns(newStationEntity.LastHeartbeat);
 
+        var loggerMock = new FakeLogger<StationsController>();
+
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerMock);
 
         var registrationRequest = new StationRegistrationRequest(newStationEntity.MacAddress);
         IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
@@ -117,6 +146,10 @@ public sealed class StationsControllerTests
             Times.Once);
 
         registrationResult.AssertNoContentResult();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
@@ -160,10 +193,13 @@ public sealed class StationsControllerTests
             .GetUtcNow())
             .Returns(updatedStationEntity.LastHeartbeat);
 
+        var loggerMock = new FakeLogger<StationsController>();
+
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerMock);
 
         var registrationRequest = new StationRegistrationRequest(updatedStationEntity.MacAddress);
         IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
@@ -178,6 +214,10 @@ public sealed class StationsControllerTests
             Times.Once);
 
         registrationResult.AssertNoContentResult();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
@@ -196,15 +236,22 @@ public sealed class StationsControllerTests
         var stationsRepositoryStub = new Mock<IStationsRepository>();
         var timestampProviderStub = new Mock<ITimestampProvider>();
 
+        var loggerMock = new FakeLogger<StationsController>();
+
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerMock);
 
         var registrationRequest = new StationRegistrationRequest(newStationEntity.MacAddress);
         IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
 
-        registrationResult.AssertBadRequestObjectResult();
+        registrationResult.AssertBadRequestResult();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
@@ -249,10 +296,13 @@ public sealed class StationsControllerTests
             .GetUtcNow())
             .Returns(updatedStationEntity.LastHeartbeat);
 
+        var loggerMock = new FakeLogger<StationsController>();
+
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerMock);
 
         IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
 
@@ -266,6 +316,10 @@ public sealed class StationsControllerTests
             Times.Once);
 
         updateResult.AssertNoContentResult();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
@@ -289,14 +343,21 @@ public sealed class StationsControllerTests
         var stationsRepositoryStub = new Mock<IStationsRepository>();
         var timestampProviderStub = new Mock<ITimestampProvider>();
 
+        var loggerMock = new FakeLogger<StationsController>();
+
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerMock);
 
         IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
 
-        updateResult.AssertBadRequestObjectResult();
+        updateResult.AssertBadRequestResult();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
@@ -313,14 +374,21 @@ public sealed class StationsControllerTests
 
         var timestampProviderStub = new Mock<ITimestampProvider>();
 
+        var loggerMock = new FakeLogger<StationsController>();
+
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object);
+            timestampProviderStub.Object,
+            loggerMock);
 
         IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
 
-        updateResult.AssertNotFoundObjectResult();
+        updateResult.AssertNotFoundResult();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
     #endregion
 }

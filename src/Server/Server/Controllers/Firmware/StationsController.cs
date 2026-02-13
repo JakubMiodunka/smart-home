@@ -16,6 +16,7 @@ public class StationsController : FirmwareController
     #region Properties
     private readonly IStationsRepository _stationsRepository;
     private readonly ITimestampProvider _timestampProvider;
+    private readonly ILogger<StationsController> _logger;
     #endregion
 
     #region Instationation
@@ -31,20 +32,26 @@ public class StationsController : FirmwareController
     /// <param name="timestampProvider">
     /// Timestamp source which shall be used by this controller.
     /// </param>
+    /// <param name="logger">
+    /// Logger which shall be used by this controller.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
     public StationsController(
         IHttpContextAccessor httpContextAccessor,
         IStationsRepository stationsRepository,
-        ITimestampProvider timestampProvider)
+        ITimestampProvider timestampProvider,
+        ILogger<StationsController> logger)
         : base(httpContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
         ArgumentNullException.ThrowIfNull(timestampProvider, nameof(timestampProvider));
+        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         _stationsRepository = stationsRepository;
         _timestampProvider = timestampProvider;
+        _logger = logger;
     }
     #endregion
 
@@ -60,11 +67,18 @@ public class StationsController : FirmwareController
     /// </returns>
     [HttpPut("registration")]
     public async Task<IActionResult> RegisterStation([FromBody] StationRegistrationRequest request)
-    {       
+    {
+        _logger.LogInformation("Processing station registration request: MacAddress=[{MacAddress}]", request.MacAddress);
+
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            return BadRequest("Unable to determine station IP address.");
+            _logger.LogWarning("Unable to process station registration request:");
+            _logger.LogDebug("Failed to determine station IP address:");
+            
+            return BadRequest();
         }
+
+        _logger.LogDebug("Station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
 
         StationEntity? knownStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -73,6 +87,8 @@ public class StationsController : FirmwareController
 
         if (knownStationEntity is null)
         {
+            _logger.LogDebug("Registering station as a new device within the system:");
+
             await _stationsRepository.CreateStationAsync(
                 request.MacAddress,
                 stationIpAddress,
@@ -80,6 +96,8 @@ public class StationsController : FirmwareController
         }
         else
         {
+            _logger.LogDebug("Registering station as already known device: Id=[{Id}]", knownStationEntity.Id);
+
             await _stationsRepository.UpdateStationAsync(
                knownStationEntity.Id,
                updateIpAddress: true,
@@ -88,6 +106,7 @@ public class StationsController : FirmwareController
                lastHeartbeat: _timestampProvider.GetUtcNow());
         }
 
+        _logger.LogInformation("Station registration successful:");
         return NoContent();
     }
 
@@ -100,10 +119,17 @@ public class StationsController : FirmwareController
     [HttpPut("heartbeat")]
     public async Task<IActionResult> UpdateHeartbeatTimestamp()
     {
+        _logger.LogInformation("Processing heartbeat signal:");
+
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            return BadRequest("Unable to determine station IP address.");
+            _logger.LogWarning("Unable to process heartbeat signal:");
+            _logger.LogDebug("Failed to determine station IP address:");
+
+            return BadRequest();
         }
+
+        _logger.LogDebug("Station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
 
         StationEntity? knownStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -112,14 +138,20 @@ public class StationsController : FirmwareController
 
         if (knownStationEntity is null)
         {
-            return NotFound("Station with provided IP address is not registered.");
+            _logger.LogWarning("Unable to process heartbeat signal:");
+            _logger.LogDebug("Failed to find station with specified IP address: IpAddress=[{IpAddress}]", stationIpAddress);
+
+            return NotFound();
         }
+
+        _logger.LogDebug("Updating station heartbeat timestamp: Id=[{Id}]", knownStationEntity.Id);
 
         await _stationsRepository.UpdateStationAsync(
             knownStationEntity.Id,
             updateLastHeartbeat: true,
             lastHeartbeat: _timestampProvider.GetUtcNow());
 
+        _logger.LogInformation("Heartbeat signal processed successfully:");
         return NoContent();
     }
 }

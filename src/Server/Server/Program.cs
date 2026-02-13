@@ -1,5 +1,4 @@
 using Dapper;
-using Microsoft.Extensions.DependencyInjection;
 using SmartHome.Server.Data;
 using SmartHome.Server.Data.Converters.JsonConverters;
 using SmartHome.Server.Data.Converters.TypeHandlers;
