@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Controllers.Firmware;
@@ -23,12 +25,14 @@ public sealed class SwitchesControllerTests
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var switchesRepositoryStub = new Mock<ISwitchesRepository>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () =>
             new SwitchesController(
                 httpContextAccessorStub.Object,
                 switchesRepositoryStub.Object,
-                stationsRepositoryStub.Object);
+                stationsRepositoryStub.Object,
+                loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
     }
@@ -38,6 +42,7 @@ public sealed class SwitchesControllerTests
     {
         var switchesRepositoryStub = new Mock<ISwitchesRepository>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () =>
             new SwitchesController(
@@ -53,6 +58,7 @@ public sealed class SwitchesControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () =>
             new SwitchesController(
@@ -68,11 +74,30 @@ public sealed class SwitchesControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () =>
             new SwitchesController(
                 httpContextAccessorStub.Object,
                 switchesRepositoryStub.Object,
+                null!,
+                loggerStub);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+    }
+
+    [Test]
+    public void InstantiationImpossibleUsingNullReferenceAsLogger()
+    {
+        var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
+        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+
+        TestDelegate actionUnderTest = () =>
+            new SwitchesController(
+                httpContextAccessorStub.Object,
+                switchesRepositoryStub.Object,
+                stationsRepositoryStub.Object,
                 null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
@@ -117,10 +142,13 @@ public sealed class SwitchesControllerTests
                 newSwitchEntity.ActualState))
             .ReturnsAsync(newSwitchEntity);
 
+        var loggerMock = new FakeLogger<SwitchesController>();
+
         var controllerUnderTest = new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
-            stationsRepositoryStub.Object);
+            stationsRepositoryStub.Object,
+            loggerMock);
 
         var registrationRequest = new SwitchRegistrationRequest(parentStationEntity.MacAddress, newSwitchEntity.LocalId);
         IActionResult registrationResult = await controllerUnderTest.RegisterSwitch(registrationRequest);
@@ -134,8 +162,13 @@ public sealed class SwitchesControllerTests
 
         var expectedResponse = new SwitchRegistrationResponse(newSwitchEntity.ExpectedState);
         registrationResult.AssertOkObjectResult(expectedValue: expectedResponse);
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
+    // TODO: Continue adjusting here.
     [Test]
     public async Task RegistrationOfKnownSwitchCausesUpdateOfExistingSwitchEntity()
     {
@@ -192,12 +225,12 @@ public sealed class SwitchesControllerTests
             switchesRepositoryMock.Object,
             stationsRepositoryStub.Object);
 
-        var request = new UpdateSwitchStateRequest(
+        var request = new UpdateSwitchRequest(
             parentStationEntity.MacAddress,
             switchEntityBeforeUpdate.LocalId,
             switchEntityAfterUpdate.ActualState.Value);
 
-        IActionResult registrationResult = await controllerUnderTest.UpdateSwitchState(request);
+        IActionResult registrationResult = await controllerUnderTest.UpdateSwitch(request);
 
         switchesRepositoryMock.Verify(mock => mock
             .UpdateSwitchAsync(

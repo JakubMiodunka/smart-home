@@ -5,7 +5,7 @@ namespace SmartHome.Server.Data.Models.Requests;
 
 /// <summary>
 /// Data transfer object (DTO) representing a request to update
-/// the current state of an electrical switch on the server side.
+/// date related to particular electrical switch on the server side.
 /// </summary>
 /// <remarks>
 /// Used for data exchange between the server and station firmware.
@@ -21,7 +21,7 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <see langword="true"/> if the circuit is closed and current is flowing;
 /// <see langword="false"/> otherwise.
 /// </param>
-public sealed record UpdateSwitchStateRequest(
+public sealed record UpdateSwitchRequest(
     [Required] PhysicalAddress StationMacAddress,
     [Range(1, byte.MaxValue)] byte SwitchLocalId,
     [Required] bool SwitchState);

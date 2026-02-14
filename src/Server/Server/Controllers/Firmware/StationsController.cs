@@ -72,13 +72,14 @@ public class StationsController : FirmwareController
 
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Unable to process station registration request:");
+            _logger.LogWarning("Failed to process station registration request:");
             _logger.LogDebug("Failed to determine station IP address:");
             
             return BadRequest();
         }
 
         _logger.LogDebug("Station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
+        _logger.LogDebug("Searching for station entity: MacAddress=[{MacAddress}]", request.MacAddress);
 
         StationEntity? knownStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -87,26 +88,39 @@ public class StationsController : FirmwareController
 
         if (knownStationEntity is null)
         {
+            _logger.LogDebug("Station entity not found:");
             _logger.LogDebug("Registering station as a new device within the system:");
 
             await _stationsRepository.CreateStationAsync(
                 request.MacAddress,
                 stationIpAddress,
                 _timestampProvider.GetUtcNow());
-        }
-        else
-        {
-            _logger.LogDebug("Registering station as already known device: Id=[{Id}]", knownStationEntity.Id);
 
-            await _stationsRepository.UpdateStationAsync(
-               knownStationEntity.Id,
-               updateIpAddress: true,
-               ipAddress: stationIpAddress,
-               updateLastHeartbeat: true,
-               lastHeartbeat: _timestampProvider.GetUtcNow());
+            _logger.LogInformation("Station registration successful:");
+
+            return NoContent();
         }
 
+        _logger.LogDebug("Station entity found: Id=[{Id}]", knownStationEntity.Id);
+        _logger.LogDebug("Registering station as already known device:");
+
+        DateTime heartbeatTimestamp = _timestampProvider.GetUtcNow();
+
+        _logger.LogDebug(
+            "Updating station details: IpAddress=[{IpAddress}], LastHeartbeat=[{LastHeartbeat}]",
+            stationIpAddress,
+            heartbeatTimestamp);
+
+        await _stationsRepository.UpdateStationAsync(
+           knownStationEntity.Id,
+           updateIpAddress: true,
+           ipAddress: stationIpAddress,
+           updateLastHeartbeat: true,
+           lastHeartbeat: heartbeatTimestamp);
+
+        _logger.LogDebug("Repository updated successfully:");
         _logger.LogInformation("Station registration successful:");
+
         return NoContent();
     }
 
@@ -123,13 +137,14 @@ public class StationsController : FirmwareController
 
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Unable to process heartbeat signal:");
+            _logger.LogWarning("Failed to process heartbeat signal:");
             _logger.LogDebug("Failed to determine station IP address:");
 
             return BadRequest();
         }
 
         _logger.LogDebug("Station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
+        _logger.LogDebug("Searching for station entity: IpAddress=[{IpAddress}]", stationIpAddress);
 
         StationEntity? knownStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -138,20 +153,26 @@ public class StationsController : FirmwareController
 
         if (knownStationEntity is null)
         {
-            _logger.LogWarning("Unable to process heartbeat signal:");
-            _logger.LogDebug("Failed to find station with specified IP address: IpAddress=[{IpAddress}]", stationIpAddress);
+            _logger.LogWarning("Failed to process heartbeat signal:");
+            _logger.LogDebug("Station entity not found:");
 
             return NotFound();
         }
 
-        _logger.LogDebug("Updating station heartbeat timestamp: Id=[{Id}]", knownStationEntity.Id);
+        _logger.LogDebug("Station entity found: Id=[{Id}]", knownStationEntity.Id);
+
+        DateTime heartbeatTimestamp = _timestampProvider.GetUtcNow();
+
+        _logger.LogDebug("Updating station details: Timestamp=[{Timestamp}]", heartbeatTimestamp);
 
         await _stationsRepository.UpdateStationAsync(
             knownStationEntity.Id,
             updateLastHeartbeat: true,
-            lastHeartbeat: _timestampProvider.GetUtcNow());
+            lastHeartbeat: heartbeatTimestamp);
 
+        _logger.LogDebug("Repository updated successfully:");
         _logger.LogInformation("Heartbeat signal processed successfully:");
+
         return NoContent();
     }
 }
