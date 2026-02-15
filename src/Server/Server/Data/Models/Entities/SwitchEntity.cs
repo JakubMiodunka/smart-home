@@ -1,4 +1,6 @@
-﻿namespace SmartHome.Server.Data.Models.Entities;
+﻿using SmartHome.Server.Services.Processors;
+
+namespace SmartHome.Server.Data.Models.Entities;
 
 /// <summary>
 /// Entity representing the details of an electrical switch functioning within the system.
@@ -29,3 +31,27 @@ public sealed record SwitchEntity(
     byte LocalId,
     bool ExpectedState,
     bool? ActualState);
+
+/// <summary>
+/// Defines logic for <see cref="SwitchEntity"/> that are not persisted directly in the database.
+/// </summary>
+public static class SwitchEntityExtensions
+{
+    /// <summary>
+    /// Determines whether the switch is considered online.
+    /// </summary>
+    /// <remarks>
+    /// A switch is defined as online only if its actual state is known. 
+    /// The <see cref="HeartbeatMonitoringServiceProcessor"> is responsible 
+    /// for nullifying the actual switch state if a heartbeat timeout occurs.
+    /// </remarks>
+    /// <param name="stationEntity">T
+    /// Switch entity to check.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the switch is considered online.
+    /// <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsOnline(this SwitchEntity switchEntity) =>
+        switchEntity.ActualState is not null;
+}

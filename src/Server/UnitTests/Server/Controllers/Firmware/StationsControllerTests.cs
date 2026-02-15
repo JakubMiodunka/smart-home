@@ -20,7 +20,7 @@ namespace UnitTests.Server.Controllers.Firmware;
 [Author("Jakub Miodunka")]
 public sealed class StationsControllerTests
 {
-    #region Test cases
+    #region Constructor
     [Test]
     public void InstantiationPossible()
     {
@@ -101,7 +101,9 @@ public sealed class StationsControllerTests
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
+    #endregion
 
+    #region Registration
     [Test]
     public async Task RegistrationOfUnknownStationCausesCreationOfNewStationEntity()
     {
@@ -135,8 +137,8 @@ public sealed class StationsControllerTests
             timestampProviderStub.Object,
             loggerMock);
 
-        var registrationRequest = new StationRegistrationRequest(newStationEntity.MacAddress);
-        IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
+        var request = new StationRegistrationRequest(newStationEntity.MacAddress);
+        IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(
@@ -145,7 +147,7 @@ public sealed class StationsControllerTests
                 newStationEntity.LastHeartbeat),
             Times.Once);
 
-        registrationResult.AssertNoContentResult();
+        response.AssertNoContentResult();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -201,8 +203,8 @@ public sealed class StationsControllerTests
             timestampProviderStub.Object,
             loggerMock);
 
-        var registrationRequest = new StationRegistrationRequest(updatedStationEntity.MacAddress);
-        IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
+        var request = new StationRegistrationRequest(updatedStationEntity.MacAddress);
+        IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(
@@ -213,7 +215,7 @@ public sealed class StationsControllerTests
                 lastHeartbeat: updatedStationEntity.LastHeartbeat),
             Times.Once);
 
-        registrationResult.AssertNoContentResult();
+        response.AssertNoContentResult();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -244,16 +246,18 @@ public sealed class StationsControllerTests
             timestampProviderStub.Object,
             loggerMock);
 
-        var registrationRequest = new StationRegistrationRequest(newStationEntity.MacAddress);
-        IActionResult registrationResult = await controllerUnderTest.RegisterStation(registrationRequest);
+        var request = new StationRegistrationRequest(newStationEntity.MacAddress);
+        IActionResult response = await controllerUnderTest.RegisterStation(request);
 
-        registrationResult.AssertBadRequestResult();
+        response.AssertBadRequestResult();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
+    #endregion
 
+    #region Heartbeat signal
     [Test]
     public async Task UpdateOfHeartbeatSignalCausesUpdatesOfHeartbeatTimestampIfStationIsRegistered()
     {

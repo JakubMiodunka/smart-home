@@ -36,6 +36,7 @@ builder.Services.AddHostedService(serviceProvider =>
 {  
     var serviceProcessor = new HeartbeatMonitoringServiceProcessor(
             serviceProvider.GetRequiredService<IStationsRepository>(),
+            serviceProvider.GetRequiredService<ISwitchesRepository>(),
             serviceProvider.GetRequiredService<ITimestampProvider>(),
             TimeSpan.FromSeconds(60),   // TODO: Move this value to some configuration file.
             serviceProvider.GetRequiredService<ILogger<HeartbeatMonitoringServiceProcessor>>());

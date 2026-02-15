@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using SmartHome.Server.Services.Processors;
+using System.Net;
 using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Entities;
@@ -33,11 +34,11 @@ public static class StationEntityExtensions
     /// </summary>
     /// <remarks>
     /// A station is defined as online only if it has an assigned IP address. 
-    /// The <see cref="HeartbeatMonitoringService"> is responsible 
+    /// The <see cref="HeartbeatMonitoringServiceProcessor"> is responsible 
     /// for nullifying the IP address if a heartbeat timeout occurs.
     /// </remarks>
     /// <param name="stationEntity">T
-    /// he station entity to check.
+    /// Station entity to check.
     /// </param>
     /// <returns>
     /// <see langword="true"/> if the station is considered online.

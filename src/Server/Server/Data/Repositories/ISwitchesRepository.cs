@@ -59,9 +59,38 @@ public interface ISwitchesRepository
     /// Switch entity that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
     Task<SwitchEntity?> GetSingleSwitchAsync(
-        bool filterById = false, long? id = null,
-        bool filterByStationId = false, long? stationId = null,
-        bool filterByLocalId = false, byte? localId = null);
+        bool filterById = false,
+        long? id = null,
+        bool filterByStationId = false,
+        long? stationId = null,
+        bool filterByLocalId = false,
+        byte? localId = null);
+
+    /// <summary>
+    /// Retrieves collection of electrical switches from the repository basing on provided criteria.
+    /// </summary>
+    /// <param name="filterByStationId">
+    /// <see langword="true"/>, if filtering by station ID shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="stationId">
+    /// Value of station ID by which switches shall be filtered.
+    /// Ignored if value of <paramref name="filterByStationId"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <param name="filterByActualState">
+    /// <see langword="true"/>, if filtering by actual switch state shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="actualState">
+    /// Value of actual switch state by which switches shall be filtered.
+    /// Ignored if value of <paramref name="filterByActualState"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <returns>
+    /// Collection of switch entities that matches the provided criteria.
+    /// </returns>
+    Task<SwitchEntity[]> GetMultipleSwitchesAsync(
+        bool filterByStationId = false,
+        long? stationId = null,
+        bool filterByActualState = true,
+        bool? actualState = null);
 
     /// <summary>
     /// Updates properties of specified electrical switch.
@@ -89,6 +118,8 @@ public interface ISwitchesRepository
     /// </returns>
     Task<SwitchEntity?> UpdateSwitchAsync(
         long id,
-        bool updateExpectedState = false, bool? expectedState = null,
-        bool updateActualState = false, bool? actualState = null);
+        bool updateExpectedState = false,
+        bool? expectedState = null,
+        bool updateActualState = false,
+        bool? actualState = null);
 }
