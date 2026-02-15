@@ -17,14 +17,10 @@
 /// <param name="request">
 /// The JSON document to be populated.
 /// </param>
-/// <param name="macAddress">
-/// Station MAC address.
-/// </param>
 /// <param name="localId">
 /// The identifier of the switch, unique at the station level.
 /// </param>
-static void populateSwitchRegistrationRequest(JsonDocument& request, const String macAddress, byte localId) {
-  request["stationMacAddress"] = macAddress;
+static void populateSwitchRegistrationRequest(JsonDocument& request, byte localId) {
   request["switchLocalId"] = localId;
 }
 
@@ -37,9 +33,6 @@ static void populateSwitchRegistrationRequest(JsonDocument& request, const Strin
 /// <param name="request">
 /// The JSON document to be populated.
 /// </param>
-/// <param name="macAddress">
-/// Station MAC address.
-/// </param>
 /// <param name="localId">
 /// The identifier of the switch, unique at the station level.
 /// </param>
@@ -47,8 +40,7 @@ static void populateSwitchRegistrationRequest(JsonDocument& request, const Strin
 /// Logical state of the switch - <see langword="true"/> 
 /// if the switch is closed and current is flowing, <see langword="false"/> otherwise.
 /// </param>
-static void populateUpdateSwitchStateRequest(JsonDocument& request, const String macAddress, byte localId, const bool switchState) {
-  request["stationMacAddress"] = macAddress;
+static void populateUpdateSwitchStateRequest(JsonDocument& request, byte localId, const bool switchState) {
   request["switchLocalId"] = localId;
   request["switchState"] = switchState;
 }
@@ -71,7 +63,7 @@ void setSwitchState(Switch& switchRef, const bool desiredState) {
   digitalWrite(switchRef.pinNumber, switchRef.pinState);
 }
 
-bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const String macAddress, const int localId) {
+bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const int localId) {
   if (SERVER_API_VERSION != 1) {
     logToSerial(ERROR, "Switch Registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
     return false;
@@ -83,7 +75,7 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const S
   JsonDocument response;
   int httpReturnCode;
   
-  populateSwitchRegistrationRequest(request, macAddress, localId);
+  populateSwitchRegistrationRequest(request, localId);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
 
   bool expectedSwitchState = response["expectedSwitchState"];
@@ -92,7 +84,7 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const S
   return httpReturnCode == HTTP_CODE_OK;
 }
 
-bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef, const String macAddress, const int localId) {
+bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef, const int localId) {
   if (SERVER_API_VERSION != 1) {
     logToSerial(ERROR, "Updating switch state not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
     return false;
@@ -105,7 +97,7 @@ bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef
   int httpReturnCode;
   
   bool switchState = getSwitchState(switchRef);
-  populateUpdateSwitchStateRequest(request, macAddress, localId, switchState);
+  populateUpdateSwitchStateRequest(request, localId, switchState);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
 
   return httpReturnCode == HTTP_CODE_NO_CONTENT;

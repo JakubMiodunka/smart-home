@@ -79,16 +79,13 @@ void setSwitchState(Switch& switchRef, const bool desiredState);
 /// The switch object to be registered.
 /// State of GPIO pin will be updated according to received server response.
 /// </param>
-/// <param name="macAddress">
-/// Station MAC address.
-/// </param>
 /// <param name="localId">
 /// The local identifier assigned to the switch.
 /// </param>
 /// <returns>
 /// True if the attempt was successful, false otherwise.
 /// </returns>
-bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const String macAddress, const int localId);
+bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const int localId);
 
 /// <summary>
 /// Attempts to update state of a single switch on the server.
@@ -99,15 +96,12 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const S
 /// <param name="switchRef">
 /// The switch object which state shall be updated.
 /// </param>
-/// <param name="macAddress">
-/// Station MAC address.
-/// </param>
 /// <param name="localId">
 /// The local identifier assigned to the switch.
 /// </param>
 /// <returns>
 /// True if the attempt was successful, false otherwise.
 /// </returns>
-bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef, const String macAddress, const int localId);
+bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef, const int localId);
 
 #endif

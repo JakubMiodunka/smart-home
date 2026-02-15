@@ -74,7 +74,7 @@ void setup() {
 
     logToSerial(INFO, "Attempting to register switch: LOCAL_ID=[%d]", localId);
 
-    while (!tryRegisterSwitch(WiFiManager, currentSwitch, macAddress, localId)) {
+    while (!tryRegisterSwitch(WiFiManager, currentSwitch, localId)) {
       logToSerial(WARNING, "Registration attempt failed. REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
       delay(REQUESTS_RETRY_INTERVAL);
     }
@@ -92,7 +92,7 @@ void setup() {
 
     logToSerial(INFO, "Attempting to update switch state: LOCAL_ID=[%d]", localId);
 
-    while (!tryUpdateSwitchState(WiFiManager, currentSwitch, macAddress, localId)) {
+    while (!tryUpdateSwitchState(WiFiManager, currentSwitch, localId)) {
       logToSerial(WARNING, "Update attempt failed. REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
       delay(REQUESTS_RETRY_INTERVAL);
     }
