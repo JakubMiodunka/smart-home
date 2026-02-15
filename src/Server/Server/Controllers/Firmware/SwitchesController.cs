@@ -73,8 +73,7 @@ public class SwitchesController : FirmwareController
     public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationRequest request)
     {
         _logger.LogInformation(
-            "Processing switch registration request: StationMacAddress=[{StationMacAddress}], SwitchLocalId=[{SwitchLocalId}]",
-            request.StationMacAddress,
+            "Processing switch registration request: SwitchLocalId=[{SwitchLocalId}]",
             request.SwitchLocalId);
 
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
@@ -86,16 +85,10 @@ public class SwitchesController : FirmwareController
         }
 
         _logger.LogDebug("Parent station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
-
-        _logger.LogDebug(
-            "Searching for parent station entity: MacAddress=[{MacAddress}], IpAddress=[{IpAddress}]",
-            request.StationMacAddress,
-            stationIpAddress);
+        _logger.LogDebug("Searching for parent station entity: IpAddress=[{IpAddress}]", stationIpAddress);
 
         StationEntity? parentStationEntity =
             await _stationsRepository.GetSingleStationAsync(
-                filterByMacAddress: true,
-                macAddress: request.StationMacAddress,
                 filterByIpAddress: true,
                 ipAddress: stationIpAddress);
 
@@ -168,11 +161,10 @@ public class SwitchesController : FirmwareController
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPatch("state")]
-    public async Task<IActionResult> UpdateSwitch([FromBody] UpdateSwitchRequest request)
+    public async Task<IActionResult> UpdateSwitch([FromBody] SwitchUpdateRequest request)
     {
         _logger.LogInformation(
-            "Processing switch update request: StationMacAddress=[{StationMacAddress}], SwitchLocalId=[{SwitchLocalId}]",
-            request.StationMacAddress,
+            "Processing switch update request: SwitchLocalId=[{SwitchLocalId}]",
             request.SwitchLocalId);
 
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
@@ -184,16 +176,10 @@ public class SwitchesController : FirmwareController
         }
 
         _logger.LogDebug("Parent station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
-
-        _logger.LogDebug(
-            "Searching for parent station entity: StationMacAddress=[{StationMacAddress}], IpAddress=[{IpAddress}]",
-            request.StationMacAddress,
-            stationIpAddress);
+        _logger.LogDebug("Searching for parent station entity: IpAddress=[{IpAddress}]", stationIpAddress);
 
         StationEntity? parentStationEntity =
             await _stationsRepository.GetSingleStationAsync(
-                filterByMacAddress: true,
-                macAddress: request.StationMacAddress,
                 filterByIpAddress: true,
                 ipAddress: stationIpAddress);
 
@@ -228,12 +214,12 @@ public class SwitchesController : FirmwareController
         }
 
         _logger.LogDebug("Switch entity found: Id=[{Id}]", knownSwitchEntity.Id);
-        _logger.LogDebug("Updating switch details: ActualSwitchState=[{ActualSwitchState}]", request.SwitchState);
+        _logger.LogDebug("Updating switch details: ActualSwitchState=[{ActualSwitchState}]", request.ActualSwitchState);
 
         await _switchesRepository.UpdateSwitchAsync(
             knownSwitchEntity.Id,
             updateActualState: true,
-            actualState: request.SwitchState);
+            actualState: request.ActualSwitchState);
 
         _logger.LogDebug("Repository updated successfully:");
         _logger.LogInformation("Switch update request processed successfully:");

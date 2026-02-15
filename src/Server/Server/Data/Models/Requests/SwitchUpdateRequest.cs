@@ -10,18 +10,14 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <remarks>
 /// Used for data exchange between the server and station firmware.
 /// </remarks>
-/// <param name="StationMacAddress">
-/// The MAC address of the station that controls this switch.
-/// </param>
 /// <param name="SwitchLocalId">
 /// The identifier of the switch, unique only at the station level.
 /// </param>
-/// <param name="SwitchState">
+/// <param name="ActualSwitchState">
 /// Current state of the electrical switch.
 /// <see langword="true"/> if the circuit is closed and current is flowing;
 /// <see langword="false"/> otherwise.
 /// </param>
-public sealed record UpdateSwitchRequest(
-    [Required] PhysicalAddress StationMacAddress,
+public sealed record SwitchUpdateRequest(
     [Range(1, byte.MaxValue)] byte SwitchLocalId,
-    [Required] bool SwitchState);
+    [Required] bool ActualSwitchState);
