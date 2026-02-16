@@ -103,7 +103,6 @@ void setup() {
   logToSerial(INFO, "State of all switches updated successfully.");
 }
 
-
 void loop() {
 
 }

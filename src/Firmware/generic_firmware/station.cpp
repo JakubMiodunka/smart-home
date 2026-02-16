@@ -41,3 +41,20 @@ bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) 
 
   return httpReturnCode == HTTP_CODE_NO_CONTENT;
 }
+
+bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) {
+  if (SERVER_API_VERSION != 1) {
+    logToSerial(ERROR, "Station registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+    return false;
+  }
+
+  const String url = getBaseUrl() + "/stations/heartbeat";
+  const HttpMethod httpMethod = PUT;
+  JsonDocument request;
+  JsonDocument response;
+  int httpReturnCode;
+
+  sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+
+  return httpReturnCode == HTTP_CODE_NO_CONTENT;
+}
