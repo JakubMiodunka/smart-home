@@ -46,26 +46,40 @@ static void populateUpdateSwitchStateRequest(JsonDocument& request, byte localId
 }
 
 void initializeSwitch(const Switch& switchRef) {
+  logToSerial(INFO, "Attempting to initialize switch: LOCAL_ID=[%d]", switchRef.localId);
+
   pinMode(switchRef.pinNumber, OUTPUT);
+
+  logToSerial(INFO, "Switch initialization successful: LOCAL_ID=[%d]", switchRef.localId);
+
 }
 
 bool getSwitchState(const Switch& switchRef) {
-  bool switchState = switchRef.pinState == HIGH;
-  switchState = switchRef.reversedLogic ? !switchState : switchState;
+  logToSerial(INFO, "Attempting to determine switch state: LOCAL_ID=[%d]", switchRef.localId);
+  
+  bool switchState = (switchRef.pinState == HIGH) != switchRef.reversedLogic;
+
+  logToSerial(INFO, "Switch state determined successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", switchRef.localId, switchState);
+
   return switchState;
 }
 
-void setSwitchState(Switch& switchRef, const bool desiredState) {
-  bool pinState = desiredState;
-  pinState = switchRef.reversedLogic ? !pinState : pinState;
+void setSwitchState(Switch& switchRef, const bool expectedState) {
+  logToSerial(INFO, "Attempting to set switch state: LOCAL_ID=[%d], EXPECTED_STATE=[%d]", switchRef.localId, expectedState);
+
+  bool pinState = (expectedState == HIGH) != switchRef.reversedLogic;
   switchRef.pinState = pinState ? HIGH : LOW;
 
   digitalWrite(switchRef.pinNumber, switchRef.pinState);
+
+  logToSerial(INFO, "Switch state set successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", switchRef.localId, switchRef.pinState);
 }
 
-bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const int localId) {
+bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef) {
+  logToSerial(INFO, "Attempting to register switch: LOCAL_ID=[%d]", switchRef.localId);
+  
   if (SERVER_API_VERSION != 1) {
-    logToSerial(ERROR, "Switch Registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+    logToSerial(ERROR, "Switch registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
     return false;
   }
   
@@ -75,16 +89,26 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const i
   JsonDocument response;
   int httpReturnCode;
   
-  populateSwitchRegistrationRequest(request, localId);
+  populateSwitchRegistrationRequest(request, switchRef.localId);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_OK;
 
-  bool expectedSwitchState = response["expectedSwitchState"];
-  setSwitchState(switchRef, expectedSwitchState);
+  if (wasOperationSuccessful) {
+    bool expectedSwitchState = response["expectedSwitchState"];
+    setSwitchState(switchRef, expectedSwitchState);
 
-  return httpReturnCode == HTTP_CODE_OK;
+    logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d]", switchRef.localId);
+  }
+  else {
+    logToSerial(WARNING, "Switch registration failed: LOCAL_ID=[%d]", switchRef.localId);
+  }
+
+  return wasOperationSuccessful;
 }
 
-bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef, const int localId) {
+bool tryUpdateSwitch(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef) {
+  logToSerial(INFO, "Attempting to update switch: LOCAL_ID=[%d]", switchRef.localId);
+
   if (SERVER_API_VERSION != 1) {
     logToSerial(ERROR, "Updating switch state not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
     return false;
@@ -97,8 +121,16 @@ bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef
   int httpReturnCode;
   
   bool switchState = getSwitchState(switchRef);
-  populateUpdateSwitchStateRequest(request, localId, switchState);
+  populateUpdateSwitchStateRequest(request, switchRef.localId, switchState);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
 
-  return httpReturnCode == HTTP_CODE_NO_CONTENT;
+  if (wasOperationSuccessful) {
+    logToSerial(INFO, "Switch update successful: LOCAL_ID=[%d]", switchRef.localId);
+  }
+  else {
+    logToSerial(WARNING, "Switch update failed: LOCAL_ID=[%d]", switchRef.localId);
+  }
+
+  return wasOperationSuccessful;
 }

@@ -12,6 +12,11 @@
 /// </summary>
 struct Switch {
   /// <summary>
+  /// The identifier of the switch, unique at the station level.
+  /// </summary>
+  uint8_t localId;
+
+  /// <summary>
   /// GPIO pin number the switch is connected to.
   /// </summary>
   uint8_t pinNumber;
@@ -60,10 +65,10 @@ bool getSwitchState(const Switch& switchRef);
 /// <param name="switchRef">
 /// The switch representation to be modified.
 /// </param>
-/// <param name="desiredState">
+/// <param name="expectedState">
 /// <see langword="true"/> if the switch should be closed to allow current flow, <see langword="false"/> otherwise.
 /// </param>
-void setSwitchState(Switch& switchRef, const bool desiredState);
+void setSwitchState(Switch& switchRef, const bool expectedState);
 
 /// <summary>
 /// Attempts to register a single switch on the server.
@@ -79,16 +84,13 @@ void setSwitchState(Switch& switchRef, const bool desiredState);
 /// The switch object to be registered.
 /// State of GPIO pin will be updated according to received server response.
 /// </param>
-/// <param name="localId">
-/// The local identifier assigned to the switch.
-/// </param>
 /// <returns>
 /// True if the attempt was successful, false otherwise.
 /// </returns>
-bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const int localId);
+bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef);
 
 /// <summary>
-/// Attempts to update state of a single switch on the server.
+/// Attempts to update a single switch details on the server.
 /// </summary>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.
@@ -96,12 +98,9 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef, const i
 /// <param name="switchRef">
 /// The switch object which state shall be updated.
 /// </param>
-/// <param name="localId">
-/// The local identifier assigned to the switch.
-/// </param>
 /// <returns>
 /// True if the attempt was successful, false otherwise.
 /// </returns>
-bool tryUpdateSwitchState(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef, const int localId);
+bool tryUpdateSwitch(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef);
 
 #endif

@@ -25,6 +25,8 @@ static void populateStationRegistrationRequest(JsonDocument& request, const Stri
 }
 
 bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) {
+  logToSerial(INFO, "Attempting to register station: MAC_ADDRESS=[%s]", macAddress.c_str());
+
   if (SERVER_API_VERSION != 1) {
     logToSerial(ERROR, "Station registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
     return false;
@@ -38,13 +40,23 @@ bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) 
 
   populateStationRegistrationRequest(request, macAddress);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
 
-  return httpReturnCode == HTTP_CODE_NO_CONTENT;
+  if (wasOperationSuccessful) {
+    logToSerial(INFO, "Station registration successful: MAC_ADDRESS=[%s]", macAddress.c_str());
+  }
+  else {
+    logToSerial(WARNING, "Station registration failed: MAC_ADDRESS=[%s]", macAddress.c_str());
+  }
+
+  return wasOperationSuccessful;
 }
 
 bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) {
+  logToSerial(INFO, "Attempting to send heartbeat signal:");
+
   if (SERVER_API_VERSION != 1) {
-    logToSerial(ERROR, "Station registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+    logToSerial(ERROR, "Heartbeat signal not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
     return false;
   }
 
@@ -55,6 +67,14 @@ bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) {
   int httpReturnCode;
 
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
 
-  return httpReturnCode == HTTP_CODE_NO_CONTENT;
+  if (wasOperationSuccessful) {
+    logToSerial(INFO, "Heartbeat signal sent successfully:");
+  }
+  else {
+    logToSerial(WARNING, "Failed to sent heartbeat signal:");
+  }
+
+  return wasOperationSuccessful;
 }
