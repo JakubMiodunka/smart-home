@@ -1,5 +1,6 @@
 ﻿namespace SmartHome.Server.Data;
 
+/// TODO: Use TimeProvider instead of this. Use FakeTimestampProvider for uint tests. 
 /// <summary>
 /// Provides methods for obtaining timestamps.
 /// </summary>

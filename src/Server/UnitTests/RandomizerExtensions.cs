@@ -17,10 +17,24 @@ internal static class RandomizerExtensions
         return values.First();
     }
 
-    public static DateTime NextDateTime(this Randomizer randomizer)
+    public static DateTime NextDateTime(this Randomizer randomizer, DateTime? from = null, DateTime? to = null)
     {
-        long randomTimestamp = randomizer.NextInt64(DateTime.MinValue.Ticks, DateTime.MaxValue.Ticks);
-        return new DateTime(randomTimestamp).ToUniversalTime();
+        long fromTicks = from?.Ticks ?? DateTime.MinValue.Ticks;
+        long toTicks = to?.Ticks ?? DateTime.MaxValue.Ticks;
+
+        long dateTimeTicks = randomizer.NextInt64(fromTicks, toTicks);
+
+        return new DateTime(dateTimeTicks).ToUniversalTime();
+    }
+
+    public static TimeSpan NextTimeSpan(this Randomizer randomizer, TimeSpan? from = null, TimeSpan? to = null)
+    {
+        long fromTicks = from?.Ticks ?? TimeSpan.MinValue.Ticks;
+        long toTicks = to?.Ticks ?? TimeSpan.MaxValue.Ticks;
+
+        long timespanTicks = randomizer.NextInt64(fromTicks, toTicks);
+
+        return TimeSpan.FromTicks(timespanTicks);
     }
 
     public static PhysicalAddress NextMacAddress(this Randomizer randomizer)

@@ -11,7 +11,7 @@ namespace SmartHome.UnitTests.Server.Data.Converters.TypeHandlers;
 [Author("Jakub Miodunka")]
 public sealed class PhysicalAddressHandlerTests
 {
-    #region Test cases
+    #region Constructor
     [Test]
     public void InstantiationPossible()
     {
@@ -19,7 +19,9 @@ public sealed class PhysicalAddressHandlerTests
 
         Assert.DoesNotThrow(actionUnderTest);
     }
+    #endregion
 
+    #region Conversion to SQL parameter
     [Test]
     public void SettingParameterImpossibleUsingNullReferenceAsParameter()
     {
@@ -94,7 +96,9 @@ public sealed class PhysicalAddressHandlerTests
 
         Assert.That(parsedMacAddress, Is.Null);
     }
+    #endregion
 
+    #region Conversion from SQL parameter
     [Test]
     public void ResultOfParsingNonStringReferenceIsNullReference()
     {

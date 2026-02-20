@@ -11,7 +11,7 @@ namespace SmartHome.UnitTests.Server.Data.Converters.TypeHandlers;
 [Author("Jakub Miodunka")]
 public sealed class IPAddressHandlerTests
 {
-    #region Test cases
+    #region Constructor
     [Test]
     public void InstantiationPossible()
     {
@@ -19,7 +19,9 @@ public sealed class IPAddressHandlerTests
 
         Assert.DoesNotThrow(actionUnderTest);
     }
+    #endregion
 
+    #region Conversion to SQL parameter
     [Test]
     public void SettingParameterImpossibleUsingNullReferenceAsParameter()
     {
@@ -85,7 +87,9 @@ public sealed class IPAddressHandlerTests
 
         dbDataParameterMock.VerifySet(mock => mock.Value = DBNull.Value);
     }
+    #endregion
 
+    #region Conversion from SQL parameter
     [Test]
     public void ResultOfParsingNullReferenceIsNullReference()
     {

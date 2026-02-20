@@ -8,9 +8,9 @@ namespace SmartHome.UnitTests.Server.Data.Converters.JsonConverters;
 [Category("UnitTest")]
 [TestOf(typeof(PhysicalAddressConverter))]
 [Author("Jakub Miodunka")]
-public sealed class PhysicalAddressConverterTests
+public sealed class BackgroundProcessorServiceTests
 {
-    #region Test cases
+    #region Constructor
     [Test]
     public void InstantiationPossible()
     {
@@ -18,7 +18,9 @@ public sealed class PhysicalAddressConverterTests
 
         Assert.DoesNotThrow(actionUnderTest);
     }
+    #endregion
 
+    #region Type conversion
     [Test]
     public void ReadingImpossibleUsingNullReferenceAsTypeToConvert()
     {
@@ -85,7 +87,9 @@ public sealed class PhysicalAddressConverterTests
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
+    #endregion
 
+    #region JSON serialization
     [Test]
     public void ResultOfDeserializationOfJsonNullValueIsNullReference()
     {
