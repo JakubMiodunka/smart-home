@@ -76,21 +76,10 @@ public interface ISwitchesRepository
     /// Value of station ID by which switches shall be filtered.
     /// Ignored if value of <paramref name="filterByStationId"/> is set to <see langword="false"/>.
     /// </param>
-    /// <param name="filterByActualState">
-    /// <see langword="true"/>, if filtering by actual switch state shall be applied, <see langword="false"/> otherwise.
-    /// </param>
-    /// <param name="actualState">
-    /// Value of actual switch state by which switches shall be filtered.
-    /// Ignored if value of <paramref name="filterByActualState"/> is set to <see langword="false"/>.
-    /// </param>
     /// <returns>
     /// Collection of switch entities that matches the provided criteria.
     /// </returns>
-    Task<SwitchEntity[]> GetMultipleSwitchesAsync(
-        bool filterByStationId = false,
-        long? stationId = null,
-        bool filterByActualState = true,
-        bool? actualState = null);
+    Task<SwitchEntity[]> GetMultipleSwitchesAsync(bool filterByStationId = false, long? stationId = null);
 
     /// <summary>
     /// Updates properties of specified electrical switch.

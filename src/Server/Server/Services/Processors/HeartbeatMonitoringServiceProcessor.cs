@@ -4,7 +4,7 @@ using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Services.Processors;
 
-/// TODO: Add unit tests to this calss.
+/// TODO: Add unit tests to this class.
 /// <summary>
 /// A processor responsible for monitoring station heartbeats and marking inactive stations as offline.
 /// </summary>
@@ -73,30 +73,26 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <summary>
     /// Searching for stations which shall be marked as offline in repository.
     /// </summary>
+    /// <param name="referenceTimestamp">
+    /// Timestamp against which station activity is compared to determine offline state.
+    /// </param>
     /// <returns>
     /// Collection of statin entities which shall be marked as offline.
     /// </returns>
-    private async Task<StationEntity[]> FindOfflineStations()
+    private async Task<StationEntity[]> FindStationsToMarkAsOffline(DateTime referenceTimestamp)
     {
-        DateTime referenceTimestamp = _timestampProvider.GetUtcNow();
         _logger.LogDebug("Searching for stations to mark as offline: ReferenceTimestamp=[{ReferenceTimestamp}]", referenceTimestamp);
 
         StationEntity[] allStations = await _stationsRepository.GetMultipleStationsAsync();
-        StationEntity[] offlineStations = allStations
+        
+        StationEntity[] stationsToMark = allStations
             .Where(station => station.IsOnline())
             .Where(station => referenceTimestamp - station.LastHeartbeat > _maxHeartbeatInterval)
             .ToArray();
 
-        if (offlineStations.Any())
-        {
-            _logger.LogDebug("Found stations to mark as offline: Count=[{Count}]", offlineStations.Count());
-        }
-        else
-        {
-            _logger.LogDebug("Stations to mark as offline not found: Count=[{Count}]", offlineStations.Count());
-        }
+        _logger.LogDebug("Stations found to mark as offline: Count=[{Count}]", stationsToMark.Count());
 
-        return offlineStations;
+        return stationsToMark;
     }
 
     /// <summary>
@@ -117,10 +113,16 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
 
         _logger.LogDebug("Marking station as offline: Id=[{Id}]", stationId);
 
-        await _stationsRepository.UpdateStationAsync(
+        StationEntity? updatedStation = await _stationsRepository.UpdateStationAsync(
             stationId,
             updateIpAddress: true,
             ipAddress: null);
+
+        if (updatedStation is null)
+        {
+            _logger.LogError("Failed to update repository:");
+            return;
+        }
 
         _logger.LogDebug("Repository updated successfully:");
     }
@@ -137,37 +139,45 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when the value of at least one argument is outside its valid range.
     /// </exception>
-    private async Task MarkSwitchesAsOffline(long parentStationId)
+    private async Task MarkStationSwitchesAsOffline(long parentStationId)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(parentStationId, 0, nameof(parentStationId));
 
         _logger.LogDebug("Searching for switches to mark as offline: ParentStationId=[{ParentStationId}]", parentStationId);
 
-        SwitchEntity[] offlineSwitches = await _switchesRepository.GetMultipleSwitchesAsync(
+        SwitchEntity[] stationSwitches = await _switchesRepository.GetMultipleSwitchesAsync(
             filterByStationId: true,
-            stationId: parentStationId,
-            filterByActualState: true,
-            actualState: null);
+            stationId: parentStationId);
 
-        if (offlineSwitches.Any())
+        SwitchEntity[] switchesToMark = stationSwitches
+            .Where(currentSwitch => currentSwitch.IsOnline())
+            .ToArray();
+
+        if (switchesToMark.Any())
         {
-            _logger.LogDebug("Found switches to mark as offline: Count=[{Count}]", offlineSwitches.Count());
+            _logger.LogDebug("Found switches to mark as offline: Count=[{Count}]", stationSwitches.Count());
         }
         else
         {
-            _logger.LogDebug("Stations to mark as offline not found: Count=[{Count}]", offlineSwitches.Count());
+            _logger.LogDebug("Stations to mark as offline not found: Count=[{Count}]", stationSwitches.Count());
             return;
         }
 
         // List.ForEach is avoided here as it does not support asynchronous operations.
-        foreach (SwitchEntity offlineSwitch in offlineSwitches)
+        foreach (SwitchEntity switchToMark in switchesToMark)
         {
-            _logger.LogDebug("Marking switch as offline: Id=[{Id}]", offlineSwitch.Id);
+            _logger.LogDebug("Marking switch as offline: Id=[{Id}]", switchToMark.Id);
 
-            await _switchesRepository.UpdateSwitchAsync(
-                offlineSwitch.Id,
+            SwitchEntity? updatedSwitch = await _switchesRepository.UpdateSwitchAsync(
+                switchToMark.Id,
                 updateActualState: true,
                 actualState: null);
+
+            if (updatedSwitch is null)
+            {
+                _logger.LogError("Failed to update repository:");
+                continue;
+            }
 
             _logger.LogDebug("Repository updated successfully:");
         }
@@ -176,13 +186,14 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <inheritdoc cref="IBackgroundServiceProcessor">
     public async Task ProcessAsync(CancellationToken cancellationToken)
     {
-        StationEntity[] offlineStations = await FindOfflineStations();
+        DateTime referenceTimestamp = _timestampProvider.GetUtcNow();
+        StationEntity[] stationsToMark = await FindStationsToMarkAsOffline(referenceTimestamp);
 
         // List.ForEach is avoided here as it does not support asynchronous operations.
-        foreach (StationEntity station in offlineStations)
+        foreach (StationEntity station in stationsToMark)
         {
             await MarkStationAsOffline(station.Id);
-            await MarkSwitchesAsOffline(station.Id);
+            await MarkStationSwitchesAsOffline(station.Id);
         }
     }
     #endregion

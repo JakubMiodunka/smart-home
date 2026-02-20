@@ -286,11 +286,7 @@ public sealed class DatabaseClient : IDatabaseClient
     }
 
     /// <inheritdoc cref="ISwitchesRepository"/>
-    public async Task<SwitchEntity[]> GetMultipleSwitchesAsync(
-        bool filterByStationId = false,
-        long? stationId = null,
-        bool filterByActualState = true,
-        bool? actualState = null)
+    public async Task<SwitchEntity[]> GetMultipleSwitchesAsync(bool filterByStationId = false, long? stationId = null)
     {
         var parameters = new DynamicParameters();
 
@@ -300,12 +296,6 @@ public sealed class DatabaseClient : IDatabaseClient
 
             parameters.Add("@filter_by_station_id", filterByStationId);
             parameters.Add("@station_id", stationId);
-        }
-
-        if (filterByActualState)
-        {
-            parameters.Add("@filter_by_actual_state", filterByStationId);
-            parameters.Add("@actual_state", stationId);
         }
 
         return await GetMultipleEntitiesAsync<SwitchEntity>("SP_switches_get", parameters);
