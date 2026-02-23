@@ -71,12 +71,27 @@ public sealed class BackgroundProcessorService : BackgroundService
         {
             while (await serviceIntervalTimer.WaitForNextTickAsync(cancellationToken))
             {
-                await _processor.ProcessAsync(cancellationToken);
+                try
+                {
+                    await _processor.ProcessAsync(cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(
+                        exception,
+                        "Exception thrown in service execution loop: ProcessorName=[{ProcessorName}], Message=[{Message}]",
+                        _processor.ProcessorName,
+                        exception.Message);
+                }
             }
         }
-        catch (Exception exception)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(exception, "Exception thrown in service execution loop:");
+            /*
+             * Is expected when operation is cancelled using cancellation token
+             * Adding extra 'catch' block only to ensure that this exception won't be logged as error.
+             */
+            _logger.LogDebug("Stopping background service execution due to cancellation request: ProcessorName=[{ProcessorName}]", _processor.ProcessorName);
         }
 
         _logger.LogInformation("Background service execution stopped: ProcessorName=[{ProcessorName}]", _processor.ProcessorName);
