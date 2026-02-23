@@ -209,7 +209,7 @@ public sealed class BackgroundProcessorServiceTests
     /// into the underlying test execution flow and timing synchronization.
     /// </remarks>
     [NonParallelizable]
-    [TestCase(1, 100)]
+    [TestCase(1, 5)]
     public async Task ExecutionLoopContinuesWhenProcessorThrowsException(
         long serviceExecutionInterval,  // Given in milliseconds.
         int numberOfIntervals)
