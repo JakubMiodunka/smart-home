@@ -95,11 +95,11 @@ public sealed class BackgroundProcessorServiceTests
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
 
-    [TestCase(0)]
-    [TestCase(-1)]
-    public void InstantiationImpossibleUsingInvalidExecutionInterval(long serviceExecutionInterval) // Given in microseconds.
+    [Test]
+    public void InstantiationImpossibleUsingInvalidExecutionInterval(
+        [Values(-1, 0)] long invalidServiceExecutionInterval) // Given in microseconds.
     {
-        var executionInterval = TimeSpan.FromMicroseconds(serviceExecutionInterval);
+        var serviceExecutionInterval = TimeSpan.FromMicroseconds(invalidServiceExecutionInterval);
 
         var serviceProcessorStub = new Mock<IBackgroundServiceProcessor>();
         var timeProviderStub = new FakeTimeProvider();
@@ -108,7 +108,7 @@ public sealed class BackgroundProcessorServiceTests
         TestDelegate actionUnderTest = () => new BackgroundProcessorService(
                 serviceProcessorStub.Object,
                 timeProviderStub,
-                executionInterval,
+                serviceExecutionInterval,
                 loggerStub);
 
         Assert.Throws<ArgumentOutOfRangeException>(actionUnderTest);
