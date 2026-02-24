@@ -146,14 +146,14 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    public async Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTime lastHeartbeat)
+    public async Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTimeOffset lastHeartbeat)
     {
         ArgumentNullException.ThrowIfNull(macAddress, nameof(macAddress));
 
         var parameters = new DynamicParameters();
         parameters.Add("@mac_address", macAddress);
         parameters.Add("@ip_address", ipAddress);
-        parameters.Add("@last_heartbeat", lastHeartbeat);
+        parameters.Add("@last_heartbeat", lastHeartbeat.ToUniversalTime());
 
         return await CreateEntityAsync<StationEntity>("SP_stations_create", parameters);
     }
@@ -211,7 +211,7 @@ public sealed class DatabaseClient : IDatabaseClient
     public async Task<StationEntity?> UpdateStationAsync(
         long id,
         bool updateIpAddress = false, IPAddress? ipAddress = null,
-        bool updateLastHeartbeat = false, DateTime? lastHeartbeat = null)
+        bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null)
     {
         var parameters = new DynamicParameters();
         parameters.Add("@id", id);
@@ -227,7 +227,7 @@ public sealed class DatabaseClient : IDatabaseClient
             ArgumentNullException.ThrowIfNull(lastHeartbeat, nameof(lastHeartbeat));
 
             parameters.Add("@update_last_heartbeat", updateLastHeartbeat);
-            parameters.Add("@last_heartbeat", lastHeartbeat);
+            parameters.Add("@last_heartbeat", lastHeartbeat?.ToUniversalTime());
         }
 
         return await GetSingleEntityAsync<StationEntity>("SP_stations_update", parameters);

@@ -23,6 +23,9 @@ public sealed class BackgroundProcessorService : BackgroundService
     /// <param name="serviceProcessor">
     /// Processor of background service which shall be executed by created instance.
     /// </param>
+    /// <param name="timeProvider">
+    /// Time reference shall be used by the instance to coordinate time-based operations.
+    /// </param>
     /// <param name="logger">
     /// Logger which shall be used by created instance.
     /// </param>
@@ -88,8 +91,8 @@ public sealed class BackgroundProcessorService : BackgroundService
         catch (OperationCanceledException)
         {
             /*
-             * Is expected when operation is cancelled using cancellation token
-             * Adding extra 'catch' block only to ensure that this exception won't be logged as error.
+             * This exception is expected when operation is cancelled using cancellation token.
+             * Adding extra 'catch' block only to ensure that intended cancellation won't be logged as error.
              */
             _logger.LogDebug("Stopping background service execution due to cancellation request: ProcessorName=[{ProcessorName}]", _processor.ProcessorName);
         }

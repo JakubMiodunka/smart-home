@@ -22,7 +22,7 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// <param name="LastHeartbeat">
 /// Timestamp of the last heartbeat signal received from the station.
 /// </param>
-public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress, DateTime LastHeartbeat);
+public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress, DateTimeOffset LastHeartbeat);
 
 /// <summary>
 /// Defines logic for <see cref="StationEntity"/> that are not persisted directly in the database.

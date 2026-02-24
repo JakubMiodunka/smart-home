@@ -25,7 +25,7 @@ public interface IStationsRepository
     /// <returns>
     /// Station model saved within the repository.
     /// </returns>
-    Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTime lastHeartbeat);
+    Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTimeOffset lastHeartbeat);
 
     /// <summary>
     /// Retrieves single station from the repository basing on provided criteria.
@@ -101,5 +101,5 @@ public interface IStationsRepository
     /// </returns>
     Task<StationEntity?> UpdateStationAsync(long id,
         bool updateIpAddress = false, IPAddress? ipAddress = null,
-        bool updateLastHeartbeat = false, DateTime? lastHeartbeat = null);
+        bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null);
 }

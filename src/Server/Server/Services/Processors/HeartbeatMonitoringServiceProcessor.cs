@@ -4,7 +4,6 @@ using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Services.Processors;
 
-/// TODO: Add unit tests to this class.
 /// <summary>
 /// A processor responsible for monitoring station heartbeats and marking inactive stations as offline.
 /// </summary>
@@ -17,7 +16,7 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     #region Properties
     private readonly IStationsRepository _stationsRepository;
     private readonly ISwitchesRepository _switchesRepository;
-    private readonly ITimestampProvider _timestampProvider;
+    private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _maxHeartbeatInterval;
     private readonly ILogger<HeartbeatMonitoringServiceProcessor> _logger;
 
@@ -35,8 +34,8 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <param name="switchesRepository">
     /// Switches repository which shall be used by created instance.
     /// </param>
-    /// <param name="timestampProvider">
-    /// Timestamp source which shall be used by created instance.
+    /// <param name="timeProvider">
+    /// Time reference shall be used by the instance to coordinate time-based operations.
     /// </param>
     /// <param name="logger">
     /// Logger which shall be used by created instance.
@@ -50,19 +49,19 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     public HeartbeatMonitoringServiceProcessor(
         IStationsRepository stationsRepository,
         ISwitchesRepository switchesRepository,
-        ITimestampProvider timestampProvider,
+        TimeProvider timeProvider,
         TimeSpan maxHeartbeatInterval,
         ILogger<HeartbeatMonitoringServiceProcessor> logger)
     {
         ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
         ArgumentNullException.ThrowIfNull(switchesRepository, nameof(switchesRepository));
-        ArgumentNullException.ThrowIfNull(timestampProvider, nameof(timestampProvider));
+        ArgumentNullException.ThrowIfNull(timeProvider, nameof(timeProvider));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxHeartbeatInterval, TimeSpan.Zero);
 
         _stationsRepository = stationsRepository;
         _switchesRepository = switchesRepository;
-        _timestampProvider = timestampProvider;
+        _timeProvider = timeProvider;
         _maxHeartbeatInterval = maxHeartbeatInterval;
         _logger = logger;
     }
@@ -79,7 +78,7 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <returns>
     /// Collection of statin entities which shall be marked as offline.
     /// </returns>
-    private async Task<StationEntity[]> FindStationsToMarkAsOffline(DateTime referenceTimestamp)
+    private async Task<StationEntity[]> FindStationsToMarkAsOffline(DateTimeOffset referenceTimestamp)
     {
         _logger.LogDebug("Searching for stations to mark as offline: ReferenceTimestamp=[{ReferenceTimestamp}]", referenceTimestamp);
 
@@ -186,7 +185,7 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <inheritdoc cref="IBackgroundServiceProcessor">
     public async Task ProcessAsync(CancellationToken cancellationToken)
     {
-        DateTime referenceTimestamp = _timestampProvider.GetUtcNow();
+        DateTimeOffset referenceTimestamp = _timeProvider.GetUtcNow();
         StationEntity[] stationsToMark = await FindStationsToMarkAsOffline(referenceTimestamp);
 
         // List.ForEach is avoided here as it does not support asynchronous operations.

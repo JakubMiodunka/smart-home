@@ -1,4 +1,5 @@
-﻿using NUnit.Framework.Internal;
+﻿using Microsoft.Extensions.Diagnostics.Latency;
+using NUnit.Framework.Internal;
 using SmartHome.Server.Data.Models.Entities;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -17,14 +18,22 @@ internal static class RandomizerExtensions
         return values.First();
     }
 
-    public static DateTime NextDateTime(this Randomizer randomizer, DateTime? from = null, DateTime? to = null)
+    /// <remarks>
+    /// The default minimum value is set to 2000-01-01T00:00:00Z to ensure compatibility with the default
+    /// starting point of <see cref="FakeTimeProvider"/>. Using a smaller value would result in
+    /// an <see cref="ArgumentOutOfRangeException"/> when initializing provider.
+    /// For general testing scenarios, <see cref="DateTimeOffset.MinValue"/>  would typically be used.
+    /// </remarks>
+    public static DateTimeOffset NextDateTimeOffset(this Randomizer randomizer, DateTimeOffset? from = null, DateTimeOffset? to = null)
     {
-        long fromTicks = from?.Ticks ?? DateTime.MinValue.Ticks;
-        long toTicks = to?.Ticks ?? DateTime.MaxValue.Ticks;
+        long fromDefault = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks;
+        
+        long fromTicks = from?.Ticks ?? fromDefault;
+        long toTicks = to?.Ticks ?? DateTimeOffset.MaxValue.Ticks;
 
-        long dateTimeTicks = randomizer.NextInt64(fromTicks, toTicks);
+        long dateTimeOffsetTicks = randomizer.NextInt64(fromTicks, toTicks);
 
-        return new DateTime(dateTimeTicks).ToUniversalTime();
+        return new DateTimeOffset(dateTimeOffsetTicks, TimeSpan.Zero);
     }
 
     public static TimeSpan NextTimeSpan(this Randomizer randomizer, TimeSpan? from = null, TimeSpan? to = null)
@@ -64,7 +73,7 @@ internal static class RandomizerExtensions
         long id = randomizer.NextInt64(1, long.MaxValue);
         PhysicalAddress macAddress = randomizer.NextMacAddress();
         IPAddress ipAddress = randomizer.NextIpAddress();
-        DateTime lastHeartbeat = randomizer.NextDateTime();
+        DateTimeOffset lastHeartbeat = randomizer.NextDateTimeOffset();
 
         return new StationEntity(id, macAddress, ipAddress, lastHeartbeat);
     }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Controllers.Firmware;
@@ -26,13 +27,13 @@ public sealed class StationsControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var timestampProviderStub = new Mock<ITimestampProvider>();
+        var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
@@ -42,13 +43,13 @@ public sealed class StationsControllerTests
     public void InstantiationImpossibleUsingNullReferenceAsHttpContextAccessor()
     {
         var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var timestampProviderStub = new Mock<ITimestampProvider>();
+        var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             null!,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
@@ -58,20 +59,20 @@ public sealed class StationsControllerTests
     public void InstantiationImpossibleUsingNullReferenceAsStationsRepository()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
-        var timestampProviderStub = new Mock<ITimestampProvider>();
+        var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             null!,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
 
     [Test]
-    public void InstantiationImpossibleUsingNullReferenceAsTimestampProvider()
+    public void InstantiationImpossibleUsingNullReferenceAsTimeProvider()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
@@ -91,12 +92,12 @@ public sealed class StationsControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var timestampProviderStub = new Mock<ITimestampProvider>();
+        var timeProviderStub = new FakeTimeProvider();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
@@ -123,18 +124,15 @@ public sealed class StationsControllerTests
                 newStationEntity.LastHeartbeat))
             .ReturnsAsync(newStationEntity);
 
-        var timestampProviderStub = new Mock<ITimestampProvider>();
-
-        timestampProviderStub.Setup(stub => stub
-            .GetUtcNow())
-            .Returns(newStationEntity.LastHeartbeat);
+        var timeProviderStub = new FakeTimeProvider();
+        timeProviderStub.SetUtcNow(newStationEntity.LastHeartbeat);
 
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerMock);
 
         var request = new StationRegistrationRequest(newStationEntity.MacAddress);
@@ -164,7 +162,7 @@ public sealed class StationsControllerTests
         StationEntity updatedStationEntity = stationEntityBeforeUpdate with
         {
             IpAddress = randomizer.NextIpAddress(),
-            LastHeartbeat = randomizer.NextDateTime()   // Successive heartbeat timestamps do not need to be chronological.
+            LastHeartbeat = randomizer.NextDateTimeOffset()   // Successive heartbeat timestamps do not need to be chronological.
         };
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
@@ -189,18 +187,15 @@ public sealed class StationsControllerTests
                 ipAddress: updatedStationEntity.IpAddress))
             .ReturnsAsync(updatedStationEntity);
 
-        var timestampProviderStub = new Mock<ITimestampProvider>();
-
-        timestampProviderStub.Setup(stub => stub
-            .GetUtcNow())
-            .Returns(updatedStationEntity.LastHeartbeat);
+        var timeProviderStub = new FakeTimeProvider();
+        timeProviderStub.SetUtcNow(updatedStationEntity.LastHeartbeat);
 
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerMock);
 
         var request = new StationRegistrationRequest(updatedStationEntity.MacAddress);
@@ -236,14 +231,13 @@ public sealed class StationsControllerTests
             TestDataGenerator.CreateHttpContextAccessorFake(newStationEntity.IpAddress);
 
         var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var timestampProviderStub = new Mock<ITimestampProvider>();
-
+        var timeProviderStub = new FakeTimeProvider();
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerMock);
 
         var request = new StationRegistrationRequest(newStationEntity.MacAddress);
@@ -270,7 +264,7 @@ public sealed class StationsControllerTests
 
         StationEntity updatedStationEntity = stationEntityBeforeUpdate with
         {
-            LastHeartbeat = randomizer.NextDateTime()   // Successive heartbeat timestamps do not need to be chronological.
+            LastHeartbeat = randomizer.NextDateTimeOffset()   // Successive heartbeat timestamps do not need to be chronological.
         };
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
@@ -294,18 +288,15 @@ public sealed class StationsControllerTests
                 lastHeartbeat: updatedStationEntity.LastHeartbeat))
             .ReturnsAsync(updatedStationEntity);
 
-        var timestampProviderStub = new Mock<ITimestampProvider>();
-
-        timestampProviderStub.Setup(stub => stub
-            .GetUtcNow())
-            .Returns(updatedStationEntity.LastHeartbeat);
+        var timeProviderStub = new FakeTimeProvider();
+        timeProviderStub.SetUtcNow(updatedStationEntity.LastHeartbeat);
 
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerMock);
 
         IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
@@ -341,18 +332,17 @@ public sealed class StationsControllerTests
 
         StationEntity updatedStationEntity = stationEntity with
         {
-            LastHeartbeat = randomizer.NextDateTime()   // Successive heartbeat timestamps do not need to be chronological.
+            LastHeartbeat = randomizer.NextDateTimeOffset()   // Successive heartbeat timestamps do not need to be chronological.
         };
 
         var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var timestampProviderStub = new Mock<ITimestampProvider>();
-
+        var timeProviderStub = new FakeTimeProvider();
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryStub.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerMock);
 
         IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
@@ -375,15 +365,13 @@ public sealed class StationsControllerTests
             TestDataGenerator.CreateHttpContextAccessorFake(unregisteredStationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
-
-        var timestampProviderStub = new Mock<ITimestampProvider>();
-
+        var timeProviderStub = new FakeTimeProvider();
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
-            timestampProviderStub.Object,
+            timeProviderStub,
             loggerMock);
 
         IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();

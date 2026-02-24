@@ -5,7 +5,6 @@ using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Services;
 using SmartHome.Server.Services.Processors;
-using System.Diagnostics.Metrics;
 
 namespace SmartHome.UnitTests.Server.Services;
 
@@ -96,10 +95,11 @@ public sealed class BackgroundProcessorServiceTests
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
 
-    [Test]
-    public void InstantiationImpossibleUsingZeroServiceExecutionInterval()
+    [TestCase(0)]
+    [TestCase(-1)]
+    public void InstantiationImpossibleUsingInvalidExecutionInterval(long serviceExecutionInterval) // Given in microseconds.
     {
-        var serviceExecutionInterval = TimeSpan.Zero;
+        var executionInterval = TimeSpan.FromMicroseconds(serviceExecutionInterval);
 
         var serviceProcessorStub = new Mock<IBackgroundServiceProcessor>();
         var timeProviderStub = new FakeTimeProvider();
@@ -108,25 +108,7 @@ public sealed class BackgroundProcessorServiceTests
         TestDelegate actionUnderTest = () => new BackgroundProcessorService(
                 serviceProcessorStub.Object,
                 timeProviderStub,
-                serviceExecutionInterval,
-                loggerStub);
-
-        Assert.Throws<ArgumentOutOfRangeException>(actionUnderTest);
-    }
-
-    [Test]
-    public void InstantiationImpossibleUsingNegativeServiceExecutionInterval()
-    {
-        var serviceExecutionInterval = TimeSpan.FromMicroseconds(-1);
-
-        var timeProviderStub = new FakeTimeProvider();
-        var serviceProcessorStub = new Mock<IBackgroundServiceProcessor>();
-        var loggerStub = new FakeLogger<BackgroundProcessorService>();
-
-        TestDelegate actionUnderTest = () => new BackgroundProcessorService(
-                serviceProcessorStub.Object,
-                timeProviderStub,
-                serviceExecutionInterval,
+                executionInterval,
                 loggerStub);
 
         Assert.Throws<ArgumentOutOfRangeException>(actionUnderTest);

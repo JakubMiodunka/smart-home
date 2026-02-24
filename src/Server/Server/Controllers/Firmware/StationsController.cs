@@ -15,7 +15,7 @@ public class StationsController : FirmwareController
 {
     #region Properties
     private readonly IStationsRepository _stationsRepository;
-    private readonly ITimestampProvider _timestampProvider;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<StationsController> _logger;
     #endregion
 
@@ -29,8 +29,8 @@ public class StationsController : FirmwareController
     /// <param name="stationsRepository">
     /// Stations repository which shall be used by this controller.
     /// </param>
-    /// <param name="timestampProvider">
-    /// Timestamp source which shall be used by this controller.
+    /// <param name="timeProvider">
+    /// Time reference shall be used by the instance to coordinate time-based operations.
     /// </param>
     /// <param name="logger">
     /// Logger which shall be used by this controller.
@@ -41,7 +41,7 @@ public class StationsController : FirmwareController
     public StationsController(
         IHttpContextAccessor httpContextAccessor,
         IStationsRepository stationsRepository,
-        ITimestampProvider timestampProvider,
+        TimeProvider timestampProvider,
         ILogger<StationsController> logger)
         : base(httpContextAccessor)
     {
@@ -50,7 +50,7 @@ public class StationsController : FirmwareController
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         _stationsRepository = stationsRepository;
-        _timestampProvider = timestampProvider;
+        _timeProvider = timestampProvider;
         _logger = logger;
     }
     #endregion
@@ -94,7 +94,7 @@ public class StationsController : FirmwareController
             await _stationsRepository.CreateStationAsync(
                 request.MacAddress,
                 stationIpAddress,
-                _timestampProvider.GetUtcNow());
+                _timeProvider.GetUtcNow());
 
             _logger.LogInformation("Station registration successful:");
 
@@ -104,7 +104,7 @@ public class StationsController : FirmwareController
         _logger.LogDebug("Station entity found: Id=[{Id}]", knownStationEntity.Id);
         _logger.LogDebug("Registering station as already known device:");
 
-        DateTime heartbeatTimestamp = _timestampProvider.GetUtcNow();
+        DateTimeOffset heartbeatTimestamp = _timeProvider.GetUtcNow();
 
         _logger.LogDebug(
             "Updating station details: IpAddress=[{IpAddress}], LastHeartbeat=[{LastHeartbeat}]",
@@ -161,7 +161,7 @@ public class StationsController : FirmwareController
 
         _logger.LogDebug("Station entity found: Id=[{Id}]", knownStationEntity.Id);
 
-        DateTime heartbeatTimestamp = _timestampProvider.GetUtcNow();
+        DateTimeOffset heartbeatTimestamp = _timeProvider.GetUtcNow();
 
         _logger.LogDebug("Updating station details: Timestamp=[{Timestamp}]", heartbeatTimestamp);
 

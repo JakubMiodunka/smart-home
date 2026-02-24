@@ -30,7 +30,6 @@ builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvide
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<ISwitchManagerFactory>(new SwitchManagerFactory());
-builder.Services.AddSingleton<ITimestampProvider, TimestampProvider>(); // TODO: Remove TimestampProvider entirely.
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHostedService(serviceProvider =>
@@ -38,7 +37,7 @@ builder.Services.AddHostedService(serviceProvider =>
     var serviceProcessor = new HeartbeatMonitoringServiceProcessor(
             serviceProvider.GetRequiredService<IStationsRepository>(),
             serviceProvider.GetRequiredService<ISwitchesRepository>(),
-            serviceProvider.GetRequiredService<ITimestampProvider>(),
+            serviceProvider.GetRequiredService<TimeProvider>(),
             TimeSpan.FromSeconds(60),   // TODO: Move this value to some configuration file.
             serviceProvider.GetRequiredService<ILogger<HeartbeatMonitoringServiceProcessor>>());
 
