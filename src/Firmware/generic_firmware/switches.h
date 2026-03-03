@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266WiFiMulti.h>
 
 #include "requests.h"
@@ -36,7 +37,7 @@ struct Switch {
 };
 
 /// <summary>
-/// Configures switcg GIOP pin as output.
+/// Configures switch GPIO pin as output.
 /// </summary>
 /// <param name="switchRef">
 /// Switch representation used to initialize the digital pin.
@@ -71,7 +72,7 @@ bool getSwitchState(const Switch& switchRef);
 void setSwitchState(Switch& switchRef, const bool expectedState);
 
 /// <summary>
-/// Attempts to register a single switch on the server.
+/// Attempts to register a single switch on the remote server.
 /// </summary>
 /// <remarks>
 /// This function changes state of provided <paramref name="switchRef"/> instance
@@ -85,12 +86,12 @@ void setSwitchState(Switch& switchRef, const bool expectedState);
 /// State of GPIO pin will be updated according to received server response.
 /// </param>
 /// <returns>
-/// True if the attempt was successful, false otherwise.
+/// <see langword="true"/> if the attempt was successful, <see langword="false"/> otherwise.
 /// </returns>
 bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef);
 
 /// <summary>
-/// Attempts to update a single switch details on the server.
+/// Attempts to update a single switch details on the remote server.
 /// </summary>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.
@@ -99,7 +100,7 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef);
 /// The switch object which state shall be updated.
 /// </param>
 /// <returns>
-/// True if the attempt was successful, false otherwise.
+/// <see langword="true"/> if the attempt was successful, <see langword="false"/> otherwise.
 /// </returns>
 bool tryUpdateSwitch(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef);
 

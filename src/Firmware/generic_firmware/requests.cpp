@@ -26,8 +26,12 @@ static const char* toHttpMethodName(const HttpMethod httpMethod) {
   return (0  <= httpMethod && httpMethod <= 4) ? names[httpMethod] : "UNKNOWN";
 }
 
-String getBaseUrl() {
-  return String(PROTOCOL) + "://" + SERVER_IP_ADDRESS + ":" + String(SERVER_PORT) + "/api/firmware/v" + String(SERVER_API_VERSION);
+String getRemoteBaseUrl() {
+  return String(REMOTE_SERVER_PROTOCOL) + "://" + REMOTE_SERVER_IP_ADDRESS + ":" + String(REMOTE_SERVER_PORT) + "/api/firmware/v" + String(REMOTE_SERVER_API_VERSION);
+}
+
+String getLocalBaseUrl() {
+  return "/api/v" + String(LOCAL_SERVER_API_VERSION);
 }
 
 bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode) {

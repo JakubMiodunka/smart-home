@@ -2,6 +2,7 @@
 #include <ArduinoJson.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFiMulti.h>
+#include <ESP8266WebServer.h>
 
 #include "config.h"
 #include "serial_logging.h"
@@ -78,12 +79,12 @@ void setSwitchState(Switch& switchRef, const bool expectedState) {
 bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef) {
   logToSerial(INFO, "Attempting to register switch: LOCAL_ID=[%d]", switchRef.localId);
   
-  if (SERVER_API_VERSION != 1) {
-    logToSerial(ERROR, "Switch registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+  if (REMOTE_SERVER_API_VERSION != 1) {
+    logToSerial(ERROR, "Not supported for specified remote API version: [API_VERSION=%u]", REMOTE_SERVER_API_VERSION);
     return false;
   }
   
-  const String url = getBaseUrl() + "/switches/registration";
+  const String url = getRemoteBaseUrl() + "/switches/registration";
   const HttpMethod httpMethod = PUT;
   JsonDocument request;
   JsonDocument response;
@@ -109,12 +110,12 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef) {
 bool tryUpdateSwitch(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef) {
   logToSerial(INFO, "Attempting to update switch: LOCAL_ID=[%d]", switchRef.localId);
 
-  if (SERVER_API_VERSION != 1) {
-    logToSerial(ERROR, "Updating switch state not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+  if (REMOTE_SERVER_API_VERSION != 1) {
+    logToSerial(ERROR, "Not supported for specified remote API version: [API_VERSION=%u]", REMOTE_SERVER_API_VERSION);
     return false;
   }
 
-  const String url = getBaseUrl() + "/switches/state";
+  const String url = getRemoteBaseUrl() + "/switches/state";
   const HttpMethod httpMethod = PATCH;
   JsonDocument request;
   JsonDocument response;

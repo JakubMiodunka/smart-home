@@ -27,12 +27,12 @@ static void populateStationRegistrationRequest(JsonDocument& request, const Stri
 bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) {
   logToSerial(INFO, "Attempting to register station: MAC_ADDRESS=[%s]", macAddress.c_str());
 
-  if (SERVER_API_VERSION != 1) {
-    logToSerial(ERROR, "Station registration not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+  if (REMOTE_SERVER_API_VERSION != 1) {
+    logToSerial(ERROR, "Not supported for specified remote API version: [API_VERSION=%u]", REMOTE_SERVER_API_VERSION);
     return false;
   }
 
-  const String url = getBaseUrl() + "/stations/registration";
+  const String url = getRemoteBaseUrl() + "/stations/registration";
   const HttpMethod httpMethod = PUT;
   JsonDocument request;
   JsonDocument response;
@@ -55,12 +55,12 @@ bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) 
 bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) {
   logToSerial(INFO, "Attempting to send heartbeat signal:");
 
-  if (SERVER_API_VERSION != 1) {
-    logToSerial(ERROR, "Heartbeat signal not supported for specified API version: [SERVER_API_VERSION=%u]", SERVER_API_VERSION);
+  if (REMOTE_SERVER_API_VERSION != 1) {
+    logToSerial(ERROR, "Not supported for specified remote API version: [API_VERSION=%u]", REMOTE_SERVER_API_VERSION);
     return false;
   }
 
-  const String url = getBaseUrl() + "/stations/heartbeat";
+  const String url = getRemoteBaseUrl() + "/stations/heartbeat";
   const HttpMethod httpMethod = PUT;
   JsonDocument request;
   JsonDocument response;

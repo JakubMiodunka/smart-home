@@ -3,6 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266WebServer.h>
 #include <WiFiClient.h> // TODO: Not sure if required here.
 
 #include "config.h"
@@ -12,42 +13,45 @@
 #include "switches.h"
 #include "requests.h"
 
-// Constraints:
-Switch Switches[] = { {1, LED_BUILTIN, HIGH, true} };
-constexpr size_t NUMBER_OF_SWITCHES = sizeof(Switches)/sizeof(Switch);
-
-// Global variables:
+// Connectivity:
 ESP8266WiFiMulti WiFiManager;
-uint32_t LastHeartbeatTimestamp = 0;  // Given in milliseconds.
+ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
+
+// Peripherals definition:
+Switch Switches[] = { {1, LED_BUILTIN, HIGH, true} };
+
+// Timekeeping:
+uint32_t LastHeartbeatTimestamp = 0;    // Given in milliseconds.
+uint32_t LastLocalApiPollTimestamp = 0; // Given in milliseconds.
 
 // TODO: Add doc-string.
 void registerAll() {
-  logToSerial(INFO, "Attempting to register station on the server.");
+  logToSerial(INFO, "Attempting to register station on the remote server.");
 
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
 
   while (!tryRegisterStation(WiFiManager, macAddress)) {
-    logToSerial(WARNING, "Registration attempt failed: REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+    logToSerial(WARNING, "Registration attempt failed: RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
     delay(REQUESTS_RETRY_INTERVAL);
   }
 
   logToSerial(INFO, "Station registration successful.");
-  logToSerial(INFO, "Attempting to register all switches on the server.");
+  logToSerial(INFO, "Attempting to register all switches on the remote server.");
 
   for (Switch& currentSwitch : Switches) {
     while (!tryRegisterSwitch(WiFiManager, currentSwitch)) {
-      logToSerial(WARNING, "Registration attempt failed. REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+      logToSerial(WARNING, "Registration attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
       delay(REQUESTS_RETRY_INTERVAL);
     }
   }
 
   logToSerial(INFO, "All switches registered successfully.");
-  logToSerial(INFO, "Attempting to updatestate of all switches on the server.");
+  logToSerial(INFO, "Attempting to update state of all switches on the remote server.");
 
   for (const Switch& currentSwitch : Switches) {
     while (!tryUpdateSwitch(WiFiManager, currentSwitch)) {
-      logToSerial(WARNING, "Update attempt failed. REQUESTS_RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+      logToSerial(WARNING, "Update attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
       delay(REQUESTS_RETRY_INTERVAL);
     }
   }
@@ -75,18 +79,29 @@ void setup() {
   WiFiManager.addAP(WIFI_SSID, WIFI_PASSWORD);
   
   while (WiFiManager.run() != WL_CONNECTED) {
-    delay(500);
+    delay(1000);
   }
 
   logToSerial(INFO, "Connection established successfully:");
   logToSerial(DEBUG, "DHCP server assigned IP address to station: IP_ADDRESS=[%s]", WiFi.localIP().toString().c_str());
-  logToSerial(DEBUG, "Measuring WiFi signal strength: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
+  logToSerial(DEBUG, "WiFi signal strength measured: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
 
   registerAll();
+
+  logToSerial(INFO, "Initializing local server API: PORT=[%d]", LOCAL_SERVER_PORT);
+
+  LocalServer.begin();
+  
+  logToSerial(INFO, "Local server API initialized successfully.");
 }
 
 void loop() {
   uint32_t currentTimestamp = millis();
+
+  if (currentTimestamp - LastLocalApiPollTimestamp >= LOCAL_SERVER_API_POLL_INTERVAL) {
+    LocalServer.handleClient();
+    LastLocalApiPollTimestamp = currentTimestamp;
+  }
 
   if (currentTimestamp - LastHeartbeatTimestamp >= HEARTBEAT_INTERVAL) {
     if (!trySendHeartbeatSignal(WiFiManager)) {

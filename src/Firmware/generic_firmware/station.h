@@ -5,7 +5,7 @@
 #include <ESP8266WiFiMulti.h>
 
 /// <summary>
-/// Attempts to register the station on the server.
+/// Attempts to register the station on the remote server.
 /// </summary>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.
@@ -19,7 +19,7 @@
 bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress);
 
 /// <summary>
-/// Attempts to send heartbaet signal to the server.
+/// Attempts to send heartbaet signal to the remote server.
 /// </summary>
 /// <param name="wiFiManager">
 /// Reference to the WiFi manager responsible for maintaining the network connection.

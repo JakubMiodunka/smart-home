@@ -19,12 +19,20 @@ enum HttpMethod {
 };
 
 /// <summary>
-/// Generates base URL for the smart home API dedicated to handling firmware requests.
+/// Generates base URL for endpoints exposed by remote server API.
 /// </summary>
 /// <returns>
-/// The base URL for the smart home API dedicated to handling firmware requests.
+/// The base URL for endpoints exposed by remote server API.
 /// </returns>
-String getBaseUrl();
+String getRemoteBaseUrl();
+
+/// <summary>
+/// Generates base URL for endpoints exposed by local server API.
+/// </summary>
+/// <returns>
+/// The base URL for endpoints exposed by local server API.
+/// </returns>
+String getLocalBaseUrl();
 
 /// <summary>
 /// Sends HTTP request using a specified method and handles the communication lifecycle.
