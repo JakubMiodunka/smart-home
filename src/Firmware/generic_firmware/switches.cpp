@@ -9,75 +9,46 @@
 #include "switches.h"
 #include "requests.h"
 
-/// <summary>
-/// Populates the provided JSON document with switch registration data.
-/// </summary>
-/// <remarks>
-/// Used internally - is not exposed in header file.
-/// </remarks>
-/// <param name="request">
-/// The JSON document to be populated.
-/// </param>
-/// <param name="localId">
-/// The identifier of the switch, unique at the station level.
-/// </param>
-static void populateSwitchRegistrationRequest(JsonDocument& request, byte localId) {
-  request["switchLocalId"] = localId;
+void SwitchRegistrationRequest::populateRequest(JsonDocument& request) const {
+  request["switchLocalId"] = this->switchLocalId;
 }
 
-/// <summary>
-/// Populates the provided JSON document with switch state update data.
-/// </summary>
-/// <remarks>
-/// Used internally - is not exposed in header file.
-/// </remarks>
-/// <param name="request">
-/// The JSON document to be populated.
-/// </param>
-/// <param name="localId">
-/// The identifier of the switch, unique at the station level.
-/// </param>
-/// <param name="switchState">
-/// Logical state of the switch - <see langword="true"/> 
-/// if the switch is closed and current is flowing, <see langword="false"/> otherwise.
-/// </param>
-static void populateUpdateSwitchStateRequest(JsonDocument& request, byte localId, const bool switchState) {
-  request["switchLocalId"] = localId;
-  request["switchState"] = switchState;
+void UpdateSwitchRequest::populateRequest(JsonDocument& request) const {
+  request["switchLocalId"] = this->switchLocalId;
+  request["actualSwitchState"] = this->actualSwitchState;
 }
 
-void initializeSwitch(const Switch& switchRef) {
-  logToSerial(INFO, "Attempting to initialize switch: LOCAL_ID=[%d]", switchRef.localId);
+void Switch::initialize() const {
+  logToSerial(INFO, "Attempting to initialize switch: LOCAL_ID=[%d]", this->localId);
 
-  pinMode(switchRef.pinNumber, OUTPUT);
+  pinMode(this->pinNumber, OUTPUT);
 
-  logToSerial(INFO, "Switch initialization successful: LOCAL_ID=[%d]", switchRef.localId);
-
+  logToSerial(INFO, "Switch initialization successful: LOCAL_ID=[%d]", this->localId);
 }
 
-bool getSwitchState(const Switch& switchRef) {
-  logToSerial(INFO, "Attempting to determine switch state: LOCAL_ID=[%d]", switchRef.localId);
+bool Switch::getState() const {
+  logToSerial(INFO, "Attempting to determine switch state: LOCAL_ID=[%d]", this->localId);
   
-  bool switchState = (switchRef.pinState == HIGH) != switchRef.reversedLogic;
+  bool switchState = (this->pinState == HIGH) != this->reversedLogic;
 
-  logToSerial(INFO, "Switch state determined successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", switchRef.localId, switchState);
+  logToSerial(INFO, "Switch state determined successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", this->localId, switchState);
 
   return switchState;
 }
 
-void setSwitchState(Switch& switchRef, const bool expectedState) {
-  logToSerial(INFO, "Attempting to set switch state: LOCAL_ID=[%d], EXPECTED_STATE=[%d]", switchRef.localId, expectedState);
+void Switch::setState(const bool expectedState) {
+  logToSerial(INFO, "Attempting to set switch state: LOCAL_ID=[%d], EXPECTED_STATE=[%d]", this->localId, expectedState);
 
-  bool pinState = (expectedState == HIGH) != switchRef.reversedLogic;
-  switchRef.pinState = pinState ? HIGH : LOW;
+  bool pinState = expectedState != this->reversedLogic;
+  this->pinState = pinState ? HIGH : LOW;
 
-  digitalWrite(switchRef.pinNumber, switchRef.pinState);
+  digitalWrite(this->pinNumber, this->pinState);
 
-  logToSerial(INFO, "Switch state set successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", switchRef.localId, switchRef.pinState);
+  logToSerial(INFO, "Switch state set successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", this->localId, this->pinState);
 }
 
-bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef) {
-  logToSerial(INFO, "Attempting to register switch: LOCAL_ID=[%d]", switchRef.localId);
+bool Switch::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
+  logToSerial(INFO, "Attempting to register switch: LOCAL_ID=[%d]", this->localId);
   
   if (REMOTE_SERVER_API_VERSION != 1) {
     logToSerial(ERROR, "Not supported for specified remote API version: [API_VERSION=%u]", REMOTE_SERVER_API_VERSION);
@@ -86,29 +57,37 @@ bool tryRegisterSwitch(ESP8266WiFiMulti& wiFiManager, Switch& switchRef) {
   
   const String url = getRemoteBaseUrl() + "/switches/registration";
   const HttpMethod httpMethod = PUT;
+  SwitchRegistrationRequest requestDto = { this->localId };
   JsonDocument request;
   JsonDocument response;
   int httpReturnCode;
-  
-  populateSwitchRegistrationRequest(request, switchRef.localId);
+    
+  requestDto.populateRequest(request);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
   bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_OK;
 
   if (wasOperationSuccessful) {
     bool expectedSwitchState = response["expectedSwitchState"];
-    setSwitchState(switchRef, expectedSwitchState);
+    this->setState(expectedSwitchState);
 
-    logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d]", switchRef.localId);
+    logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d]", this->localId);
   }
   else {
-    logToSerial(WARNING, "Switch registration failed: LOCAL_ID=[%d]", switchRef.localId);
+    logToSerial(WARNING, "Switch registration failed: LOCAL_ID=[%d]", this->localId);
   }
 
   return wasOperationSuccessful;
 }
 
-bool tryUpdateSwitch(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef) {
-  logToSerial(INFO, "Attempting to update switch: LOCAL_ID=[%d]", switchRef.localId);
+void Switch::registerOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
+  while (!this->tryRegisterOnRemoteServer(wiFiManager)) {
+    logToSerial(WARNING, "Registration attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+    delay(REQUESTS_RETRY_INTERVAL);
+  }
+}
+
+bool Switch::tryUpdateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
+  logToSerial(INFO, "Attempting to update switch: LOCAL_ID=[%d]", this->localId);
 
   if (REMOTE_SERVER_API_VERSION != 1) {
     logToSerial(ERROR, "Not supported for specified remote API version: [API_VERSION=%u]", REMOTE_SERVER_API_VERSION);
@@ -117,21 +96,33 @@ bool tryUpdateSwitch(ESP8266WiFiMulti& wiFiManager, const Switch& switchRef) {
 
   const String url = getRemoteBaseUrl() + "/switches/state";
   const HttpMethod httpMethod = PATCH;
+  UpdateSwitchRequest requestDto = { this->localId, this->getState() };
   JsonDocument request;
   JsonDocument response;
   int httpReturnCode;
-  
-  bool switchState = getSwitchState(switchRef);
-  populateUpdateSwitchStateRequest(request, switchRef.localId, switchState);
+
+  requestDto.populateRequest(request);
   sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
   bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
 
   if (wasOperationSuccessful) {
-    logToSerial(INFO, "Switch update successful: LOCAL_ID=[%d]", switchRef.localId);
+    logToSerial(INFO, "Switch update successful: LOCAL_ID=[%d]", this->localId);
   }
   else {
-    logToSerial(WARNING, "Switch update failed: LOCAL_ID=[%d]", switchRef.localId);
+    logToSerial(WARNING, "Switch update failed: LOCAL_ID=[%d]", this->localId);
   }
 
   return wasOperationSuccessful;
+}
+
+void Switch::updateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
+  while (!this->tryUpdateOnRemoteServer(wiFiManager)) {
+    logToSerial(WARNING, "Update attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+    delay(REQUESTS_RETRY_INTERVAL);
+  }
+}
+
+void Switch::setupLocalEndpoint(ESP8266WebServer& server) const {
+  String endpoint = getLocalBaseUrl() + "/switches/" + String(this->localId);
+  // TODO: Implement.
 }

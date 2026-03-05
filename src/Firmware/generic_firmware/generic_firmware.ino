@@ -40,20 +40,14 @@ void registerAll() {
   logToSerial(INFO, "Attempting to register all switches on the remote server.");
 
   for (Switch& currentSwitch : Switches) {
-    while (!tryRegisterSwitch(WiFiManager, currentSwitch)) {
-      logToSerial(WARNING, "Registration attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
-      delay(REQUESTS_RETRY_INTERVAL);
-    }
+    currentSwitch.registerOnRemoteServer(WiFiManager);
   }
 
   logToSerial(INFO, "All switches registered successfully.");
   logToSerial(INFO, "Attempting to update state of all switches on the remote server.");
 
   for (const Switch& currentSwitch : Switches) {
-    while (!tryUpdateSwitch(WiFiManager, currentSwitch)) {
-      logToSerial(WARNING, "Update attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
-      delay(REQUESTS_RETRY_INTERVAL);
-    }
+    currentSwitch.updateOnRemoteServer(WiFiManager);
   }
 
   logToSerial(INFO, "State of all switches updated successfully.");
@@ -69,7 +63,7 @@ void setup() {
   logToSerial(INFO, "Attempting to initialize all switches: COUNT=[%d]", sizeof(Switches)/sizeof(Switch));
 
   for (const Switch& currentSwitch : Switches) {
-    initializeSwitch(currentSwitch);
+    currentSwitch.initialize();
   }
 
   logToSerial(INFO, "All switches initialized successfully.");
