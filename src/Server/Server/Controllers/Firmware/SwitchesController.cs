@@ -69,8 +69,8 @@ public class SwitchesController : FirmwareController
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
-    [HttpPut("registration")]
-    public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationRequest request)
+    [HttpPut]
+    public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationStationRequest request)
     {
         _logger.LogInformation(
             "Processing switch registration request: SwitchLocalId=[{SwitchLocalId}]",
@@ -114,7 +114,7 @@ public class SwitchesController : FirmwareController
                 filterByLocalId: true,
                 localId: request.SwitchLocalId);
 
-        SwitchRegistrationResponse response;
+        SwitchRegistrationServerResponse response;
 
         if (knownSwitchEntity is null)
         {
@@ -136,14 +136,14 @@ public class SwitchesController : FirmwareController
 
             _logger.LogDebug("Switch entity created successfully: Id=[{Id}]", newSwitchEntity.Id);
 
-            response = new SwitchRegistrationResponse(DefaultExpectedSwitchState);
+            response = new SwitchRegistrationServerResponse(newSwitchEntity.Id, DefaultExpectedSwitchState);
         }
         else
         {
             _logger.LogDebug("Switch entity found: Id=[{Id}]", knownSwitchEntity.Id);
             _logger.LogDebug("Registering switch as already known device:");
 
-            response = new SwitchRegistrationResponse(knownSwitchEntity.ExpectedState);
+            response = new SwitchRegistrationServerResponse(knownSwitchEntity.Id, knownSwitchEntity.ExpectedState);
         }
 
         _logger.LogInformation("Switch registration successful:");
@@ -154,18 +154,19 @@ public class SwitchesController : FirmwareController
     /// <summary>
     /// Updates the data related to particular electrical switch according to details provided in request body.
     /// </summary>
+    /// <param name="switchId">
+    /// The unique global identifier of the switch.
+    /// </param>
     /// <param name="request">
     /// Data transfer object (DTO) containing details about the switch which shall be updated.
     /// </param>
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
-    [HttpPatch("state")]
-    public async Task<IActionResult> UpdateSwitch([FromBody] SwitchUpdateRequest request)
+    [HttpPatch("{switchId}")]
+    public async Task<IActionResult> UpdateSwitch(long switchId, [FromBody] SwitchUpdateStationRequest request)
     {
-        _logger.LogInformation(
-            "Processing switch update request: SwitchLocalId=[{SwitchLocalId}]",
-            request.SwitchLocalId);
+        _logger.LogInformation("Processing switch update request: SwitchId=[{SwitchId}]", switchId);
 
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
@@ -194,16 +195,16 @@ public class SwitchesController : FirmwareController
         _logger.LogDebug("Parent station entity found: Id=[{Id}]", parentStationEntity.Id);
 
         _logger.LogDebug(
-            "Searching for switch entity: StationId=[{StationId}], LocalId=[{LocalId}]",
+            "Searching for switch entity: StationId=[{StationId}], SwitchId=[{SwitchId}]",
             parentStationEntity.Id,
-            request.SwitchLocalId);
+            switchId);
 
         SwitchEntity? knownSwitchEntity =
             await _switchesRepository.GetSingleSwitchAsync(
+                filterById: true,
+                id: switchId,
                 filterByStationId: true,
-                stationId: parentStationEntity.Id,
-                filterByLocalId: true,
-                localId: request.SwitchLocalId);
+                stationId: parentStationEntity.Id);
 
         if (knownSwitchEntity is null)
         {
