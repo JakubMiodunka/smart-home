@@ -1,5 +1,4 @@
 using Dapper;
-using SmartHome.Server.Data;
 using SmartHome.Server.Data.Converters.JsonConverters;
 using SmartHome.Server.Data.Converters.TypeHandlers;
 using SmartHome.Server.Data.Database;
@@ -19,9 +18,9 @@ SqlMapper.AddTypeHandler(new IPAddressHandler());
 
 // JSON serializer configuration
 builder.Services.AddControllers().AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
-    });
+{
+    options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
+});
 
 // Dependency injection configuration
 builder.Services.AddHttpContextAccessor();

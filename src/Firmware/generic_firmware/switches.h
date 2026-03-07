@@ -33,7 +33,7 @@ struct SwitchRegistrationServerResponse {
   /// <summary>
   /// The identifier assigned to the switch by remote server, unique within the system.
   /// </summary>
-  uint8_t switchGlobalId;
+  uint32_t switchId;
 
   /// <summary>
   /// Logical state of the switch to which shall be set - <see langword="true"/> if the switch
@@ -110,7 +110,7 @@ struct Switch {
   /// <remarks>
   /// A value of zero indicates that the identifier has not yet been assigned.
   /// </remarks>
-  uint32_t globalId = 0;
+  uint32_t id = 0;
 
   /// <summary>
   /// The identifier of the switch, unique only at the station level.
