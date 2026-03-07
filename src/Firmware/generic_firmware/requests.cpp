@@ -30,7 +30,7 @@ String getRemoteBaseUrl() {
   return String(REMOTE_SERVER_PROTOCOL) + "://" + REMOTE_SERVER_IP_ADDRESS + ":" + String(REMOTE_SERVER_PORT) + "/api/firmware/v" + String(REMOTE_SERVER_API_VERSION);
 }
 
-String getLocalBaseUrl() {
+String getLocalEndpointPrefix() {
   return "/api/v" + String(LOCAL_SERVER_API_VERSION);
 }
 
@@ -93,12 +93,8 @@ bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const Http
     String serializedResponse = httpClient.getString();
     logToSerial(DEBUG, "Received response: HTTP_RETURN_CODE=[%i], RESPONSE_BODY=[%s]", httpReturnCode, serializedResponse.c_str());
 
-    if (serializedResponse.length() != 0) {
-      DeserializationError deserializationError = deserializeJson(response, serializedResponse);
-      
-      if (deserializationError) {
-        logToSerial(ERROR, "Response deserialization failed: ERROR_MESSAGE=[%s]", deserializationError.c_str());
-      }
+    if (serializedResponse.length() > 0) {
+      tryParseJsonString(serializedResponse, response);
     }
   }
   else {

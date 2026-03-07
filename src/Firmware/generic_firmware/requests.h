@@ -27,12 +27,12 @@ enum HttpMethod {
 String getRemoteBaseUrl();
 
 /// <summary>
-/// Generates base URL for endpoints exposed by local server API.
+/// Generates prefix for all endpoints exposed by local server API.
 /// </summary>
 /// <returns>
 /// The base URL for endpoints exposed by local server API.
 /// </returns>
-String getLocalBaseUrl();
+String getLocalEndpointPrefix();
 
 /// <summary>
 /// Attempts to parse a JSON string into <see cref="JsonDocument"/> instance.
@@ -46,7 +46,7 @@ String getLocalBaseUrl();
 /// <returns>
 /// <see langword="true"/> if parsing was successful and all fields are valid, <see langword="false"/> otherwise.
 /// </returns>
-bool tryParseJsonString(const String jsonString, JsonDocument& jsonDocument); // TODO: Use it more extensively in code.
+bool tryParseJsonString(const String jsonString, JsonDocument& jsonDocument);
 
 /// <summary>
 /// Sends HTTP request using a specified method and handles the communication lifecycle.

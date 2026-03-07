@@ -185,7 +185,7 @@ void Switch::updateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
 }
 
 void Switch::setupControlEndpoint(ESP8266WebServer& server) {
-  String endpoint = getLocalBaseUrl() + "/switches/" + String(this->localId);
+  String endpoint = getLocalEndpointPrefix() + "/switches/" + String(this->localId);
   logToSerial(INFO, "Attempting to setup an endpoint: ENDPOINT=[%s]", endpoint.c_str());
 
   server.on(endpoint, HTTP_PATCH, [this, &server]() {
