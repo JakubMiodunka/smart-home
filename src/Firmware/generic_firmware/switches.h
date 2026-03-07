@@ -9,9 +9,9 @@
 #include "requests.h"
 
 /// <summary>
-/// Data transfer object (DTO) for registering a switch on the remote server.
+/// Data transfer object (DTO) representing the request for switch registration on the remote server.
 /// </summary>
-struct SwitchRegistrationRequest {
+struct SwitchRegistrationStationRequest {
   /// <summary>
   /// The identifier of the switch, unique at the station level.
   /// </summary>
@@ -20,21 +20,46 @@ struct SwitchRegistrationRequest {
   /// <summary>
   /// Populates the provided JSON document with switch registration data.
   /// </summary>
-  /// <param name="request">
+  /// <param name="jsonDocument">
   /// The JSON document to be populated.
   /// </param>
-  void populateRequest(JsonDocument& request) const;
+  void toJsonDocument(JsonDocument& jsonDocument) const;
+};
+
+/// <summary>
+/// Data transfer object (DTO) representing the server's response to a switch registration request.
+/// </summary>
+struct SwitchRegistrationServerResponse {
+  /// <summary>
+  /// The identifier assigned to the switch by remote server, unique within the system.
+  /// </summary>
+  uint8_t switchGlobalId;
+
+  /// <summary>
+  /// Logical state of the switch to which shall be set - <see langword="true"/> if the switch
+  /// shall be closed and current shall flow, <see langword="false"/> otherwise.
+  /// </summary>
+  bool expectedSwitchState;
+
+  /// <summary>
+  /// Attempts to parse a JSON document into DTO instance.
+  /// </summary>
+  /// <param name="jsonString">
+  /// JSON document to be parsed.
+  /// </param>
+  /// <param name="response">
+  /// Reference to the object where the parsing result shall be stored.
+  /// </param>
+  /// <returns>
+  /// <see langword="true"/> if parsing was successful and all fields are valid, <see langword="false"/> otherwise.
+  /// </returns>
+  static bool tryParseJsonDocument(const JsonDocument& jsonDocument, SwitchRegistrationServerResponse& response);
 };
 
 /// <summary>
 /// Data transfer object (DTO) for updating switch details on the remote server.
 /// </summary>
-struct UpdateSwitchRequest {
-  /// <summary>
-  /// The identifier of the switch, unique at the station level.
-  /// </summary>
-  uint8_t switchLocalId;
-
+struct UpdateSwitchStationRequest {
   /// <summary>
   /// Current logical state of the switch - <see langword="true"/> if the switch
   /// is closed and current is flowing, <see langword="false"/> otherwise.
@@ -47,37 +72,32 @@ struct UpdateSwitchRequest {
   /// <param name="request">
   /// The JSON document to be populated.
   /// </param>
-  void populateRequest(JsonDocument& request) const;
+  void toJsonDocument(JsonDocument& jsonDocument) const;
 };
 
 /// <summary>
-/// Data transfer object (DTO) sent from remote server to control specified switch.
+/// Data transfer object (DTO) sent from remote server to control specific switch.
 /// </summary>
-struct SwitchCommandRequest {
+struct UpdateSwitchServerRequest {
   /// <summary>
-  /// The identifier of the switch, unique at the station level.
-  /// </summary>
-  uint8_t switchLocalId;
-
-  /// <summary>
-  /// eEpected logical state of the switch - <see langword="true"/> if the switch
-  /// is shall be and current shall flow, <see langword="false"/> otherwise.
+  /// Logical state of the switch to which shall be set - <see langword="true"/> if the switch
+  /// shall be closed and current shall flow, <see langword="false"/> otherwise.
   /// </summary>
   bool expectedSwitchState;
 
   /// <summary>
-  /// Attempts to parse a JSON string into DTO instance.
+  /// Attempts to parse a JSON document into DTO instance.
   /// </summary>
-  /// <param name="json">
-  /// JSON-formatted string to be parsed.
+  /// <param name="jsonDocument">
+  /// JSON document to be parsed.
   /// </param>
-  /// <param name="output">
+  /// <param name="request">
   /// Reference to the object where the parsing result shall be stored.
   /// </param>
   /// <returns>
   /// <see langword="true"/> if parsing was successful and all fields are valid, <see langword="false"/> otherwise.
   /// </returns>
-  static bool tryParse(const String& jsonString, SwitchCommandRequest& output); // TODO: Implement.
+  static bool tryParseJsonDocument(const JsonDocument& jsonDocument, UpdateSwitchServerRequest& request);
 };
 
 /// <summary>
@@ -85,9 +105,20 @@ struct SwitchCommandRequest {
 /// </summary>
 struct Switch {
   /// <summary>
-  /// The identifier of the switch, unique at the station level.
+  /// The identifier of the switch, unique within the system.
   /// </summary>
-  uint8_t localId;
+  /// <remarks>
+  /// A value of zero indicates that the identifier has not yet been assigned.
+  /// </remarks>
+  uint32_t globalId = 0;
+
+  /// <summary>
+  /// The identifier of the switch, unique only at the station level.
+  /// </summary>
+  /// <remarks>
+  /// A value of zero indicates that the identifier has not yet been assigned.
+  /// </remarks>
+  uint8_t localId = 0;
 
   /// <summary>
   /// GPIO pin number the switch is connected to.
@@ -152,7 +183,7 @@ struct Switch {
   /// Registers the switch on the remote server.
   /// </summary>
   /// <remarks>
-  /// Implements a retry policy, blocking execution until the update 
+  /// Implements a retry policy, blocking execution until the request 
   /// is successfully acknowledged by the remote server.
   /// </remarks>
   /// <param name="wiFiManager">
@@ -189,7 +220,7 @@ struct Switch {
   /// <param name="server">
   /// Reference to the web server where the endpoint shall be registered.
   /// </param>
-  void setupLocalEndpoint(ESP8266WebServer& server) const;
+  void setupControlEndpoint(ESP8266WebServer& server);
 };
 
 #endif

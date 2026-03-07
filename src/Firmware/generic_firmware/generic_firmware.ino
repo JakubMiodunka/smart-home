@@ -18,6 +18,7 @@ ESP8266WiFiMulti WiFiManager;
 ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
 // Peripherals definition:
+Station ThisStation = {};
 Switch Switches[] = { {1, LED_BUILTIN, HIGH, true} };
 
 // Timekeeping:
@@ -26,17 +27,11 @@ uint32_t LastLocalApiPollTimestamp = 0; // Given in milliseconds.
 
 // TODO: Add doc-string.
 void registerAll() {
-  logToSerial(INFO, "Attempting to register station on the remote server.");
-
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
 
-  while (!tryRegisterStation(WiFiManager, macAddress)) {
-    logToSerial(WARNING, "Registration attempt failed: RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
-    delay(REQUESTS_RETRY_INTERVAL);
-  }
+  ThisStation.registerOnRemoteServer(WiFiManager, macAddress);
 
-  logToSerial(INFO, "Station registration successful.");
   logToSerial(INFO, "Attempting to register all switches on the remote server.");
 
   for (Switch& currentSwitch : Switches) {
@@ -84,7 +79,11 @@ void setup() {
 
   logToSerial(INFO, "Initializing local server API: PORT=[%d]", LOCAL_SERVER_PORT);
 
-  LocalServer.begin();
+  for (Switch& currentSwitch : Switches) {
+    currentSwitch.setupControlEndpoint(LocalServer);
+  }
+
+  LocalServer.begin(LOCAL_SERVER_PORT);
   
   logToSerial(INFO, "Local server API initialized successfully.");
 }
@@ -98,7 +97,7 @@ void loop() {
   }
 
   if (currentTimestamp - LastHeartbeatTimestamp >= HEARTBEAT_INTERVAL) {
-    if (!trySendHeartbeatSignal(WiFiManager)) {
+    if (!ThisStation.trySendHeartbeatSignal(WiFiManager)) {
       registerAll();
     }
     LastHeartbeatTimestamp = currentTimestamp;

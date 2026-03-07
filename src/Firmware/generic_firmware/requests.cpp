@@ -34,6 +34,19 @@ String getLocalBaseUrl() {
   return "/api/v" + String(LOCAL_SERVER_API_VERSION);
 }
 
+bool tryParseJsonString(const String jsonString, JsonDocument& jsonDocument) {
+  logToSerial(DEBUG, "Attempting to parse JSON string: JSON_STRING=[%s]", jsonString.c_str());
+
+  DeserializationError deserializationError = deserializeJson(jsonDocument, jsonString);   
+  if (deserializationError) {
+    logToSerial(ERROR, "Parsing JSON string failed: ERROR_MESSAGE=[%s]", deserializationError.c_str());
+    return false;
+  }
+
+  logToSerial(DEBUG, "Parsing JSON string successful:");
+  return true;
+}
+
 bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode) {
   wl_status_t connectionStatus = wiFiManager.run();
   if (connectionStatus != WL_CONNECTED) {

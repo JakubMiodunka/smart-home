@@ -5,28 +5,63 @@
 #include <ESP8266WiFiMulti.h>
 
 /// <summary>
-/// Attempts to register the station on the remote server.
+/// Data transfer object (DTO) representing the request for station registration on the remote server.
 /// </summary>
-/// <param name="wiFiManager">
-/// Reference to the WiFi manager responsible for maintaining the network connection.
-/// </param>
-/// <param name="macAddress">
-/// The MAC address of the station.
-/// </param>
-/// <returns>
-/// True if the attempt was successful, false otherwise.
-/// </returns>
-bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress);
+struct StationRegistrationStationRequest {
+  /// <summary>
+  /// Station MAC address.
+  /// </summary>
+  String stationMacAddress;
+  
+  /// <summary>
+  /// Populates the provided JSON document with station registration data.
+  /// </summary>
+  /// <param name="jsonDocument">
+  /// The JSON document to be populated.
+  /// </param>
+  void toJsonDocument(JsonDocument& jsonDocument) const;
+};
 
-/// <summary>
-/// Attempts to send heartbaet signal to the remote server.
-/// </summary>
-/// <param name="wiFiManager">
-/// Reference to the WiFi manager responsible for maintaining the network connection.
-/// </param>
-/// <returns>
-/// True if the attempt was successful, false otherwise.
-/// </returns>
-bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager);
+struct Station {
+  /// <summary>
+  /// Attempts to register the station on the remote server.
+  /// </summary>
+  /// <param name="wiFiManager">
+  /// Reference to the WiFi manager responsible for maintaining the network connection.
+  /// </param>
+  /// <param name="macAddress">
+  /// The MAC address of the station.
+  /// </param>
+  /// <returns>
+  /// <see langword="true"/> if the attempt was successful, <see langword="false"/> otherwise.
+  /// </returns>
+  bool tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const;
+
+  /// <summary>
+  /// Registers the station on the remote server.
+  /// </summary>
+  /// <remarks>
+  /// Implements a retry policy, blocking execution until the request 
+  /// is successfully acknowledged by the remote server.
+  /// </remarks>
+  /// <param name="wiFiManager">
+  /// Reference to the WiFi manager responsible for maintaining the network connection.
+  /// </param>
+  /// <param name="macAddress">
+  /// The MAC address of the station.
+  /// </param>
+  void registerOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const;
+
+  /// <summary>
+  /// Attempts to send heartbaet signal to the remote server.
+  /// </summary>
+  /// <param name="wiFiManager">
+  /// Reference to the WiFi manager responsible for maintaining the network connection.
+  /// </param>
+  /// <returns>
+  /// <see langword="true"/> if the attempt was successful, <see langword="false"/> otherwise.
+  /// </returns>
+  bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) const;
+};
 
 #endif

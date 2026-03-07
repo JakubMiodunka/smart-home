@@ -9,13 +9,70 @@
 #include "switches.h"
 #include "requests.h"
 
-void SwitchRegistrationRequest::populateRequest(JsonDocument& request) const {
-  request["switchLocalId"] = this->switchLocalId;
+void SwitchRegistrationStationRequest::toJsonDocument(JsonDocument& jsonDocument) const {
+  jsonDocument["switchLocalId"] = this->switchLocalId;
 }
 
-void UpdateSwitchRequest::populateRequest(JsonDocument& request) const {
-  request["switchLocalId"] = this->switchLocalId;
-  request["actualSwitchState"] = this->actualSwitchState;
+bool SwitchRegistrationServerResponse::tryParseJsonDocument(const JsonDocument& jsonDocument, SwitchRegistrationServerResponse& response) {
+  logToSerial(DEBUG, "Attempting to parse JSON document:");
+
+  static constexpr const char* SWITCH_GLOBAL_ID_KEY = "switchGlobalId";
+  JsonVariantConst switchGlobalIdVariant = jsonDocument[SWITCH_GLOBAL_ID_KEY];
+
+  if (switchGlobalIdVariant.isNull()) {
+    logToSerial(ERROR, "JSON key not found: JSON_KEY=[%s]", SWITCH_GLOBAL_ID_KEY);
+    return false;
+  }
+  
+  if (!switchGlobalIdVariant.is<uint32_t>()) {
+    logToSerial(ERROR, "Type of JSON key invalid: JSON_KEY=[%s], EXPECTED_TYPE=[uint32_t]", SWITCH_GLOBAL_ID_KEY);
+    return false;
+  }
+
+  static constexpr const char* EXPECTED_SWITCH_STATE_KEY = "expectedSwitchState";
+  JsonVariantConst expectedSwitchStateVariant = jsonDocument[EXPECTED_SWITCH_STATE_KEY];
+
+  if (expectedSwitchStateVariant.isNull()) {
+    logToSerial(ERROR, "JSON key not found: JSON_KEY=[%s]", EXPECTED_SWITCH_STATE_KEY);
+    return false;
+  }
+  
+  if (!expectedSwitchStateVariant.is<bool>()) {
+    logToSerial(ERROR, "Type of JSON key invalid: JSON_KEY=[%s], EXPECTED_TYPE=[bool]", EXPECTED_SWITCH_STATE_KEY);
+    return false;
+  }
+
+  response.switchGlobalId = switchGlobalIdVariant.as<uint32_t>();
+  response.expectedSwitchState = expectedSwitchStateVariant.as<bool>();
+
+  logToSerial(DEBUG, "JSON document parsing successful:");
+  return true;
+}
+
+void UpdateSwitchStationRequest::toJsonDocument(JsonDocument& jsonDocument) const {
+  jsonDocument["actualSwitchState"] = this->actualSwitchState;
+}
+
+bool UpdateSwitchServerRequest::tryParseJsonDocument(const JsonDocument& jsonDocument, UpdateSwitchServerRequest &request) {
+  logToSerial(DEBUG, "Attempting to parse JSON document:");
+
+  static constexpr const char* EXPECTED_SWITCH_STATE_KEY = "expectedSwitchState";
+  JsonVariantConst expectedSwitchStateVariant = jsonDocument[EXPECTED_SWITCH_STATE_KEY];
+
+  if (expectedSwitchStateVariant.isNull()) {
+    logToSerial(ERROR, "JSON key not found: JSON_KEY=[%s]", EXPECTED_SWITCH_STATE_KEY);
+    return false;
+  }
+  
+  if (!expectedSwitchStateVariant.is<bool>()) {
+    logToSerial(ERROR, "Type of JSON key invalid: JSON_KEY=[%s], EXPECTED_TYPE=[bool]", EXPECTED_SWITCH_STATE_KEY);
+    return false;
+  }
+
+  request.expectedSwitchState = expectedSwitchStateVariant.as<bool>();
+
+  logToSerial(DEBUG, "JSON deserialization successful:");
+  return true;
 }
 
 void Switch::initialize() const {
@@ -55,28 +112,33 @@ bool Switch::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
     return false;
   }
   
-  const String url = getRemoteBaseUrl() + "/switches/registration";
+  const String url = getRemoteBaseUrl() + "/switches";
   const HttpMethod httpMethod = PUT;
-  SwitchRegistrationRequest requestDto = { this->localId };
-  JsonDocument request;
-  JsonDocument response;
+  SwitchRegistrationStationRequest request = { this->localId };
+  JsonDocument requestJson;
+  request.toJsonDocument(requestJson);
+  JsonDocument responseJson;
   int httpReturnCode;
     
-  requestDto.populateRequest(request);
-  sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpReturnCode);
   bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_OK;
 
-  if (wasOperationSuccessful) {
-    bool expectedSwitchState = response["expectedSwitchState"];
-    this->setState(expectedSwitchState);
+  if (!wasOperationSuccessful) {
+    logToSerial(WARNING, "Switch registration failed: LOCAL_ID=[%d]", this->localId);
+    return false;
+  }
+
+  SwitchRegistrationServerResponse response;
+  if (SwitchRegistrationServerResponse::tryParseJsonDocument(responseJson, response)) {
+    this->globalId = response.switchGlobalId;
+    this->setState(response.expectedSwitchState);
 
     logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d]", this->localId);
-  }
-  else {
-    logToSerial(WARNING, "Switch registration failed: LOCAL_ID=[%d]", this->localId);
+    return true;
   }
 
-  return wasOperationSuccessful;
+  logToSerial(ERROR, "Remote server response parsing failed:");
+  return false;
 }
 
 void Switch::registerOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
@@ -94,15 +156,15 @@ bool Switch::tryUpdateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
     return false;
   }
 
-  const String url = getRemoteBaseUrl() + "/switches/state";
+  const String url = getRemoteBaseUrl() + "/switches/" + String(this->globalId);
   const HttpMethod httpMethod = PATCH;
-  UpdateSwitchRequest requestDto = { this->localId, this->getState() };
-  JsonDocument request;
-  JsonDocument response;
+  UpdateSwitchStationRequest request = { this->getState() };
+  JsonDocument requestJson;
+  request.toJsonDocument(requestJson);
+  JsonDocument responseJson;
   int httpReturnCode;
 
-  requestDto.populateRequest(request);
-  sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpReturnCode);
   bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
 
   if (wasOperationSuccessful) {
@@ -122,7 +184,36 @@ void Switch::updateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
   }
 }
 
-void Switch::setupLocalEndpoint(ESP8266WebServer& server) const {
+void Switch::setupControlEndpoint(ESP8266WebServer& server) {
   String endpoint = getLocalBaseUrl() + "/switches/" + String(this->localId);
-  // TODO: Implement.
+  logToSerial(INFO, "Attempting to setup an endpoint: ENDPOINT=[%s]", endpoint.c_str());
+
+  server.on(endpoint, HTTP_PATCH, [this, &server]() {
+    String requestBody = server.arg("plain");
+    logToSerial(INFO, "Request received: TYPE=[UpdateSwitchServerRequest], BODY=[%s]", requestBody.c_str());
+    
+    JsonDocument requestJson;
+    UpdateSwitchServerRequest request;
+    int httpCode;
+    if (tryParseJsonString(requestBody, requestJson) && 
+        UpdateSwitchServerRequest::tryParseJsonDocument(requestJson, request)) {
+      logToSerial(DEBUG, "Request body parsing successful:");
+
+      this->setState(request.expectedSwitchState);
+    
+      httpCode = HTTP_CODE_NO_CONTENT;
+      logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
+      server.send(httpCode);
+
+      return;
+    }
+
+    logToSerial(ERROR, "Request body parsing failed:");
+
+    httpCode = HTTP_CODE_BAD_REQUEST;
+    logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
+    server.send(httpCode);
+  });
+
+  logToSerial(INFO, "Endpoint setup successful: ENDPOINT=[%s]", endpoint.c_str());
 }

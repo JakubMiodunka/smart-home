@@ -8,23 +8,11 @@
 #include "station.h"
 #include "requests.h"
 
-/// <summary>
-/// Populates the provided JSON document with station registration data.
-/// </summary>
-/// <remarks>
-/// Used internally - is not exposed in header file.
-/// </remarks>
-/// <param name="request">
-/// The JSON document to be populated with registration data.
-/// </param>
-/// <param name="macAddress">
-/// Station MAC address.
-/// </param>
-static void populateStationRegistrationRequest(JsonDocument& request, const String macAddress) {
-  request["macAddress"] = macAddress;
+void StationRegistrationStationRequest::toJsonDocument(JsonDocument& jsonDocument) const {
+  jsonDocument["macAddress"] = this->stationMacAddress;
 }
 
-bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) {
+bool Station::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const {
   logToSerial(INFO, "Attempting to register station: MAC_ADDRESS=[%s]", macAddress.c_str());
 
   if (REMOTE_SERVER_API_VERSION != 1) {
@@ -32,14 +20,15 @@ bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) 
     return false;
   }
 
-  const String url = getRemoteBaseUrl() + "/stations/registration";
+  const String url = getRemoteBaseUrl() + "/stations";
   const HttpMethod httpMethod = PUT;
-  JsonDocument request;
-  JsonDocument response;
+  StationRegistrationStationRequest request = { macAddress };
+  JsonDocument requestJson;
+  request.toJsonDocument(requestJson);
+  JsonDocument responseJson;
   int httpReturnCode;
 
-  populateStationRegistrationRequest(request, macAddress);
-  sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpReturnCode);
   bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
 
   if (wasOperationSuccessful) {
@@ -52,7 +41,14 @@ bool tryRegisterStation(ESP8266WiFiMulti& wiFiManager, const String macAddress) 
   return wasOperationSuccessful;
 }
 
-bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) {
+void Station::registerOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const {
+  while (!this->tryRegisterOnRemoteServer(wiFiManager, macAddress)) {
+    logToSerial(WARNING, "Registration attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
+    delay(REQUESTS_RETRY_INTERVAL);
+  }
+}
+
+bool Station::trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) const {
   logToSerial(INFO, "Attempting to send heartbeat signal:");
 
   if (REMOTE_SERVER_API_VERSION != 1) {
@@ -62,11 +58,11 @@ bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) {
 
   const String url = getRemoteBaseUrl() + "/stations/heartbeat";
   const HttpMethod httpMethod = PUT;
-  JsonDocument request;
-  JsonDocument response;
+  JsonDocument requestJson;
+  JsonDocument responseJson;
   int httpReturnCode;
 
-  sendHttpRequest(wiFiManager, url, httpMethod, request, response, httpReturnCode);
+  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpReturnCode);
   bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
 
   if (wasOperationSuccessful) {

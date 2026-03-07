@@ -35,6 +35,20 @@ String getRemoteBaseUrl();
 String getLocalBaseUrl();
 
 /// <summary>
+/// Attempts to parse a JSON string into <see cref="JsonDocument"/> instance.
+/// </summary>
+/// <param name="jsonString">
+/// JSON string to be parsed.
+/// </param>
+/// <param name="jsonDocument">
+/// Reference to <see cref="JsonDocument"/> instance where the parsing result shall be stored.
+/// </param>
+/// <returns>
+/// <see langword="true"/> if parsing was successful and all fields are valid, <see langword="false"/> otherwise.
+/// </returns>
+bool tryParseJsonString(const String jsonString, JsonDocument& jsonDocument); // TODO: Use it more extensively in code.
+
+/// <summary>
 /// Sends HTTP request using a specified method and handles the communication lifecycle.
 /// </summary>
 /// <param name="wiFiManager">
