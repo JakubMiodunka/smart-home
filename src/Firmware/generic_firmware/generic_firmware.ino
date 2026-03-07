@@ -19,7 +19,7 @@ ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
 // Peripherals definition:
 Station ThisStation = {};
-Switch Switches[] = { {1, LED_BUILTIN, HIGH, true} };
+Switch Switches[] = { {0, 1, LED_BUILTIN, HIGH, true} }; // TODO :Where is global ID?????
 
 // Timekeeping:
 uint32_t LastHeartbeatTimestamp = 0;    // Given in milliseconds.
@@ -49,12 +49,10 @@ void registerAll() {
 }
 
 void setup() {
-  logToSerial(INFO, "Attempting to initialize serial port: BAUD_RATE=[%ul]", SERIAL_PORT_BAUD_RATE);
-
   Serial.begin(SERIAL_PORT_BAUD_RATE);
   Serial.println();
 
-  logToSerial(INFO, "Serial port to initialization successful:");
+  logToSerial(INFO, "Serial port to initialization successful: BAUD_RATE=[%ul]", SERIAL_PORT_BAUD_RATE);
   logToSerial(INFO, "Attempting to initialize all switches: COUNT=[%d]", sizeof(Switches)/sizeof(Switch));
 
   for (const Switch& currentSwitch : Switches) {
