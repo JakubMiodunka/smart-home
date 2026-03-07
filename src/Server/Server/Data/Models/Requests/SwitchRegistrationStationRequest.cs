@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Requests;
 
@@ -12,4 +11,4 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <param name="SwitchLocalId">
 /// The identifier of the switch, unique only at the station level.
 /// </param>
-public sealed record SwitchRegistrationRequest([Range(1, byte.MaxValue)] byte SwitchLocalId);
+public sealed record SwitchRegistrationStationRequest([Range(1, byte.MaxValue)] byte SwitchLocalId);

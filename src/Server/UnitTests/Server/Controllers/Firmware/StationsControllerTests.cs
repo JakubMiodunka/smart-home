@@ -135,7 +135,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationRequest(newStationEntity.MacAddress);
+        var request = new StationRegistrationStationRequest(newStationEntity.MacAddress);
         IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         stationsRepositoryMock.Verify(mock => mock
@@ -198,7 +198,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationRequest(updatedStationEntity.MacAddress);
+        var request = new StationRegistrationStationRequest(updatedStationEntity.MacAddress);
         IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         stationsRepositoryMock.Verify(mock => mock
@@ -240,7 +240,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationRequest(newStationEntity.MacAddress);
+        var request = new StationRegistrationStationRequest(newStationEntity.MacAddress);
         IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         response.AssertBadRequestResult();

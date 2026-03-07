@@ -9,7 +9,7 @@
 #include "requests.h"
 
 void StationRegistrationStationRequest::toJsonDocument(JsonDocument& jsonDocument) const {
-  jsonDocument["macAddress"] = this->stationMacAddress;
+  jsonDocument["stationMacAddress"] = this->stationMacAddress;
 }
 
 bool Station::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const {

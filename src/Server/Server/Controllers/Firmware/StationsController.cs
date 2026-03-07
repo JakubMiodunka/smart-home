@@ -65,10 +65,10 @@ public class StationsController : FirmwareController
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
-    [HttpPut("registration")]
-    public async Task<IActionResult> RegisterStation([FromBody] StationRegistrationRequest request)
+    [HttpPut]
+    public async Task<IActionResult> RegisterStation([FromBody] StationRegistrationStationRequest request)
     {
-        _logger.LogInformation("Processing station registration request: MacAddress=[{MacAddress}]", request.MacAddress);
+        _logger.LogInformation("Processing station registration request: MacAddress=[{MacAddress}]", request.StationMacAddress);
 
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
@@ -79,12 +79,12 @@ public class StationsController : FirmwareController
         }
 
         _logger.LogDebug("Station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
-        _logger.LogDebug("Searching for station entity: MacAddress=[{MacAddress}]", request.MacAddress);
+        _logger.LogDebug("Searching for station entity: MacAddress=[{MacAddress}]", request.StationMacAddress);
 
         StationEntity? knownStationEntity =
             await _stationsRepository.GetSingleStationAsync(
                 filterByMacAddress: true,
-                macAddress: request.MacAddress);
+                macAddress: request.StationMacAddress);
 
         if (knownStationEntity is null)
         {
@@ -92,7 +92,7 @@ public class StationsController : FirmwareController
             _logger.LogDebug("Registering station as a new device within the system:");
 
             await _stationsRepository.CreateStationAsync(
-                request.MacAddress,
+                request.StationMacAddress,
                 stationIpAddress,
                 _timeProvider.GetUtcNow());
 

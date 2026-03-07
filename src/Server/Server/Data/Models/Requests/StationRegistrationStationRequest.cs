@@ -9,7 +9,7 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <remarks>
 /// Used for data exchange between the server and station firmware.
 /// </remarks>
-/// <param name="MacAddress">
+/// <param name="StationMacAddress">
 /// The MAC address of the station to be registered.
 /// </param>
-public sealed record StationRegistrationRequest([Required] PhysicalAddress MacAddress);
+public sealed record StationRegistrationStationRequest([Required] PhysicalAddress StationMacAddress);
