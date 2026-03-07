@@ -10,13 +10,13 @@ public interface ISwitchManager
     /// <summary>
     /// Changes state of managed electrical switch.
     /// </summary>
-    /// <param name="shallBeClosed">
+    /// <param name="expectedState">
     /// Desired state of electrical switch - <see langword="true"/> if the circuit shall be closed 
     /// and current shall be flowing; <see langword="false"/> otherwise. 
     /// </param>
     /// <see langword="true"/> if operation was successful, <see langword="false"/>otherwise.
     /// </returns>
-    public bool TryChangeState(bool shallBeClosed);
+    public bool TryChangeState(bool expectedState);
 }
 
 /// <summary>
@@ -32,17 +32,17 @@ public sealed class SwitchManager : ISwitchManager
     /// <summary>
     /// Creates new instance of <see cref="SwitchManager"/>.
     /// </summary>
-    /// <param name="managedElectricalSwitch">
+    /// <param name="managedSwitch">
     /// Entity of switch which shall be controlled by the manager.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
-    public SwitchManager(SwitchEntity managedElectricalSwitch)
+    public SwitchManager(SwitchEntity managedSwitch)
     {
-        ArgumentNullException.ThrowIfNull(managedElectricalSwitch);
+        ArgumentNullException.ThrowIfNull(managedSwitch);
 
-        ManagedSwitch = managedElectricalSwitch;
+        ManagedSwitch = managedSwitch;
     }
     #endregion
 
@@ -60,7 +60,6 @@ public sealed class SwitchManager : ISwitchManager
     /// <see langword="true"/> if the command was successfully delivered and acknowledged by the station, 
     /// <see langword="false"/>otherwise.
     /// </returns>
-    public bool TryChangeState(bool expectedState) =>
-        true;
+    public bool TryChangeState(bool expectedState) => true; // TODO: Implement
     #endregion
 }

@@ -16,16 +16,16 @@ void SwitchRegistrationStationRequest::toJsonDocument(JsonDocument& jsonDocument
 bool SwitchRegistrationServerResponse::tryParseJsonDocument(const JsonDocument& jsonDocument, SwitchRegistrationServerResponse& response) {
   logToSerial(DEBUG, "Attempting to parse JSON document:");
 
-  static constexpr const char* SWITCH_GLOBAL_ID_KEY = "switchGlobalId";
-  JsonVariantConst switchGlobalIdVariant = jsonDocument[SWITCH_GLOBAL_ID_KEY];
+  static constexpr const char* SWITCH_ID_KEY = "switchId";
+  JsonVariantConst switchIdVariant = jsonDocument[SWITCH_ID_KEY];
 
-  if (switchGlobalIdVariant.isNull()) {
-    logToSerial(ERROR, "JSON key not found: JSON_KEY=[%s]", SWITCH_GLOBAL_ID_KEY);
+  if (switchIdVariant.isNull()) {
+    logToSerial(ERROR, "JSON key not found: JSON_KEY=[%s]", SWITCH_ID_KEY);
     return false;
   }
   
-  if (!switchGlobalIdVariant.is<uint32_t>()) {
-    logToSerial(ERROR, "Type of JSON key invalid: JSON_KEY=[%s], EXPECTED_TYPE=[uint32_t]", SWITCH_GLOBAL_ID_KEY);
+  if (!switchIdVariant.is<uint32_t>()) {
+    logToSerial(ERROR, "Type of JSON key invalid: JSON_KEY=[%s], EXPECTED_TYPE=[uint32_t]", SWITCH_ID_KEY);
     return false;
   }
 
@@ -42,7 +42,7 @@ bool SwitchRegistrationServerResponse::tryParseJsonDocument(const JsonDocument& 
     return false;
   }
 
-  response.switchGlobalId = switchGlobalIdVariant.as<uint32_t>();
+  response.switchId = switchIdVariant.as<uint32_t>();
   response.expectedSwitchState = expectedSwitchStateVariant.as<bool>();
 
   logToSerial(DEBUG, "JSON document parsing successful:");
@@ -130,7 +130,7 @@ bool Switch::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
 
   SwitchRegistrationServerResponse response;
   if (SwitchRegistrationServerResponse::tryParseJsonDocument(responseJson, response)) {
-    this->globalId = response.switchGlobalId;
+    this->id = response.switchId;
     this->setState(response.expectedSwitchState);
 
     logToSerial(INFO, "Switch registration successful: LOCAL_ID=[%d]", this->localId);
@@ -156,7 +156,7 @@ bool Switch::tryUpdateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
     return false;
   }
 
-  const String url = getRemoteBaseUrl() + "/switches/" + String(this->globalId);
+  const String url = getRemoteBaseUrl() + "/switches/" + String(this->id);
   const HttpMethod httpMethod = PATCH;
   UpdateSwitchStationRequest request = { this->getState() };
   JsonDocument requestJson;
