@@ -14,4 +14,4 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <see langword="true"/> if the circuit is closed and current is flowing;
 /// <see langword="false"/> otherwise.
 /// </param>
-public sealed record SwitchUpdateStationRequest([Required] bool ActualSwitchState);
+public sealed record SwitchUpdateStationRequest(bool ActualSwitchState);
