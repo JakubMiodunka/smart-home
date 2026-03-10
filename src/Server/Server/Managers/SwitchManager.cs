@@ -87,23 +87,21 @@ public sealed class SwitchManager : ISwitchManager
     /// </returns>
     public async Task<bool> TryChangeState(bool expectedState)
     {
-        SwitchEntity? managedSwitch = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: ManagedSwitchId);
-
-        if (managedSwitch is null)
+        if (await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: ManagedSwitchId) is not SwitchEntity managedSwitch)
         {
-            throw new InvalidOperationException();
+            // TODO: Log error.
+            return false;
         }
 
         if (managedSwitch.ActualState == expectedState)
         {
             return true;
         }
-        
-        StationEntity? parentStation = await _stationsRepository.GetSingleStationAsync(filterById: true, id: managedSwitch.StationId);
 
-        if (parentStation is null)
+        if (await _stationsRepository.GetSingleStationAsync(filterById: true, id: managedSwitch.StationId) is not StationEntity parentStation)
         {
-            throw new InvalidOperationException();
+            // TODO: Log error.
+            return false;
         }
 
         HttpClient httpClient = _httpClientFactory.CreateClient();
