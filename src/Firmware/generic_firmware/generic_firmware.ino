@@ -19,7 +19,7 @@ ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
 // Peripherals definition:
 Station ThisStation = {};
-Switch Switches[] = { {0, 1, LED_BUILTIN, HIGH, true} }; // TODO :Where is global ID?????
+Switch Switches[] = { {0, 1, LED_BUILTIN, HIGH, true} };
 
 // Timekeeping:
 uint32_t LastHeartbeatTimestamp = 0;    // Given in milliseconds.
