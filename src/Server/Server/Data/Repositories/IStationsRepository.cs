@@ -54,7 +54,7 @@ public interface IStationsRepository
     /// <returns>
     /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    /// TODO: Maybe implement it as TryGetSingleStationAsync to avoid returning null reference?
+    /// TODO: Use pattern matching instead of sepparete null check.
     Task<StationEntity?> GetSingleStationAsync(
         bool filterById = false, long? id = null,
         bool filterByIpAddress = false, IPAddress? ipAddress = null,
