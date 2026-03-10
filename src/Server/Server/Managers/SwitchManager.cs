@@ -1,10 +1,13 @@
 ﻿using SmartHome.Server.Data.Models.Entities;
+using SmartHome.Server.Data.Models.Requests;
+using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Managers;
 
 /// <summary>
 /// Manager, which is able to control an electrical switch.
 /// </summary>
+/// TODO: Adjust doc-string.
 public interface ISwitchManager
 {
     /// <summary>
@@ -16,33 +19,58 @@ public interface ISwitchManager
     /// </param>
     /// <see langword="true"/> if operation was successful, <see langword="false"/>otherwise.
     /// </returns>
-    public bool TryChangeState(bool expectedState);
+    public Task<bool> TryChangeState(bool expectedState);
 }
 
 /// <summary>
 /// Provides logic to communicate with and control an electrical switch via its associated station.
 /// </summary>
+/// TODO: Add logging.
+/// TODO: Adjust doc-string.
 public sealed class SwitchManager : ISwitchManager
 {
     #region Properties
-    public SwitchEntity ManagedSwitch { get; init; }
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IStationsRepository _stationsRepository;
+    private readonly ISwitchesRepository _switchesRepository;
+
+    public long ManagedSwitchId { get; init; }
     #endregion
 
     #region Instantiation
     /// <summary>
     /// Creates new instance of <see cref="SwitchManager"/>.
     /// </summary>
-    /// <param name="managedSwitch">
+    /// <param name="managedSwitchId">
     /// Entity of switch which shall be controlled by the manager.
+    /// </param>
+    /// <param name="httpClientFactory">
+    /// Factory used to provide <see cref="HttpClient"/> instances
+    /// for HTTP-based communication with station specified in <paramref name="managedSwitch"/>.
+    /// </param>
+    /// <param name="stationsRepository">
+    /// Stations repository which shall be used by this manager.
+    /// </param>
+    /// <param name="switchesRepository">
+    /// 
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
-    public SwitchManager(SwitchEntity managedSwitch)
+    public SwitchManager(
+        long managedSwitchId,
+        IHttpClientFactory httpClientFactory,
+        IStationsRepository stationsRepository,
+        ISwitchesRepository switchesRepository)
     {
-        ArgumentNullException.ThrowIfNull(managedSwitch);
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        ArgumentNullException.ThrowIfNull(stationsRepository);
+        ArgumentNullException.ThrowIfNull(switchesRepository);
 
-        ManagedSwitch = managedSwitch;
+        _httpClientFactory = httpClientFactory;
+        _stationsRepository = stationsRepository;
+        _switchesRepository = switchesRepository;
+        ManagedSwitchId = managedSwitchId;
     }
     #endregion
 
@@ -50,9 +78,6 @@ public sealed class SwitchManager : ISwitchManager
     /// <summary>
     /// Sends a command to station associated with managed electrical switch to change its state.
     /// </summary>
-    /// <remarks>
-    /// TODO: Implement the actual communication with the station.
-    /// </remarks>
     /// <param name="expectedState">
     /// Desired state of electrical switch - <see langword="true"/> if the circuit shall be closed 
     /// and current shall be flowing; <see langword="false"/> otherwise. 
@@ -60,6 +85,43 @@ public sealed class SwitchManager : ISwitchManager
     /// <see langword="true"/> if the command was successfully delivered and acknowledged by the station, 
     /// <see langword="false"/>otherwise.
     /// </returns>
-    public bool TryChangeState(bool expectedState) => true; // TODO: Implement
+    public async Task<bool> TryChangeState(bool expectedState)
+    {
+        SwitchEntity? managedSwitch = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: ManagedSwitchId);
+
+        if (managedSwitch is null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (managedSwitch.ActualState == expectedState)
+        {
+            return true;
+        }
+        
+        StationEntity? parentStation = await _stationsRepository.GetSingleStationAsync(filterById: true, id: managedSwitch.StationId);
+
+        if (parentStation is null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        HttpClient httpClient = _httpClientFactory.CreateClient();
+        httpClient.Timeout = TimeSpan.FromSeconds(2);
+
+        string url = $"http://{parentStation.IpAddress}:80/api/v1/switches/{managedSwitch.LocalId}";
+        var request = new SwitchUpdateStationRequest(expectedState);
+
+        try
+        {
+            // TODO: Cancellation token can be passed here.
+            var response = await httpClient.PutAsJsonAsync(url, request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
     #endregion
 }

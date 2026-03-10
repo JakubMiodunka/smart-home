@@ -22,14 +22,28 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
 });
 
+// TODO: Clean DI configuration.
 // Dependency injection configuration
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHttpContextAccessor();
+
+/*
+ * Register a generic IHttpClientFactory to manage connection pooling for remote Stations.
+ * Each Station feature is implemented in its own dedicated manager class, allowing for 
+ * granular and optimized timeout policies tailored to specific operation types. 
+ * This approach ensures high performance and fast-fail behavior while keeping 
+ * the codebase clean, modular, and DRY.
+ */
+builder.Services.AddHttpClient();
+
 builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
-builder.Services.AddSingleton<ISwitchManagerFactory>(new SwitchManagerFactory());
-builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ISwitchManagerFactory>(serviceProvider => new SwitchManagerFactory(
+    serviceProvider.GetRequiredService<IHttpClientFactory>(),
+    serviceProvider.GetRequiredService<IStationsRepository>(),
+    serviceProvider.GetRequiredService<ISwitchesRepository>()));
 
 builder.Services.AddHostedService(serviceProvider =>
 {  
