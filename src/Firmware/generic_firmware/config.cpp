@@ -1,6 +1,6 @@
 #include "config.h"
 
-const char* REMOTE_SERVER_IP_ADDRESS = "192.168.1.134";
+const char* REMOTE_SERVER_IP_ADDRESS = "192.168.0.199";
 const uint16_t REMOTE_SERVER_PORT = 5236;
 const char* REMOTE_SERVER_PROTOCOL = "http";
 const uint8_t REMOTE_SERVER_API_VERSION = 1;

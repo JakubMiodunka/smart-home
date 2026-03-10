@@ -53,7 +53,7 @@ void UpdateSwitchStationRequest::toJsonDocument(JsonDocument& jsonDocument) cons
   jsonDocument["actualSwitchState"] = this->actualSwitchState;
 }
 
-bool UpdateSwitchServerRequest::tryParseJsonDocument(const JsonDocument& jsonDocument, UpdateSwitchServerRequest &request) {
+bool UpdateSwitchServerRequest::tryParseJsonDocument(const JsonDocument& jsonDocument, UpdateSwitchServerRequest& request) {
   logToSerial(DEBUG, "Attempting to parse JSON document:");
 
   static constexpr const char* EXPECTED_SWITCH_STATE_KEY = "expectedSwitchState";
@@ -78,6 +78,8 @@ bool UpdateSwitchServerRequest::tryParseJsonDocument(const JsonDocument& jsonDoc
 void Switch::initialize() const {
   logToSerial(INFO, "Attempting to initialize switch: LOCAL_ID=[%d]", this->localId);
 
+  // Set GPIO state before enabling driver to prevent a pulse of LOW state during transition.
+  digitalWrite(this->pinNumber, this->pinState);
   pinMode(this->pinNumber, OUTPUT);
 
   logToSerial(INFO, "Switch initialization successful: LOCAL_ID=[%d]", this->localId);
@@ -101,7 +103,7 @@ void Switch::setState(const bool expectedState) {
 
   digitalWrite(this->pinNumber, this->pinState);
 
-  logToSerial(INFO, "Switch state set successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", this->localId, this->pinState);
+  logToSerial(INFO, "Switch state set successfuly: LOCAL_ID=[%d], ACTUAL_STATE=[%d]", this->localId, this->getState());
 }
 
 bool Switch::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
@@ -184,6 +186,7 @@ void Switch::updateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
   }
 }
 
+// TODO: Maybe check aloso IP of the caller to block unwanted API cals made not by the remote server.
 void Switch::setupControlEndpoint(ESP8266WebServer& server) {
   String endpoint = getLocalEndpointPrefix() + "/switches/" + String(this->localId);
   logToSerial(INFO, "Attempting to setup an endpoint: ENDPOINT=[%s]", endpoint.c_str());
