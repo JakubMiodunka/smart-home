@@ -105,21 +105,21 @@ public class SwitchesController : ControllerBase
     public async Task<IActionResult> UpdateSwitch(long switchId, [FromBody] SwitchUpdateClientRequest request)
     {
         SwitchEntity? switchEntity = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: switchId);
-
+    
         if (switchEntity is null)
         {
             return NotFound();
         }
-
+    
         ISwitchManager switchManager = _switchManagerFactory.CreateFor(switchEntity);
-
-        bool wasOperationSuccessful = switchManager.TryChangeState(request.ExpectedSwitchState);
-
+    
+        bool wasOperationSuccessful = await switchManager.TryChangeState(request.ExpectedSwitchState);
+    
         if (wasOperationSuccessful)
         {
             return NoContent();
         }
-
+    
         return StatusCode(StatusCodes.Status503ServiceUnavailable);
     }
 }
