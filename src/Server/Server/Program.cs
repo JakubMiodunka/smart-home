@@ -43,7 +43,8 @@ builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => servicePro
 builder.Services.AddSingleton<ISwitchManagerFactory>(serviceProvider => new SwitchManagerFactory(
     serviceProvider.GetRequiredService<IHttpClientFactory>(),
     serviceProvider.GetRequiredService<IStationsRepository>(),
-    serviceProvider.GetRequiredService<ISwitchesRepository>()));
+    serviceProvider.GetRequiredService<ISwitchesRepository>(),
+    serviceProvider.GetRequiredService<ILoggerFactory>()));
 
 builder.Services.AddHostedService(serviceProvider =>
 {  
