@@ -27,27 +27,36 @@ public sealed class SwitchManagerFactory : ISwitchManagerFactory
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IStationsRepository _stationsRepository;
     private readonly ISwitchesRepository _switchesRepository;
+    private readonly ILoggerFactory _loggerFactory;
     #endregion
 
     #region Instationation
     public SwitchManagerFactory(
         IHttpClientFactory httpClientFactory,
         IStationsRepository stationsRepository,
-        ISwitchesRepository switchesRepository)
+        ISwitchesRepository switchesRepository,
+        ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(httpClientFactory);
         ArgumentNullException.ThrowIfNull(stationsRepository);
         ArgumentNullException.ThrowIfNull(switchesRepository);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _httpClientFactory = httpClientFactory;
         _stationsRepository = stationsRepository;
         _switchesRepository = switchesRepository;
+        _loggerFactory = loggerFactory;
     }
     #endregion
 
     #region Interactions
-    /// <inheritdoc cref="ISwitchManagerFactory"/>
+    /// <inheritdoc cref="ISwitchManagerFactory.CreateFor(SwitchEntity)"/>
     public ISwitchManager CreateFor(SwitchEntity switchEntity) =>
-        new SwitchManager(switchEntity.Id, _httpClientFactory, _stationsRepository, _switchesRepository);
+        new SwitchManager(
+            switchEntity.Id,
+            _httpClientFactory,
+            _stationsRepository,
+            _switchesRepository,
+            _loggerFactory.CreateLogger<SwitchManager>());
     #endregion
 }

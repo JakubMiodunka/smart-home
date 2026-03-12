@@ -3,8 +3,8 @@
 namespace SmartHome.Server.Data.Models.Requests;
 
 /// <summary>
-/// Data transfer object (DTO) representing a request to update
-/// date related to update properties of electrical switch.
+/// Data transfer object (DTO) representing a request created by server client
+/// to update properties of electrical switch on server site.
 /// </summary>
 /// <remarks>
 /// Used for data exchange between the client and server.
