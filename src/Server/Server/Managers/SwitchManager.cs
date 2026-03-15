@@ -6,30 +6,38 @@ using System.Net;
 namespace SmartHome.Server.Managers;
 
 /// <summary>
-/// Manager, which is able to control an electrical switch.
+/// Manages the state of a specific switch on a remote station.
 /// </summary>
-/// TODO: Adjust doc-string.
 public interface ISwitchManager
 {
+    long ManagedSwitchId
+    {
+        get;
+    }
+
     /// <summary>
     /// Changes state of managed electrical switch.
     /// </summary>
     /// <param name="expectedState">
     /// Desired state of electrical switch - <see langword="true"/> if the circuit shall be closed 
-    /// and current shall be flowing; <see langword="false"/> otherwise. 
+    /// and current shall be flowing, <see langword="false"/> otherwise. 
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the asynchronous operation.
     /// </param>
     /// <see langword="true"/> if operation was successful, <see langword="false"/>otherwise.
     /// </returns>
-    public Task<bool> TryChangeState(bool expectedState);
+    Task<bool> TryChangeState(bool expectedState, CancellationToken cancellationToken);
 }
 
-/// <summary>
-/// Provides logic to communicate with and control an electrical switch via its associated station.
-/// </summary>
-/// TODO: Add logging.
-/// TODO: Adjust doc-string.
+/// <inheritdoc cref="ISwitchManager"/>
 public sealed class SwitchManager : ISwitchManager
 {
+    #region Constants
+    // TODO: Maybe store configuration in some configuration file.
+    private const double RequestTimeout = 5000; // Given in milliseconds.
+    #endregion
+
     #region Properties
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IStationsRepository _stationsRepository;
@@ -44,20 +52,20 @@ public sealed class SwitchManager : ISwitchManager
     /// Creates new instance of <see cref="SwitchManager"/>.
     /// </summary>
     /// <param name="managedSwitchId">
-    /// Entity of switch which shall be controlled by the manager.
+    /// Identifier of switch which shall be controlled by the manager.
     /// </param>
     /// <param name="httpClientFactory">
-    /// Factory used to provide <see cref="HttpClient"/> instances
-    /// for HTTP-based communication with station specified in <paramref name="managedSwitch"/>.
+    /// Factory which shall be used to obtain instances of <see cref="HttpClient"/> class.
+    /// Those will be used to communicate with station associated with the managed switch.
     /// </param>
     /// <param name="stationsRepository">
     /// Stations repository which shall be used by this manager.
     /// </param>
     /// <param name="switchesRepository">
-    /// 
+    /// Switches repository which shall be used by this manager.
     /// </param>
     /// <param name="logger">
-    /// 
+    /// Logger which shall be used by this manager.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
@@ -85,18 +93,62 @@ public sealed class SwitchManager : ISwitchManager
 
     #region Interacitons
     /// <summary>
-    /// Sends a command to station associated with managed electrical switch to change its state.
+    /// Generates endpoint URL specific for controlling managed switch.
     /// </summary>
-    /// <param name="expectedSwitchState">
-    /// Desired state of electrical switch - <see langword="true"/> if the circuit shall be closed 
-    /// and current shall be flowing; <see langword="false"/> otherwise. 
+    /// <param name="managedSwitch">
+    /// Managed switch entity.
     /// </param>
-    /// <see langword="true"/> if the command was successfully delivered and acknowledged by the station, 
-    /// <see langword="false"/>otherwise.
+    /// <param name="parentStation">
+    /// Entity of parent station associated with the managed switch.
+    /// </param>
+    /// <returns>
+    /// Endpoint URL specific for controlling managed switch.
     /// </returns>
-    public async Task<bool> TryChangeState(bool expectedSwitchState)
+    private string GetEndpointUrl(SwitchEntity managedSwitch, StationEntity parentStation)
     {
-        _logger.LogInformation("Attempting to change state of switch: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}]", ManagedSwitchId, expectedSwitchState);
+        ArgumentNullException.ThrowIfNull(managedSwitch);
+        ArgumentNullException.ThrowIfNull(parentStation);
+
+        /*
+         * TODO:
+         * Collect information about which protocol station is using,
+         * port number and its API version to be more flexible during endpoint URL constriction.
+         */
+        return $"http://{parentStation.IpAddress}:80/api/v1/switches/{managedSwitch.LocalId}";
+    }
+
+    /// <summary>
+    /// Creates HTTP client complementary to communicate with station associated with the managed switch.
+    /// </summary>
+    /// <returns>
+    /// HTTP client complementary to communicate with station associated with the managed switch.
+    /// </returns>
+    private HttpClient CreateHttpClient()
+    {
+        /*
+         * TODO:
+         * Collect information about which protocol station is using,
+         * so that creation of HTTP client can be more flexible and adapted to specific station types.
+         */
+
+        HttpClient httpClient = _httpClientFactory.CreateClient();
+        // ESP8266's simple web server only supports only HTTP 1.0.
+        httpClient.DefaultRequestVersion = HttpVersion.Version10;
+        httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        httpClient.Timeout = TimeSpan.FromMilliseconds(RequestTimeout);
+
+        return httpClient;
+    }
+
+    /// <inheritdoc cref="ISwitchManager.TryChangeState(bool, CancellationToken)"/>
+    /// <summary>
+    /// Sends a command to station associated with managed switch to change its state.
+    /// </summary>
+    public async Task<bool> TryChangeState(bool expectedSwitchState, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation(
+            "Attempting to change state of switch: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}]",
+            ManagedSwitchId, expectedSwitchState);
 
         if (await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: ManagedSwitchId) is not SwitchEntity managedSwitch)
         {
@@ -119,20 +171,17 @@ public sealed class SwitchManager : ISwitchManager
 
         if (await _stationsRepository.GetSingleStationAsync(filterById: true, id: managedSwitch.StationId) is not StationEntity parentStation)
         {
-            _logger.LogError("Parent station entity not found: SwitchId=[{SwitchId}], StationId=[{StationId}]", managedSwitch.Id, managedSwitch.StationId);
+            _logger.LogError(
+                "Parent station entity not found: SwitchId=[{SwitchId}], StationId=[{StationId}]",
+                managedSwitch.Id,
+                managedSwitch.StationId);
+
             return false;
         }
 
-        // TODO: Create predefined ESP8266 client.
-        HttpClient httpClient = _httpClientFactory.CreateClient();
-        // ESP8266's simple web server only supports only HTTP 1.0.
-        httpClient.DefaultRequestVersion = HttpVersion.Version10;
-        httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
-        httpClient.Timeout = TimeSpan.FromSeconds(1);   // TODO: Maybe store it some configuration variable/file.
+        HttpClient httpClient = CreateHttpClient();
+        string url = GetEndpointUrl(managedSwitch, parentStation);
 
-        // TODO: Collect information about which protocol station is using and its API version to be more flexible during endpoint URL construinction.
-        string url = $"http://{parentStation.IpAddress}:80/api/v1/switches/{managedSwitch.LocalId}";
-        
         var request = new SwitchUpdateServerRequest(expectedSwitchState);
         using var requestJsonContent = JsonContent.Create(request);
 
@@ -157,9 +206,8 @@ public sealed class SwitchManager : ISwitchManager
              * which is not supported by certain station types (e.g. stations based on the ESP8266 
              * chip running a server using the ESP8266WebServer library).
              */
-            // TODO: Pass cancellation tokent to HttpClient.PatchAsync.
             _logger.LogDebug("Sending request to station: Url=[{Url}], Request=[{Request}]", url, request);
-            HttpResponseMessage response = await httpClient.PatchAsync(url, requestJsonContent);
+            HttpResponseMessage response = await httpClient.PatchAsync(url, requestJsonContent, cancellationToken);
             wasRequestSuccessful = response.StatusCode == HttpStatusCode.NoContent;
 
             if (wasRequestSuccessful)
@@ -168,11 +216,10 @@ public sealed class SwitchManager : ISwitchManager
             }
             else
             {
-                // TODO: Pass cancellation token to HttpResponseMessage.Content.ReadAsStringAsync.
                 _logger.LogWarning(
                     "Response received: StatusCode=[{StatusCode}], Body=[{Body}]",
                     response.StatusCode,
-                    await response.Content.ReadAsStringAsync());
+                    await response.Content.ReadAsStringAsync(cancellationToken));
             }
         }
         catch (HttpRequestException exception)
