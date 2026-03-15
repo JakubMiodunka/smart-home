@@ -98,11 +98,17 @@ public class SwitchesController : ControllerBase
     /// <param name="request">
     /// Data transfer object (DTO) containing details about the switch which shall be updated.
     /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the asynchronous operation.
+    /// </param>
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPatch("{switchId}")]
-    public async Task<IActionResult> UpdateSwitch(long switchId, [FromBody] SwitchUpdateClientRequest request)
+    public async Task<IActionResult> UpdateSwitch(
+        long switchId,
+        [FromBody] SwitchUpdateClientRequest request,
+        CancellationToken cancellationToken)
     {
         SwitchEntity? switchEntity = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: switchId);
     
@@ -113,7 +119,7 @@ public class SwitchesController : ControllerBase
     
         ISwitchManager switchManager = _switchManagerFactory.CreateFor(switchEntity);
     
-        bool wasOperationSuccessful = await switchManager.TryChangeState(request.ExpectedSwitchState);
+        bool wasOperationSuccessful = await switchManager.TryChangeState(request.ExpectedSwitchState, cancellationToken);
     
         if (wasOperationSuccessful)
         {
