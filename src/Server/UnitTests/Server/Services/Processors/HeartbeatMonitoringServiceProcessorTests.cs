@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Logging.Testing;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Services.Processors;
+using System.Net;
 
 namespace SmartHome.UnitTests.Server.Services;
 
@@ -147,6 +149,184 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
     #endregion
 
     #region Service execution
-    // TODO: Add additional test cases.
+    [Test]
+    public async Task MarksStationAsOfflineWhenHeartbeatTimeoutExceeded()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        TimeSpan maxHeartbeatInterval = randomizer.NextTimeSpan(
+            from: TimeSpan.FromSeconds(15),
+            to: TimeSpan.FromHours(1));
+
+        var timeProviderStub = new FakeTimeProvider();
+
+        StationEntity offlineStation = randomizer.NextStationEntity() with
+        {
+            LastHeartbeat = timeProviderStub.GetUtcNow()
+        };
+
+        StationEntity onlineStation = randomizer.NextStationEntity() with
+        {
+            LastHeartbeat = timeProviderStub.GetUtcNow() + maxHeartbeatInterval
+        };
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        
+        stationsRepositoryMock.Setup(mock => mock
+            .GetMultipleStationsAsync())
+            .ReturnsAsync([offlineStation, onlineStation]);
+
+        stationsRepositoryMock.Setup(mock => mock
+            .UpdateStationAsync(
+                id: offlineStation.Id,
+                updateIpAddress: true,
+                ipAddress: null,
+                updateLastHeartbeat: false,
+                lastHeartbeat: null))
+            .ReturnsAsync(offlineStation with { IpAddress = null });
+
+        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var loggerMock = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
+
+        var serviceProcessor = new HeartbeatMonitoringServiceProcessor(
+            stationsRepositoryMock.Object,
+            switchesRepositoryStub.Object,
+            timeProviderStub,
+            maxHeartbeatInterval,
+            loggerMock);
+
+        timeProviderStub.Advance(maxHeartbeatInterval + TimeSpan.FromSeconds(1));
+        await serviceProcessor.ProcessAsync(CancellationToken.None);
+
+        stationsRepositoryMock.Verify (mock => mock
+            .UpdateStationAsync(
+                offlineStation.Id,
+                updateIpAddress: true,
+                ipAddress: null,
+                updateLastHeartbeat: false,
+                lastHeartbeat: It.IsAny<DateTimeOffset?>()),
+            Times.Once);
+
+        // Not using named arguments as update method for this station shall not be invoked at all.
+        stationsRepositoryMock.Verify(mock => mock
+            .UpdateStationAsync(
+                onlineStation.Id,
+                It.IsAny<bool>(),
+                It.IsAny<IPAddress?>(),
+                It.IsAny<bool>(),
+                It.IsAny<DateTimeOffset?>()),
+            Times.Never);
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+    }
+
+    [Test]
+    public async Task MarksSwitchesAsOfflineWhenParentStationHeartbeatTimeoutExceeded()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        TimeSpan maxHeartbeatInterval = randomizer.NextTimeSpan(
+            from: TimeSpan.FromSeconds(15),
+            to: TimeSpan.FromHours(1));
+
+        var timeProviderStub = new FakeTimeProvider();
+
+        StationEntity offlineStation = randomizer.NextStationEntity() with
+        {
+            LastHeartbeat = timeProviderStub.GetUtcNow()
+        };
+
+        bool offlineSwitchState = randomizer.NextBool();
+
+        SwitchEntity offlineSwitch = randomizer.NextSwitchEntity() with
+        {
+            StationId = offlineStation.Id,
+            ExpectedState = offlineSwitchState,
+            ActualState = offlineSwitchState
+        };
+
+        StationEntity onlineStation = randomizer.NextStationEntity() with
+        {
+            LastHeartbeat = timeProviderStub.GetUtcNow() + maxHeartbeatInterval
+        };
+
+        bool onlineSwitchState = randomizer.NextBool();
+
+        SwitchEntity onlineSwitch = randomizer.NextSwitchEntity() with
+        {
+            StationId = onlineStation.Id,
+            ExpectedState = onlineSwitchState,
+            ActualState = onlineSwitchState
+        };
+
+        var stationsRepositoryStub = new Mock<IStationsRepository>();
+
+        stationsRepositoryStub.Setup(mock => mock
+            .GetMultipleStationsAsync())
+            .ReturnsAsync([offlineStation, onlineStation]);
+
+        stationsRepositoryStub.Setup(mock => mock
+            .UpdateStationAsync(
+                id: offlineStation.Id,
+                updateIpAddress: true,
+                ipAddress: null,
+                updateLastHeartbeat: false,
+                lastHeartbeat: null))
+            .ReturnsAsync(offlineStation with { IpAddress = null });
+
+        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+
+        switchesRepositoryMock.Setup(mock => mock
+            .GetMultipleSwitchesAsync(
+            filterByStationId: true,
+            stationId: offlineStation.Id))
+        .ReturnsAsync([offlineSwitch]);
+
+        switchesRepositoryMock.Setup(mock => mock
+            .UpdateSwitchAsync(
+                id: offlineSwitch.Id,
+                updateExpectedState: false,
+                expectedState: null,
+                updateActualState: true,
+                actualState: null))
+            .ReturnsAsync(offlineSwitch with { ActualState = null });
+
+        var loggerMock = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
+
+        var serviceProcessor = new HeartbeatMonitoringServiceProcessor(
+            stationsRepositoryStub.Object,
+            switchesRepositoryMock.Object,
+            timeProviderStub,
+            maxHeartbeatInterval,
+            loggerMock);
+
+        timeProviderStub.Advance(maxHeartbeatInterval + TimeSpan.FromSeconds(1));
+        await serviceProcessor.ProcessAsync(CancellationToken.None);
+
+        switchesRepositoryMock.Verify(mock => mock
+            .UpdateSwitchAsync(
+                offlineSwitch.Id,
+                updateExpectedState: false,
+                expectedState: null,
+                updateActualState: true,
+                actualState: null),
+            Times.Once);
+
+        // Not using named arguments as update method for this station shall not be invoked at all.
+        switchesRepositoryMock.Verify(mock => mock
+           .UpdateSwitchAsync(
+               onlineSwitch.Id,
+               It.IsAny<bool>(),
+               It.IsAny<bool?>(),
+               It.IsAny<bool>(),
+               It.IsAny<bool?>()),
+           Times.Never);
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+    }
     #endregion
 }
