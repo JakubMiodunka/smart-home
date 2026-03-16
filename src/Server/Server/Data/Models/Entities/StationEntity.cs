@@ -9,6 +9,12 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// Entity representing the general details of a station functioning within the system.
 /// Used for data exchange between the server and the database.
 /// </summary>
+/// <remarks>
+/// In theory, type of <param name="Port"/> param could be
+/// set to <see langword="ushort"/> as its range fits the port range perfectly.
+/// However, since SQL Server lacks an unsigned 16-bit type and <see cref="IPEndPoint.Port"/>
+/// uses <see langword="int"/>, this type was used here to avoid unnecessary complexity and casting.
+/// </remarks>
 /// <param name="Id">
 /// The unique global identifier for the station.
 /// </param>
@@ -17,12 +23,47 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// </param>
 /// <param name="IpAddress">
 /// The IP address assigned to the station within the network. 
-/// A <see langword="null"/> value indicates that station is offline and address is unknown.
+/// Set to <see langword="null"/> if station is offline and address is unknown.
+/// </param>
+/// <param name="Port">
+/// The network port on which the station's control service is listening.
+/// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/> (no validation).
+/// Set to <see langword="null"/> if station is offline and port is unknown.
 /// </param>
 /// <param name="LastHeartbeat">
 /// Timestamp of the last heartbeat signal received from the station.
 /// </param>
-public sealed record StationEntity(long Id, PhysicalAddress MacAddress, IPAddress? IpAddress, DateTimeOffset LastHeartbeat);
+public sealed record StationEntity(
+    long Id,
+    PhysicalAddress MacAddress,
+    IPAddress? IpAddress,
+    int? Port,
+    DateTimeOffset LastHeartbeat)
+{
+    /// <summary>
+    /// Validates if the port is within <see cref="IPEndPoint.MinPort"/> and <see cref="IPEndPoint.MaxPort"/>.
+    /// </summary>
+    /// <param name="port">
+    /// The port number to validate.
+    /// </param>
+    /// <returns>
+    /// The validated port number.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the port is out of valid range.
+    /// </exception>
+    private static int? ValidatePort(int? port)
+    {
+        if (port is int value)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, IPEndPoint.MinPort, nameof(Port));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, IPEndPoint.MaxPort, nameof(Port));
+        }
+        return port;
+    }
+
+    public int? Port { get; init; } = ValidatePort(Port);
+}
 
 /// <summary>
 /// Defines logic for <see cref="StationEntity"/> that are not persisted directly in the database.
@@ -41,9 +82,10 @@ public static class StationEntityExtensions
     /// Station entity to check.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> if the station is considered online.
-    /// <see langword="false"/> otherwise.
+    /// <see langword="true"/> if the station is considered online, <see langword="false"/> otherwise.
+    /// <see langword="null"/> if station status is ambiguous.
     /// </returns>
-    public static bool IsOnline(this StationEntity stationEntity) =>
-        stationEntity.IpAddress is not null;
+    public static bool? IsOnline(this StationEntity stationEntity) =>
+        stationEntity.IpAddress is not null &&
+        stationEntity.Port is not null;
 }
