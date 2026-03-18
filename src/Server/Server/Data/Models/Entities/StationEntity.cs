@@ -10,7 +10,7 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// Used for data exchange between the server and the database.
 /// </summary>
 /// <remarks>
-/// In theory, type of <param name="Port"/> param could be
+/// In theory, type of <param name="HttpPort"/> param could be
 /// set to <see langword="ushort"/> as its range fits the port range perfectly.
 /// However, since SQL Server lacks an unsigned 16-bit type and <see cref="IPEndPoint.Port"/>
 /// uses <see langword="int"/>, this type was used here to avoid unnecessary complexity and casting.
@@ -25,14 +25,17 @@ namespace SmartHome.Server.Data.Models.Entities;
 /// The IP address assigned to the station within the network. 
 /// Set to <see langword="null"/> if station is offline and address is unknown.
 /// </param>
-/// <param name="Port">
+/// <param name="HttpPort">
 /// The network port on which the station's control service is listening.
-/// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/> (no validation).
+/// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/>.
 /// Set to <see langword="null"/> if station is offline and port is unknown.
 /// </param>
 /// <param name="LastHeartbeat">
 /// Timestamp of the last heartbeat signal received from the station.
 /// </param>
+/// <exception cref="ArgumentOutOfRangeException">
+/// Thrown when the value of at least one argument is outside its valid range.
+/// </exception>
 public sealed record StationEntity(
     long Id,
     PhysicalAddress MacAddress,
@@ -70,6 +73,11 @@ public sealed record StationEntity(
 /// </summary>
 public static class StationEntityExtensions
 {
+    #region Constants
+    private const string StationApiPrefix = "api/v1";   // TODO: Save to DB also station API version.
+    #endregion
+
+    #region Extension Methods
     /// <summary>
     /// Determines whether the station is considered online.
     /// </summary>
@@ -86,6 +94,27 @@ public static class StationEntityExtensions
     /// <see langword="null"/> if station status is ambiguous.
     /// </returns>
     public static bool? IsOnline(this StationEntity stationEntity) =>
-        stationEntity.IpAddress is not null &&
-        stationEntity.Port is not null;
+        stationEntity.IpAddress is not null && stationEntity.Port is not null;
+
+    /// <summary>
+    /// Determines the base URL for the API exposed by the station.
+    /// </summary>
+    /// <param name="stationEntity">
+    /// The station entity to determine the base URL for.
+    /// </param>
+    /// <returns>
+    /// Absolute base URL for the API exposed by the station.
+    /// <see langword="null"/> if the station is marked as offline.
+    /// </returns>
+    public static Uri? BaseApiUrl(this StationEntity stationEntity)
+    {
+        if (stationEntity.IpAddress is IPAddress ipAddress && stationEntity.Port is int port)
+        {
+            var builder = new UriBuilder(Uri.UriSchemeHttp, ipAddress.ToString(), port, StationApiPrefix);
+            return builder.Uri;
+        }
+
+        return null;
+    }
+    #endregion
 }
