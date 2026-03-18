@@ -1,6 +1,7 @@
 ﻿using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
+using System.Collections.ObjectModel;
 using System.Net;
 
 namespace SmartHome.Server.Managers;
@@ -36,6 +37,8 @@ public sealed class SwitchManager : ISwitchManager
     #region Constants
     // TODO: Maybe store configuration in some configuration file.
     private const double RequestTimeout = 5000; // Given in milliseconds.
+    // TODO: Use a static dictionary to map API versions to functions that generate relative endpoint URLs for a specific station.
+    private static Func<SwitchEntity, Uri> Endpoint => switchEntity => new Uri($"switches/{switchEntity.LocalId}");
     #endregion
 
     #region Properties
@@ -104,7 +107,13 @@ public sealed class SwitchManager : ISwitchManager
     /// <returns>
     /// Endpoint URL specific for controlling managed switch.
     /// </returns>
-    private string GetEndpointUrl(SwitchEntity managedSwitch, StationEntity parentStation)
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one required reference-type argument is a <see langword="null"/> reference.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if base API URL of the parent station cannot be determined.
+    /// </exception>
+    private Uri GetEndpointUrl(SwitchEntity managedSwitch, StationEntity parentStation)
     {
         ArgumentNullException.ThrowIfNull(managedSwitch);
         ArgumentNullException.ThrowIfNull(parentStation);
@@ -114,7 +123,16 @@ public sealed class SwitchManager : ISwitchManager
          * Collect information about which protocol station is using,
          * port number and its API version to be more flexible during endpoint URL constriction.
          */
-        return $"http://{parentStation.IpAddress}:80/api/v1/switches/{managedSwitch.LocalId}";
+
+        if (parentStation.BaseApiUrl() is not Uri baseStationApiUrl)
+        {
+            throw new InvalidOperationException();
+        }
+
+        Uri endpointRelativeUrl = Endpoint(managedSwitch);
+        var endpointAbsoluteUrl = new Uri(baseStationApiUrl, endpointRelativeUrl);
+
+        return endpointAbsoluteUrl;
     }
 
     /// <summary>
@@ -132,8 +150,7 @@ public sealed class SwitchManager : ISwitchManager
          */
 
         HttpClient httpClient = _httpClientFactory.CreateClient();
-        // ESP8266's simple web server only supports only HTTP 1.0.
-        httpClient.DefaultRequestVersion = HttpVersion.Version10;
+        httpClient.DefaultRequestVersion = HttpVersion.Version10;   // ESP8266's simple web server only supports only HTTP 1.0.
         httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
         httpClient.Timeout = TimeSpan.FromMilliseconds(RequestTimeout);
 
@@ -180,7 +197,7 @@ public sealed class SwitchManager : ISwitchManager
         }
 
         HttpClient httpClient = CreateHttpClient();
-        string url = GetEndpointUrl(managedSwitch, parentStation);
+        Uri url = GetEndpointUrl(managedSwitch, parentStation);
 
         var request = new SwitchUpdateServerRequest(expectedSwitchState);
         using var requestJsonContent = JsonContent.Create(request);

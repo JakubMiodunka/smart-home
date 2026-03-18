@@ -84,9 +84,8 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
 
         StationEntity[] allStations = await _stationsRepository.GetMultipleStationsAsync();
         
-        // TODO: Continue here.
         StationEntity[] stationsToMark = allStations
-            .Where(station => station.IsOnline())
+            .Where(station => station.IsOnline() is true or null)   // Stations with unclear status are also processed to ensure data integrity by marking them offline.
             .Where(station => referenceTimestamp - station.LastHeartbeat > _maxHeartbeatInterval)
             .ToArray();
 
