@@ -1,5 +1,4 @@
-﻿using SmartHome.Server.Data;
-using SmartHome.Server.Data.Models.Entities;
+﻿using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Services.Processors;
@@ -115,7 +114,9 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
         StationEntity? updatedStation = await _stationsRepository.UpdateStationAsync(
             stationId,
             updateIpAddress: true,
-            ipAddress: null);
+            ipAddress: null,
+            updateApiPort: true,
+            apiPort: null);
 
         if (updatedStation is null)
         {

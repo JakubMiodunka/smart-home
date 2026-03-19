@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Models.Requests;
@@ -12,4 +13,13 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <param name="StationMacAddress">
 /// The MAC address of the station to be registered.
 /// </param>
-public sealed record StationRegistrationStationRequest([Required] PhysicalAddress StationMacAddress);
+/// <param name="ApiPort">
+/// The network port on which the station's control service is listening.
+/// </param>
+public sealed record StationRegistrationStationRequest(
+    [Required]
+    PhysicalAddress StationMacAddress,
+
+    [Required]
+    [Range(IPEndPoint.MinPort, IPEndPoint.MaxPort)]
+    int ApiPort);

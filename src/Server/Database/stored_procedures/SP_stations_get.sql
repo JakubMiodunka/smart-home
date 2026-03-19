@@ -13,6 +13,7 @@ BEGIN
         id,
         mac_address,
         ip_address,
+        api_port,
         last_heartbeat
     FROM stations
     WHERE
