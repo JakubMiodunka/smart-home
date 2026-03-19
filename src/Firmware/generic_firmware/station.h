@@ -14,6 +14,11 @@ struct StationRegistrationStationRequest {
   String stationMacAddress;
   
   /// <summary>
+  /// The network port on which the station's control service is listening.
+  /// </summary>
+  uint16_t stationApiPort;
+
+  /// <summary>
   /// Populates the provided JSON document with station registration data.
   /// </summary>
   /// <param name="jsonDocument">
