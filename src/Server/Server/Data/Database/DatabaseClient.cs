@@ -146,13 +146,18 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    public async Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTimeOffset lastHeartbeat)
+    public async Task<StationEntity> CreateStationAsync(
+        PhysicalAddress macAddress,
+        IPAddress? ipAddress,
+        int? apiPort,
+        DateTimeOffset lastHeartbeat)
     {
         ArgumentNullException.ThrowIfNull(macAddress, nameof(macAddress));
 
         var parameters = new DynamicParameters();
         parameters.Add("@mac_address", macAddress);
         parameters.Add("@ip_address", ipAddress);
+        parameters.Add("@api_port", apiPort);
         parameters.Add("@last_heartbeat", lastHeartbeat.ToUniversalTime());
 
         return await CreateEntityAsync<StationEntity>("SP_stations_create", parameters);
@@ -211,6 +216,7 @@ public sealed class DatabaseClient : IDatabaseClient
     public async Task<StationEntity?> UpdateStationAsync(
         long id,
         bool updateIpAddress = false, IPAddress? ipAddress = null,
+        bool updateApiPort = false, int? apiPort = null,
         bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null)
     {
         var parameters = new DynamicParameters();
@@ -220,6 +226,12 @@ public sealed class DatabaseClient : IDatabaseClient
         {
             parameters.Add("@update_ip_address", updateIpAddress);
             parameters.Add("@ip_address", ipAddress);
+        }
+
+        if (updateApiPort)
+        {
+            parameters.Add("@update_api_port", updateApiPort);
+            parameters.Add("@api_port", apiPort);
         }
 
         if (updateLastHeartbeat)
