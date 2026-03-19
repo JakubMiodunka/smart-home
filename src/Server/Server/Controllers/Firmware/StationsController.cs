@@ -93,7 +93,7 @@ public class StationsController : FirmwareController
             await _stationsRepository.CreateStationAsync(
                 request.StationMacAddress,
                 stationIpAddress,
-                request.ApiPort,
+                request.StationApiPort,
                 _timeProvider.GetUtcNow());
 
             _logger.LogInformation("Station registration successful:");
@@ -116,7 +116,7 @@ public class StationsController : FirmwareController
            updateIpAddress: true,
            ipAddress: stationIpAddress,
            updateApiPort: true,
-           apiPort: request.ApiPort,
+           apiPort: request.StationApiPort,
            updateLastHeartbeat: true,
            lastHeartbeat: heartbeatTimestamp);
 

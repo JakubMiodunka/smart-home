@@ -10,6 +10,7 @@
 
 void StationRegistrationStationRequest::toJsonDocument(JsonDocument& jsonDocument) const {
   jsonDocument["stationMacAddress"] = this->stationMacAddress;
+  jsonDocument["stationApiPort"] = this->stationApiPort;
 }
 
 bool Station::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const {
@@ -22,7 +23,7 @@ bool Station::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const Str
 
   const String url = getRemoteBaseUrl() + "/stations";
   const HttpMethod httpMethod = PUT;
-  StationRegistrationStationRequest request = { macAddress };
+  StationRegistrationStationRequest request = { macAddress, LOCAL_SERVER_PORT };
   JsonDocument requestJson;
   request.toJsonDocument(requestJson);
   JsonDocument responseJson;
