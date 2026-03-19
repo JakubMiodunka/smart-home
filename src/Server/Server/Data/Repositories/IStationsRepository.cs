@@ -18,6 +18,12 @@ public interface IStationsRepository
     /// </param>
     /// <param name="ipAddress">
     /// IP address of the station.
+    /// Set to <see langword="null"/> if station is offline and address is unknown.
+    /// </param>
+    /// <param name="apiPort">
+    /// The network port on which the station's control service is listening.
+    /// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/>.
+    /// Set to <see langword="null"/> if station is offline and port is unknown.
     /// </param>
     /// <param name="lastHeartbeat">
     /// Timestamp of the last heartbeat signal received from the station.
@@ -25,7 +31,11 @@ public interface IStationsRepository
     /// <returns>
     /// Station model saved within the repository.
     /// </returns>
-    Task<StationEntity> CreateStationAsync(PhysicalAddress macAddress, IPAddress? ipAddress, DateTimeOffset lastHeartbeat);
+    Task<StationEntity> CreateStationAsync(
+        PhysicalAddress macAddress,
+        IPAddress? ipAddress,
+        int? apiPort,
+        DateTimeOffset lastHeartbeat);
 
     /// <summary>
     /// Retrieves single station from the repository basing on provided criteria.
@@ -54,7 +64,6 @@ public interface IStationsRepository
     /// <returns>
     /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
     /// </returns>
-    /// TODO: Use pattern matching instead of sepparete null check.
     Task<StationEntity?> GetSingleStationAsync(
         bool filterById = false, long? id = null,
         bool filterByIpAddress = false, IPAddress? ipAddress = null,
@@ -89,6 +98,15 @@ public interface IStationsRepository
     /// New IP address of the station.
     /// Ignored if value of <paramref name="updateIpAddress"/> is set to <see langword="false"/>.
     /// </param>
+    /// <param name="updateApiPort">
+    /// <see langword="true"/> if API port of specified station shall be updated, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="apiPort">
+    /// New station API port.
+    /// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/>.
+    /// Set to <see langword="null"/> if station is offline and port is unknown.
+    /// Ignored if value of <paramref name="updateApiPort"/> is set to <see langword="false"/>.
+    /// </param>
     /// <param name="updateLastHeartbeat">
     /// <see langword="true"/> if timestamp of last heartbeat signal shall be updated, <see langword="false"/> otherwise.
     /// </param>
@@ -102,5 +120,6 @@ public interface IStationsRepository
     /// </returns>
     Task<StationEntity?> UpdateStationAsync(long id,
         bool updateIpAddress = false, IPAddress? ipAddress = null,
+        bool updateApiPort = false, int? apiPort = null,
         bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null);
 }
