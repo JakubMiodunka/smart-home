@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SmartHome.Server.Data;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
@@ -94,6 +93,7 @@ public class StationsController : FirmwareController
             await _stationsRepository.CreateStationAsync(
                 request.StationMacAddress,
                 stationIpAddress,
+                request.ApiPort,
                 _timeProvider.GetUtcNow());
 
             _logger.LogInformation("Station registration successful:");
@@ -115,6 +115,8 @@ public class StationsController : FirmwareController
            knownStationEntity.Id,
            updateIpAddress: true,
            ipAddress: stationIpAddress,
+           updateApiPort: true,
+           apiPort: request.ApiPort,
            updateLastHeartbeat: true,
            lastHeartbeat: heartbeatTimestamp);
 
