@@ -150,6 +150,7 @@ public sealed class DatabaseClient : IDatabaseClient
         PhysicalAddress macAddress,
         IPAddress? ipAddress,
         int? apiPort,
+        byte? apiVersion,
         DateTimeOffset lastHeartbeat)
     {
         ArgumentNullException.ThrowIfNull(macAddress, nameof(macAddress));
@@ -158,6 +159,7 @@ public sealed class DatabaseClient : IDatabaseClient
         parameters.Add("@mac_address", macAddress);
         parameters.Add("@ip_address", ipAddress);
         parameters.Add("@api_port", apiPort);
+        parameters.Add("@api_version", apiVersion);
         parameters.Add("@last_heartbeat", lastHeartbeat.ToUniversalTime());
 
         return await CreateEntityAsync<StationEntity>("SP_stations_create", parameters);
@@ -217,22 +219,21 @@ public sealed class DatabaseClient : IDatabaseClient
         long id,
         bool updateIpAddress = false, IPAddress? ipAddress = null,
         bool updateApiPort = false, int? apiPort = null,
+        bool updateApiVersion = false, byte? apiVersion = null,
         bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null)
     {
         var parameters = new DynamicParameters();
+        
         parameters.Add("@id", id);
 
-        if (updateIpAddress)
-        {
-            parameters.Add("@update_ip_address", updateIpAddress);
-            parameters.Add("@ip_address", ipAddress);
-        }
+        parameters.Add("@update_ip_address", updateIpAddress);
+        parameters.Add("@ip_address", updateIpAddress ? ipAddress : null);
 
-        if (updateApiPort)
-        {
-            parameters.Add("@update_api_port", updateApiPort);
-            parameters.Add("@api_port", apiPort);
-        }
+        parameters.Add("@update_api_port", updateApiPort);
+        parameters.Add("@api_port", updateApiPort ? apiPort : null);
+
+        parameters.Add("@update_api_version", updateApiVersion);
+        parameters.Add("@api_version", updateApiVersion ? apiVersion : null);
 
         if (updateLastHeartbeat)
         {
@@ -323,6 +324,7 @@ public sealed class DatabaseClient : IDatabaseClient
         bool updateActualState = false, bool? actualState = null)
     {
         var parameters = new DynamicParameters();
+        
         parameters.Add("@id", id);
 
         if (updateExpectedState)
@@ -333,11 +335,8 @@ public sealed class DatabaseClient : IDatabaseClient
             parameters.Add("@expected_state", expectedState);
         }
 
-        if (updateActualState)
-        {
-            parameters.Add("@update_actual_state", updateActualState);
-            parameters.Add("@actual_state", actualState);
-        }
+        parameters.Add("@update_actual_state", updateActualState);
+        parameters.Add("@actual_state", updateActualState ? actualState : null);
 
         return await GetSingleEntityAsync<SwitchEntity>("SP_switches_update", parameters);
     }

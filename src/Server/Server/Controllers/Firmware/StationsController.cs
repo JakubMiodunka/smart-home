@@ -94,6 +94,7 @@ public class StationsController : FirmwareController
                 request.StationMacAddress,
                 stationIpAddress,
                 request.StationApiPort,
+                request.StationApiVersion,
                 _timeProvider.GetUtcNow());
 
             _logger.LogInformation("Station registration successful:");
@@ -117,6 +118,8 @@ public class StationsController : FirmwareController
            ipAddress: stationIpAddress,
            updateApiPort: true,
            apiPort: request.StationApiPort,
+           updateApiVersion: true,
+           apiVersion: request.StationApiVersion,
            updateLastHeartbeat: true,
            lastHeartbeat: heartbeatTimestamp);
 

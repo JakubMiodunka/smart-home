@@ -25,6 +25,10 @@ public interface IStationsRepository
     /// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/>.
     /// Set to <see langword="null"/> if station is offline and port is unknown.
     /// </param>
+    /// <param name="apiVersion">
+    /// Version of the API exposed by the station.
+    /// Set to <see langword="null"/> if station is offline and its API version is unknown.
+    /// </param>
     /// <param name="lastHeartbeat">
     /// Timestamp of the last heartbeat signal received from the station.
     /// </param>
@@ -35,6 +39,7 @@ public interface IStationsRepository
         PhysicalAddress macAddress,
         IPAddress? ipAddress,
         int? apiPort,
+        byte? apiVersion,
         DateTimeOffset lastHeartbeat);
 
     /// <summary>
@@ -107,6 +112,13 @@ public interface IStationsRepository
     /// Set to <see langword="null"/> if station is offline and port is unknown.
     /// Ignored if value of <paramref name="updateApiPort"/> is set to <see langword="false"/>.
     /// </param>
+    /// <param name="updateApiVersion">
+    /// <see langword="true"/> if API version of specified station shall be updated, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="apiVersion">
+    /// New station API version. Set to <see langword="null"/> if station is offline and its API version is unknown.
+    /// Ignored if value of <paramref name="updateApiVersion"/> is set to <see langword="false"/>.
+    /// </param>
     /// <param name="updateLastHeartbeat">
     /// <see langword="true"/> if timestamp of last heartbeat signal shall be updated, <see langword="false"/> otherwise.
     /// </param>
@@ -121,5 +133,6 @@ public interface IStationsRepository
     Task<StationEntity?> UpdateStationAsync(long id,
         bool updateIpAddress = false, IPAddress? ipAddress = null,
         bool updateApiPort = false, int? apiPort = null,
+        bool updateApiVersion = false, byte? apiVersion = null,
         bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null);
 }
