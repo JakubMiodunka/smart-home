@@ -116,7 +116,9 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
             updateIpAddress: true,
             ipAddress: null,
             updateApiPort: true,
-            apiPort: null);
+            apiPort: null,
+            updateApiVersion: true,
+            apiVersion: null);
 
         if (updatedStation is null)
         {
