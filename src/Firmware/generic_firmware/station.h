@@ -19,6 +19,11 @@ struct StationRegistrationStationRequest {
   uint16_t stationApiPort;
 
   /// <summary>
+  /// Version of the API exposed by the station. 
+  /// </summary>
+  uint8_t stationApiVersion;
+
+  /// <summary>
   /// Populates the provided JSON document with station registration data.
   /// </summary>
   /// <param name="jsonDocument">
