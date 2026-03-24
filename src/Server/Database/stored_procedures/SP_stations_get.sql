@@ -14,6 +14,7 @@ BEGIN
         mac_address,
         ip_address,
         api_port,
+        api_version,
         last_heartbeat
     FROM stations
     WHERE

@@ -16,10 +16,16 @@ namespace SmartHome.Server.Data.Models.Requests;
 /// <param name="StationApiPort">
 /// The network port on which the station's control service is listening.
 /// </param>
+/// <param name="StationApiVersion">
+/// Version of the API exposed by the station.
+/// </param>
 public sealed record StationRegistrationStationRequest(
     [Required]
     PhysicalAddress StationMacAddress,
 
     [Required]
     [Range(IPEndPoint.MinPort, IPEndPoint.MaxPort)]
-    int StationApiPort);
+    int StationApiPort,
+
+    [Required]
+    byte StationApiVersion);
