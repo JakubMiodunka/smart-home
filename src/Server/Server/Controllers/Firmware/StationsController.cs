@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Server.Controllers;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
@@ -10,7 +11,7 @@ namespace SmartHome.Server.Controllers.Firmware;
 /// Controller providing endpoints for firmware to manage stations.
 /// </summary>
 [Route("api/firmware/v1/stations")]
-public class StationsController : FirmwareController
+public class StationsController : BaseController
 {
     #region Properties
     private readonly IStationsRepository _stationsRepository;
