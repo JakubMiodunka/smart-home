@@ -53,7 +53,7 @@ public sealed class SwitchManagerFactory : ISwitchManagerFactory
     /// <inheritdoc cref="ISwitchManagerFactory.CreateFor(SwitchEntity)"/>
     public ISwitchManager CreateFor(SwitchEntity switchEntity) =>
         new SwitchManager(
-            switchEntity.Id,
+            switchEntity,
             _httpClientFactory,
             _stationsRepository,
             _switchesRepository,

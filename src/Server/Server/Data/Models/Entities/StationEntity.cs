@@ -78,17 +78,17 @@ public static class StationEntityExtensions
             _ => null
         };
 
-/// <summary>
-/// Determines the base URL for the API exposed by the station.
-/// </summary>
-/// <param name="stationEntity">
-/// The station entity to determine the base URL for.
-/// </param>
-/// <returns>
-/// Absolute base URL for the API exposed by the station.
-/// <see langword="null"/> if the station is marked as offline.
-/// </returns>
-public static Uri? BaseApiUrl(this StationEntity stationEntity)
+    /// <summary>
+    /// Determines the base URL for the API exposed by the station.
+    /// </summary>
+    /// <param name="stationEntity">
+    /// The station entity to determine the base URL for.
+    /// </param>
+    /// <returns>
+    /// Absolute base URL for the API exposed by the station.
+    /// <see langword="null"/> if the station is marked as offline.
+    /// </returns>
+    public static Uri? BaseApiUrl(this StationEntity stationEntity)
     {
         if (stationEntity.IpAddress is IPAddress ipAddress 
             && stationEntity.ApiPort is int apiPort
