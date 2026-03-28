@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace SmartHome.Server.Controllers.Firmware;
+namespace Server.Controllers;
 
 /// <summary>
-/// Base class for controllers that handle requests from station firmware.
+/// Base class for all controllers defined within the application.
 /// </summary>
 [ApiController]
-public abstract class FirmwareController : ControllerBase
+public abstract class BaseController : ControllerBase
 {
     #region Properties
     protected readonly IHttpContextAccessor _httpContextAccessor;
@@ -15,7 +15,7 @@ public abstract class FirmwareController : ControllerBase
 
     #region Instantiation
     /// <summary>
-    /// Initializes basic functionalities of the <see cref="FirmwareController"/>.
+    /// Initializes basic functionalities of the <see cref="BaseController"/>.
     /// </summary>
     /// <param name="httpContextAccessor">
     /// Provides access to the <see cref="HttpContext"/> of the current request.
@@ -23,7 +23,7 @@ public abstract class FirmwareController : ControllerBase
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one required reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    protected FirmwareController(IHttpContextAccessor httpContextAccessor)
+    protected BaseController(IHttpContextAccessor httpContextAccessor) : base()
     {
         ArgumentNullException.ThrowIfNull(httpContextAccessor, nameof(httpContextAccessor));
 
@@ -31,7 +31,7 @@ public abstract class FirmwareController : ControllerBase
     }
     #endregion
 
-    #region Interacitons
+    #region Utilities
     /// <summary>
     /// Attempts to retrieve the remote IP address of the client from the current HTTP context.
     /// </summary>

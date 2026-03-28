@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Server.Controllers;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Managers;
 using SmartHome.Server.Managers.Factories;
+using System.Net;
 
 namespace SmartHome.Server.Controllers.Clients;
 
@@ -12,7 +14,7 @@ namespace SmartHome.Server.Controllers.Clients;
 /// </summary>
 [ApiController]
 [Route("api/clients/v1/switches")]
-public class SwitchesController : ControllerBase
+public class SwitchesController : BaseController
 {
     #region Properties
     private readonly ISwitchesRepository _switchesRepository;
@@ -20,13 +22,15 @@ public class SwitchesController : ControllerBase
     private readonly ILogger<SwitchesController> _logger;
     #endregion
 
-    // TODO: Add logging.
     // TODO: Add unit tests.
     // TODO: Concider edge cases.
     #region Instationation
     /// <summary>
     /// Creates an new controller instance.
     /// </summary>
+    /// <param name="httpContextAccessor">
+    /// Provides access to the <see cref="HttpContext"/> of the current request.
+    /// </param>
     /// <param name="switchesRepository">
     /// Stations repository which shall be used by this controller.
     /// </param>
@@ -40,9 +44,10 @@ public class SwitchesController : ControllerBase
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
     public SwitchesController(
+        IHttpContextAccessor httpContextAccessor,
         ISwitchesRepository switchesRepository,
         ISwitchManagerFactory switchManagerFactory,
-        ILogger<SwitchesController> logger)
+        ILogger<SwitchesController> logger) : base(httpContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(switchesRepository, nameof(switchesRepository));
         ArgumentNullException.ThrowIfNull(switchManagerFactory, nameof(switchManagerFactory));
@@ -63,7 +68,26 @@ public class SwitchesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetSwitches()
     {
+        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
+        {
+            _logger.LogWarning(
+                "Request processing failed: Message=[{Message}]",
+                "Failed to determine client IP address.");
+
+            return BadRequest();
+        }
+
+        _logger.LogInformation(
+            "Processing request to return collection of switches: ClientIpAddress=[{ClientIpAddress}]",
+            clientIpAddress);
+
         SwitchEntity[] allSwitches = await _switchesRepository.GetMultipleSwitchesAsync();
+
+        _logger.LogInformation(
+            "Request processed successfully: ClientIpAddress=[{ClientIpAddress}, EntitiesReturned=[{EntitiesReturned}]",
+            clientIpAddress,
+            allSwitches.Count());
+
         return Ok(allSwitches);
     }
 
@@ -79,16 +103,33 @@ public class SwitchesController : ControllerBase
     [HttpGet("{switchId}")]
     public async Task<IActionResult> GetSwitch(long switchId)
     {
-        SwitchEntity? switchEntity = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: switchId);
-
-        if (switchEntity is null)
+        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
         {
-            return NotFound();
+            _logger.LogWarning(
+                "Request processing failed: Message=[{Message}]",
+                "Failed to determine client IP address.");
+
+            return BadRequest();
         }
 
-        return Ok(switchEntity);
+        _logger.LogInformation(
+            "Processing request to return a switch: ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}]",
+            clientIpAddress,
+            switchId);
+
+        SwitchEntity? switchEntity = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: switchId);
+
+        _logger.Log(
+            switchEntity is null ? LogLevel.Warning : LogLevel.Information,
+            "Request processed successfully: ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}, EntitiesReturned=[{EntitiesReturned}]",
+            clientIpAddress,
+            switchId,
+            switchEntity is null ? 0 : 1);
+
+        return switchEntity is null ? NotFound() : Ok(switchEntity);
     }
 
+    /// TODO: Add logging.
     /// <summary>
     /// Updates the data related to particular electrical switch according to details provided in request body.
     /// </summary>
