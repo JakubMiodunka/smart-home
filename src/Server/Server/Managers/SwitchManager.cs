@@ -1,7 +1,6 @@
 ﻿using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
-using System.Collections.ObjectModel;
 using System.Net;
 
 namespace SmartHome.Server.Managers;
@@ -11,13 +10,10 @@ namespace SmartHome.Server.Managers;
 /// </summary>
 public interface ISwitchManager
 {
-    long ManagedSwitchId
-    {
-        get;
-    }
+    SwitchEntity ManagedSwitch { get; }
 
     /// <summary>
-    /// Changes state of managed electrical switch.
+    /// Attempts to change state of managed electrical switch.
     /// </summary>
     /// <param name="expectedState">
     /// Desired state of electrical switch - <see langword="true"/> if the circuit shall be closed 
@@ -26,36 +22,32 @@ public interface ISwitchManager
     /// <param name="cancellationToken">
     /// A token to cancel the asynchronous operation.
     /// </param>
+    /// <returns>
     /// <see langword="true"/> if operation was successful, <see langword="false"/>otherwise.
     /// </returns>
     Task<bool> TryChangeState(bool expectedState, CancellationToken cancellationToken);
 }
 
 /// <inheritdoc cref="ISwitchManager"/>
-public sealed class SwitchManager : ISwitchManager
+public sealed class SwitchManager : FeatureManager, ISwitchManager
 {
-    #region Constants
-    // TODO: Maybe store configuration in some configuration file.
-    private const double RequestTimeout = 5000; // Given in milliseconds.
-    // TODO: Use a static dictionary to map API versions to functions that generate relative endpoint URLs for a specific station.
-    private static Func<SwitchEntity, Uri> Endpoint => switchEntity => new Uri($"switches/{switchEntity.LocalId}");
-    #endregion
-
     #region Properties
-    private readonly IHttpClientFactory _httpClientFactory;
+    // TODO: Move this value to some cinfiguration file.
+    private static readonly TimeSpan s_httpClientTimeout = TimeSpan.FromMilliseconds(5000);
+
     private readonly IStationsRepository _stationsRepository;
     private readonly ISwitchesRepository _switchesRepository;
     private readonly ILogger<SwitchManager> _logger;
 
-    public long ManagedSwitchId { get; init; }
+    public SwitchEntity ManagedSwitch { get; init; }
     #endregion
 
     #region Instantiation
     /// <summary>
     /// Creates new instance of <see cref="SwitchManager"/>.
     /// </summary>
-    /// <param name="managedSwitchId">
-    /// Identifier of switch which shall be controlled by the manager.
+    /// <param name="managedSwitch">
+    /// Entity of the switch managed by created manager instance.
     /// </param>
     /// <param name="httpClientFactory">
     /// Factory which shall be used to obtain instances of <see cref="HttpClient"/> class.
@@ -74,90 +66,27 @@ public sealed class SwitchManager : ISwitchManager
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
     public SwitchManager(
-        long managedSwitchId,
+        SwitchEntity managedSwitch,
         IHttpClientFactory httpClientFactory,
         IStationsRepository stationsRepository,
         ISwitchesRepository switchesRepository,
-        ILogger<SwitchManager> logger)
+        ILogger<SwitchManager> logger) : base(httpClientFactory, s_httpClientTimeout, logger)
     {
-        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        ArgumentNullException.ThrowIfNull(managedSwitch);
         ArgumentNullException.ThrowIfNull(stationsRepository);
         ArgumentNullException.ThrowIfNull(switchesRepository);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _httpClientFactory = httpClientFactory;
         _stationsRepository = stationsRepository;
         _switchesRepository = switchesRepository;
         _logger = logger;
 
-        ManagedSwitchId = managedSwitchId;
+        ManagedSwitch = managedSwitch;
     }
     #endregion
 
     #region Interacitons
-    /// <summary>
-    /// Generates endpoint URL specific for controlling managed switch.
-    /// </summary>
-    /// <param name="managedSwitch">
-    /// Managed switch entity.
-    /// </param>
-    /// <param name="parentStation">
-    /// Entity of parent station associated with the managed switch.
-    /// </param>
-    /// <returns>
-    /// Endpoint URL specific for controlling managed switch.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown, when at least one required reference-type argument is a <see langword="null"/> reference.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if base API URL of the parent station cannot be determined.
-    /// </exception>
-    private Uri GetEndpointUrl(SwitchEntity managedSwitch, StationEntity parentStation)
-    {
-        ArgumentNullException.ThrowIfNull(managedSwitch);
-        ArgumentNullException.ThrowIfNull(parentStation);
-
-        /*
-         * TODO:
-         * Collect information about which protocol station is using,
-         * port number and its API version to be more flexible during endpoint URL constriction.
-         */
-
-        if (parentStation.BaseApiUrl() is not Uri baseStationApiUrl)
-        {
-            throw new InvalidOperationException();
-        }
-
-        Uri endpointRelativeUrl = Endpoint(managedSwitch);
-        var endpointAbsoluteUrl = new Uri(baseStationApiUrl, endpointRelativeUrl);
-
-        return endpointAbsoluteUrl;
-    }
-
-    /// <summary>
-    /// Creates HTTP client complementary to communicate with station associated with the managed switch.
-    /// </summary>
-    /// <returns>
-    /// HTTP client complementary to communicate with station associated with the managed switch.
-    /// </returns>
-    private HttpClient CreateHttpClient()
-    {
-        /*
-         * TODO:
-         * Collect information about which protocol station is using,
-         * so that creation of HTTP client can be more flexible and adapted to specific station types.
-         */
-
-        HttpClient httpClient = _httpClientFactory.CreateClient();
-        httpClient.DefaultRequestVersion = HttpVersion.Version10;   // ESP8266's simple web server only supports only HTTP 1.0.
-        httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
-        httpClient.Timeout = TimeSpan.FromMilliseconds(RequestTimeout);
-
-        return httpClient;
-    }
-
-    /// <inheritdoc cref="ISwitchManager.TryChangeState(bool, CancellationToken)"/>
+    /// <inheritdoc cref="ISwitchManager"/>
     /// <summary>
     /// Sends a command to station associated with managed switch to change its state.
     /// </summary>
@@ -165,55 +94,44 @@ public sealed class SwitchManager : ISwitchManager
     {
         _logger.LogInformation(
             "Attempting to change state of switch: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}]",
-            ManagedSwitchId, expectedSwitchState);
+            ManagedSwitch.Id, expectedSwitchState);
 
-        if (await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: ManagedSwitchId) is not SwitchEntity managedSwitch)
-        {
-            _logger.LogWarning("Switch entity not found: SwitchId=[{SwitchId}]", ManagedSwitchId);
-            return false;
-        }
-
-        if (managedSwitch.ActualState == expectedSwitchState)
+        if (ManagedSwitch.ActualState == expectedSwitchState)
         {
             _logger.LogInformation(
                 "Switch already in expected state: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
-                managedSwitch.Id,
-                managedSwitch.ExpectedState,
-                managedSwitch.ActualState);
+                ManagedSwitch.Id,
+                ManagedSwitch.ExpectedState,
+                ManagedSwitch.ActualState);
 
             return true;
         }
 
-        await _switchesRepository.UpdateSwitchAsync(managedSwitch.Id, updateExpectedState: true, expectedState: expectedSwitchState);
+        await _switchesRepository.UpdateSwitchAsync(ManagedSwitch.Id, updateExpectedState: true, expectedState: expectedSwitchState);
 
-        if (await _stationsRepository.GetSingleStationAsync(filterById: true, id: managedSwitch.StationId) is not StationEntity parentStation)
+        if (await _stationsRepository.GetSingleStationAsync(filterById: true, id: ManagedSwitch.StationId) is not StationEntity parentStation)
         {
             _logger.LogError(
                 "Parent station entity not found: SwitchId=[{SwitchId}], StationId=[{StationId}]",
-                managedSwitch.Id,
-                managedSwitch.StationId);
+                ManagedSwitch.Id,
+                ManagedSwitch.StationId);
 
             return false;
         }
 
-        HttpClient httpClient = CreateHttpClient();
-        Uri url = GetEndpointUrl(managedSwitch, parentStation);
+        if (ManagedSwitch.SwitchUrl(parentStation) is not Uri endpointUrl)
+        {
+            _logger.LogWarning(
+                "Switch endpoint URL was considered as unreachable: SwitchId=[{SwitchId}], StationId=[{StationId}]",
+                ManagedSwitch.Id,
+                ManagedSwitch.StationId);
+
+            return false;
+        }
 
         var request = new SwitchUpdateServerRequest(expectedSwitchState);
-        using var requestJsonContent = JsonContent.Create(request);
+        using HttpContent requestContent = await AsHttpContent(request);
 
-        if (httpClient.DefaultRequestVersion <= HttpVersion.Version10)
-        {
-            /*
-             * Forces full serialization of the request body before transmission.
-             * This ensures the 'Content-Length' header is sent instead of 'Transfer-Encoding: chunked',
-             * which is not supported by the HTTP below version 1.0.
-             * Simple server running on ESP8266 does not support chunked transfer encoding, so this is required to ensure compatibility.
-             */
-            _logger.LogDebug("Buffering request content to calculate Content-Length and prevent chunked transfer:");
-            await requestJsonContent.LoadIntoBufferAsync();
-        }
-        
         bool wasRequestSuccessful = false;
 
         try
@@ -223,8 +141,8 @@ public sealed class SwitchManager : ISwitchManager
              * which is not supported by certain station types (e.g. stations based on the ESP8266 
              * chip running a server using the ESP8266WebServer library).
              */
-            _logger.LogDebug("Sending request to station: Url=[{Url}], Request=[{Request}]", url, request);
-            HttpResponseMessage response = await httpClient.PatchAsync(url, requestJsonContent, cancellationToken);
+            _logger.LogDebug("Sending request to station: Url=[{Url}], Request=[{Request}]", endpointUrl, request);
+            HttpResponseMessage response = await _httpClient.PatchAsync(endpointUrl, requestContent, cancellationToken);
             wasRequestSuccessful = response.StatusCode == HttpStatusCode.NoContent;
 
             if (wasRequestSuccessful)
@@ -256,7 +174,7 @@ public sealed class SwitchManager : ISwitchManager
                 _logger.LogWarning(
                     exception,
                     "Station failed to respond within the allowed timeframe: Timeout=[{Timeout}]",
-                    httpClient.Timeout);
+                    _httpClient.Timeout);
 
                 return false;
             }
@@ -268,7 +186,7 @@ public sealed class SwitchManager : ISwitchManager
         if (wasRequestSuccessful)
         {
             await _switchesRepository.UpdateSwitchAsync(
-                managedSwitch.Id,
+                ManagedSwitch.Id,
                 updateActualState: true,
                 actualState: expectedSwitchState);
 
