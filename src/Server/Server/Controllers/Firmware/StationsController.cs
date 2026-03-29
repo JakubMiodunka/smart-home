@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Server.Controllers;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
@@ -68,18 +70,19 @@ public class StationsController : BaseController
     [HttpPut]
     public async Task<IActionResult> RegisterStation([FromBody] StationRegistrationStationRequest request)
     {
-        _logger.LogInformation("Processing station registration request: MacAddress=[{MacAddress}]", request.StationMacAddress);
-
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Failed to process station registration request:");
-            _logger.LogDebug("Failed to determine station IP address:");
-            
+            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
+
             return BadRequest();
         }
 
-        _logger.LogDebug("Station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
-        _logger.LogDebug("Searching for station entity: MacAddress=[{MacAddress}]", request.StationMacAddress);
+        _logger.LogInformation(
+            "Processing station registration request: StationIpAddress=[{StationIpAddress}], StationMacAddress=[{MacAddress}]",
+            stationIpAddress,
+            request.StationMacAddress);
+
+        _logger.LogDebug("Searching for station entity: StationMacAddress=[{StationMacAddress}]", request.StationMacAddress);
 
         StationEntity? knownStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -91,29 +94,29 @@ public class StationsController : BaseController
             _logger.LogDebug("Station entity not found:");
             _logger.LogDebug("Registering station as a new device within the system:");
 
-            await _stationsRepository.CreateStationAsync(
+            StationEntity newStationEntity = await _stationsRepository.CreateStationAsync(
                 request.StationMacAddress,
                 stationIpAddress,
                 request.StationApiPort,
                 request.StationApiVersion,
                 _timeProvider.GetUtcNow());
 
-            _logger.LogInformation("Station registration successful:");
+            _logger.LogInformation("Station registration successful: StationId=[{StationId}]", newStationEntity.Id);
 
             return NoContent();
         }
 
-        _logger.LogDebug("Station entity found: Id=[{Id}]", knownStationEntity.Id);
+        _logger.LogDebug("Station entity found: StationId=[{Id}]", knownStationEntity.Id);
         _logger.LogDebug("Registering station as already known device:");
 
         DateTimeOffset heartbeatTimestamp = _timeProvider.GetUtcNow();
 
         _logger.LogDebug(
-            "Updating station details: IpAddress=[{IpAddress}], LastHeartbeat=[{LastHeartbeat}]",
+            "Updating station details: StationIpAddress=[{IpAddress}], LastHeartbeat=[{LastHeartbeat}]",
             stationIpAddress,
             heartbeatTimestamp);
 
-        await _stationsRepository.UpdateStationAsync(
+        StationEntity? updatedStationEntity = await _stationsRepository.UpdateStationAsync(
            knownStationEntity.Id,
            updateIpAddress: true,
            ipAddress: stationIpAddress,
@@ -123,6 +126,15 @@ public class StationsController : BaseController
            apiVersion: request.StationApiVersion,
            updateLastHeartbeat: true,
            lastHeartbeat: heartbeatTimestamp);
+
+        if (updatedStationEntity is null)
+        {
+            _logger.LogError("Failed to update repository: StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+                knownStationEntity.Id,
+                stationIpAddress);
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
 
         _logger.LogDebug("Repository updated successfully:");
         _logger.LogInformation("Station registration successful:");
@@ -139,18 +151,18 @@ public class StationsController : BaseController
     [HttpPut("heartbeat")]
     public async Task<IActionResult> UpdateHeartbeatTimestamp()
     {
-        _logger.LogInformation("Processing heartbeat signal:");
-
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Failed to process heartbeat signal:");
-            _logger.LogDebug("Failed to determine station IP address:");
+            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
 
             return BadRequest();
         }
 
-        _logger.LogDebug("Station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
-        _logger.LogDebug("Searching for station entity: IpAddress=[{IpAddress}]", stationIpAddress);
+        _logger.LogInformation(
+            "Processing heartbeat signal: StationIpAddress=[{StationIpAddress}]",
+            stationIpAddress);
+
+        _logger.LogDebug("Searching for station entity: StationIpAddress=[{StationIpAddress}]", stationIpAddress);
 
         StationEntity? knownStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -165,16 +177,25 @@ public class StationsController : BaseController
             return NotFound();
         }
 
-        _logger.LogDebug("Station entity found: Id=[{Id}]", knownStationEntity.Id);
+        _logger.LogDebug("Station entity found: StationId=[{Id}]", knownStationEntity.Id);
 
         DateTimeOffset heartbeatTimestamp = _timeProvider.GetUtcNow();
 
-        _logger.LogDebug("Updating station details: Timestamp=[{Timestamp}]", heartbeatTimestamp);
+        _logger.LogDebug("Updating station details: LastHeartbeat=[{LastHeartbeat}]", heartbeatTimestamp);
 
-        await _stationsRepository.UpdateStationAsync(
+        StationEntity? updatedStationEntity = await _stationsRepository.UpdateStationAsync(
             knownStationEntity.Id,
             updateLastHeartbeat: true,
             lastHeartbeat: heartbeatTimestamp);
+
+        if (updatedStationEntity is null)
+        {
+            _logger.LogError("Failed to update repository: StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+                knownStationEntity.Id,
+                stationIpAddress);
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
 
         _logger.LogDebug("Repository updated successfully:");
         _logger.LogInformation("Heartbeat signal processed successfully:");
