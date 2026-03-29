@@ -73,20 +73,19 @@ public class SwitchesController : BaseController
     [HttpPut]
     public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationStationRequest request)
     {
-        _logger.LogInformation(
-            "Processing switch registration request: SwitchLocalId=[{SwitchLocalId}]",
-            request.SwitchLocalId);
-
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Failed to process switch registration request:");
-            _logger.LogDebug("Failed to determine parent station IP address:");
+            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
 
             return BadRequest();
         }
 
-        _logger.LogDebug("Parent station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
-        _logger.LogDebug("Searching for parent station entity: IpAddress=[{IpAddress}]", stationIpAddress);
+        _logger.LogInformation(
+            "Processing switch registration request: StationIpAddress=[{StationIpAddress}], SwitchLocalId=[{SwitchLocalId}]",
+            stationIpAddress,
+            request.SwitchLocalId);
+
+        _logger.LogDebug("Searching for parent station entity: StationIpAddress=[{StationIpAddress}]", stationIpAddress);
 
         StationEntity? parentStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -101,7 +100,7 @@ public class SwitchesController : BaseController
             return NotFound();
         }
 
-        _logger.LogDebug("Parent station entity found: Id=[{Id}]", parentStationEntity.Id);
+        _logger.LogDebug("Parent station entity found: StationId=[{Id}]", parentStationEntity.Id);
 
         _logger.LogDebug(
             "Searching for switch entity: StationId=[{StationId}], LocalId=[{LocalId}]",
@@ -135,14 +134,16 @@ public class SwitchesController : BaseController
                 DefaultExpectedSwitchState,
                 actualState: DefaultActualSwitchState);
 
-            _logger.LogDebug("Switch entity created successfully: Id=[{Id}]", newSwitchEntity.Id);
+            _logger.LogDebug("Switch entity created successfully: SwitchId=[{Id}]", newSwitchEntity.Id);
 
             response = new SwitchRegistrationServerResponse(newSwitchEntity.Id, DefaultExpectedSwitchState);
         }
         else
         {
-            _logger.LogDebug("Switch entity found: Id=[{Id}]", knownSwitchEntity.Id);
+            _logger.LogDebug("Switch entity found: SwitchId=[{Id}]", knownSwitchEntity.Id);
             _logger.LogDebug("Registering switch as already known device:");
+
+            // Nothing to be done.
 
             response = new SwitchRegistrationServerResponse(knownSwitchEntity.Id, knownSwitchEntity.ExpectedState);
         }
@@ -167,18 +168,19 @@ public class SwitchesController : BaseController
     [HttpPatch("{switchId}")]
     public async Task<IActionResult> UpdateSwitch(long switchId, [FromBody] SwitchUpdateStationRequest request)
     {
-        _logger.LogInformation("Processing switch update request: SwitchId=[{SwitchId}]", switchId);
-
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Failed to process switch update request:");
-            _logger.LogDebug("Failed to determine parent station IP address:");
+            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
 
             return BadRequest();
         }
 
-        _logger.LogDebug("Parent station IP address determined: IpAddress=[{IpAddress}]", stationIpAddress);
-        _logger.LogDebug("Searching for parent station entity: IpAddress=[{IpAddress}]", stationIpAddress);
+        _logger.LogInformation(
+            "Processing switch update request: StationIpAddress=[{StationIpAddress}], SwitchId=[{SwitchId}]",
+            stationIpAddress,
+            switchId);
+
+        _logger.LogDebug("Searching for parent station entity: StationIpAddress=[{StationIpAddress}]", stationIpAddress);
 
         StationEntity? parentStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -187,13 +189,14 @@ public class SwitchesController : BaseController
 
         if (parentStationEntity is null)
         {
-            _logger.LogWarning("Failed to process switch update request:");
-            _logger.LogDebug("Parent station entity not found:");
+            _logger.LogWarning("Request processing failed: Message=[{Message}], StationIpAddress=[{StationIpAddress}]",
+                "Parent station entity not found.",
+                stationIpAddress);
 
             return NotFound();
         }
 
-        _logger.LogDebug("Parent station entity found: Id=[{Id}]", parentStationEntity.Id);
+        _logger.LogDebug("Parent station entity found: StationId=[{StationId}]", parentStationEntity.Id);
 
         _logger.LogDebug(
             "Searching for switch entity: StationId=[{StationId}], SwitchId=[{SwitchId}]",
@@ -209,19 +212,29 @@ public class SwitchesController : BaseController
 
         if (knownSwitchEntity is null)
         {
-            _logger.LogWarning("Failed to process switch update request:");
-            _logger.LogDebug("Switch entity not found:");
+            _logger.LogWarning("Request processing failed: Message=[{Message}], StationIpAddress=[{StationIpAddress}], SwitchId=[{SwitchId}]",
+                "Switch not found.",
+                stationIpAddress, switchId);
 
             return NotFound();
         }
 
-        _logger.LogDebug("Switch entity found: Id=[{Id}]", knownSwitchEntity.Id);
+        _logger.LogDebug("Switch entity found: SwitchId=[{SwitchId}]", knownSwitchEntity.Id);
         _logger.LogDebug("Updating switch details: ActualSwitchState=[{ActualSwitchState}]", request.ActualSwitchState);
 
-        await _switchesRepository.UpdateSwitchAsync(
+        SwitchEntity? updatedSwitchEntity = await _switchesRepository.UpdateSwitchAsync(
             knownSwitchEntity.Id,
             updateActualState: true,
             actualState: request.ActualSwitchState);
+
+        if (updatedSwitchEntity is null)
+        {
+            _logger.LogError("Failed to update repository: SwitchId=[{}], StationIpAddress=[{IpAddress}]",
+                knownSwitchEntity.Id,
+                stationIpAddress);
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
 
         _logger.LogDebug("Repository updated successfully:");
         _logger.LogInformation("Switch update request processed successfully:");

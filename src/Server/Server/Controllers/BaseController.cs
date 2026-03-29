@@ -32,6 +32,7 @@ public abstract class BaseController : ControllerBase
     #endregion
 
     #region Utilities
+    /// TODO: Checking if caller IP address is available in every controller method generates too much boiler plate code. Rework needed.
     /// <summary>
     /// Attempts to retrieve the remote IP address of the client from the current HTTP context.
     /// </summary>

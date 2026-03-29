@@ -70,9 +70,7 @@ public class SwitchesController : BaseController
     {
         if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
         {
-            _logger.LogWarning(
-                "Request processing failed: Message=[{Message}]",
-                "Failed to determine client IP address.");
+            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
 
             return BadRequest();
         }
@@ -105,9 +103,7 @@ public class SwitchesController : BaseController
     {
         if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
         {
-            _logger.LogWarning(
-                "Request processing failed: Message=[{Message}]",
-                "Failed to determine client IP address.");
+            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
 
             return BadRequest();
         }
@@ -129,7 +125,6 @@ public class SwitchesController : BaseController
         return switchEntity is null ? NotFound() : Ok(switchEntity);
     }
 
-    /// TODO: Add logging.
     /// <summary>
     /// Updates the data related to particular electrical switch according to details provided in request body.
     /// </summary>
@@ -151,22 +146,49 @@ public class SwitchesController : BaseController
         [FromBody] SwitchUpdateClientRequest request,
         CancellationToken cancellationToken)
     {
+        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
+        {
+            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
+
+            return BadRequest();
+        }
+
+        _logger.LogInformation(
+            "Processing request to update a switch: ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}]",
+            clientIpAddress,
+            switchId);
+
         SwitchEntity? switchEntity = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: switchId);
     
         if (switchEntity is null)
         {
+            _logger.LogWarning(
+                "Request processing failed: Message=[{Message}], SwitchId=[{SwitchId}], ClientIpAddress=[{ClientIpAddress}]",
+                "Switch not found.",
+                switchId,
+                clientIpAddress);
+
             return NotFound();
         }
     
         ISwitchManager switchManager = _switchManagerFactory.CreateFor(switchEntity);
-    
-        bool wasOperationSuccessful = await switchManager.TryChangeState(request.ExpectedSwitchState, cancellationToken);
-    
-        if (wasOperationSuccessful)
+
+        if (await switchManager.TryChangeState(request.ExpectedSwitchState, cancellationToken))
         {
+            _logger.LogInformation(
+                "Request processed successfully: ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}",
+                clientIpAddress,
+                switchId);
+            
             return NoContent();
         }
-    
+
+        _logger.LogInformation(
+            "Request processing failed: Message=[{Message}], SwitchId=[{SwitchId}], ClientIpAddress=[{ClientIpAddress}]",
+            "Unable to update switch.",
+            switchId,
+            clientIpAddress);
+
         return StatusCode(StatusCodes.Status503ServiceUnavailable);
     }
 }
