@@ -94,7 +94,7 @@ public static class StationEntityExtensions
             && stationEntity.ApiPort is int apiPort
             && stationEntity.ApiVersion is byte apiVersion)
         {
-            var builder = new UriBuilder(Uri.UriSchemeHttp, ipAddress.ToString(), apiPort, $"api/v{apiVersion}");
+            var builder = new UriBuilder(Uri.UriSchemeHttp, ipAddress.ToString(), apiPort, $"api/v{apiVersion}/");
             return builder.Uri;
         }
 
