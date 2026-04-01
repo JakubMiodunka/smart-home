@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Diagnostics.Latency;
-using NUnit.Framework.Internal;
+﻿using NUnit.Framework.Internal;
 using SmartHome.Server.Data.Models.Entities;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -73,9 +72,11 @@ internal static class RandomizerExtensions
         long id = randomizer.NextInt64(1, long.MaxValue);
         PhysicalAddress macAddress = randomizer.NextMacAddress();
         IPAddress ipAddress = randomizer.NextIpAddress();
+        int apiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1);
+        byte apiVersion = randomizer.NextByte();
         DateTimeOffset lastHeartbeat = randomizer.NextDateTimeOffset();
 
-        return new StationEntity(id, macAddress, ipAddress, lastHeartbeat);
+        return new StationEntity(id, macAddress, ipAddress, apiPort, apiVersion, lastHeartbeat);
     }
 
     public static SwitchEntity NextSwitchEntity(this Randomizer randomizer)

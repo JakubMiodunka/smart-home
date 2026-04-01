@@ -6,7 +6,6 @@ using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Controllers.Firmware;
-using SmartHome.Server.Data;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
@@ -110,22 +109,24 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var newStationEntity = randomizer.NextStationEntity();
+        var stationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub = 
-            TestDataGenerator.CreateHttpContextAccessorFake(newStationEntity.IpAddress);
+            TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
 
         stationsRepositoryMock.Setup(mock => mock
             .CreateStationAsync(
-                newStationEntity.MacAddress,
-                newStationEntity.IpAddress,
-                newStationEntity.LastHeartbeat))
-            .ReturnsAsync(newStationEntity);
+                stationEntity.MacAddress,
+                stationEntity.IpAddress,
+                stationEntity.ApiPort,
+                stationEntity.ApiVersion,
+                stationEntity.LastHeartbeat))
+            .ReturnsAsync(stationEntity);
 
         var timeProviderStub = new FakeTimeProvider();
-        timeProviderStub.SetUtcNow(newStationEntity.LastHeartbeat);
+        timeProviderStub.SetUtcNow(stationEntity.LastHeartbeat);
 
         var loggerMock = new FakeLogger<StationsController>();
 
@@ -135,14 +136,20 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationStationRequest(newStationEntity.MacAddress);
+        var request = new StationRegistrationStationRequest(
+            stationEntity.MacAddress,
+            stationEntity.ApiPort!.Value,
+            stationEntity.ApiVersion!.Value);
+
         IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(
-                newStationEntity.MacAddress,
-                newStationEntity.IpAddress,
-                newStationEntity.LastHeartbeat),
+                stationEntity.MacAddress,
+                stationEntity.IpAddress,
+                stationEntity.ApiPort,
+                stationEntity.ApiVersion,
+                stationEntity.LastHeartbeat),
             Times.Once);
 
         response.AssertNoContentResult();
@@ -162,7 +169,10 @@ public sealed class StationsControllerTests
         StationEntity updatedStationEntity = stationEntityBeforeUpdate with
         {
             IpAddress = randomizer.NextIpAddress(),
-            LastHeartbeat = randomizer.NextDateTimeOffset()   // Successive heartbeat timestamps do not need to be chronological.
+            /* There is no validation if successive heartbeat timestamps are chronological.
+             * In real scenario it is enforced by the usage of TimeProvider instance instead of FakeTimeProvider.
+             */
+            LastHeartbeat = randomizer.NextDateTimeOffset()
         };
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
@@ -182,9 +192,13 @@ public sealed class StationsControllerTests
 
         stationsRepositoryMock.Setup(mock => mock
             .UpdateStationAsync(
-                stationEntityBeforeUpdate.Id,
+                updatedStationEntity.Id,
                 updateIpAddress: true,
-                ipAddress: updatedStationEntity.IpAddress))
+                ipAddress: updatedStationEntity.IpAddress,
+                updateApiPort: true,
+                apiPort: updatedStationEntity.ApiPort,
+                updateApiVersion: true,
+                apiVersion: updatedStationEntity.ApiVersion))
             .ReturnsAsync(updatedStationEntity);
 
         var timeProviderStub = new FakeTimeProvider();
@@ -198,7 +212,11 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationStationRequest(updatedStationEntity.MacAddress);
+        var request = new StationRegistrationStationRequest(
+            updatedStationEntity.MacAddress,
+            updatedStationEntity.ApiPort!.Value,
+            updatedStationEntity.ApiVersion!.Value);
+
         IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         stationsRepositoryMock.Verify(mock => mock
@@ -206,6 +224,10 @@ public sealed class StationsControllerTests
                 updatedStationEntity.Id, 
                 updateIpAddress: true,
                 ipAddress: updatedStationEntity.IpAddress,
+                updateApiPort: true,
+                apiPort: updatedStationEntity.ApiPort,
+                updateApiVersion: true,
+                apiVersion: updatedStationEntity.ApiVersion,
                 updateLastHeartbeat: true,
                 lastHeartbeat: updatedStationEntity.LastHeartbeat),
             Times.Once);
@@ -222,13 +244,13 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity newStationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextStationEntity() with
         {
             IpAddress = null
         };
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(newStationEntity.IpAddress);
+            TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
 
         var stationsRepositoryStub = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
@@ -240,10 +262,83 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationStationRequest(newStationEntity.MacAddress);
+        var request = new StationRegistrationStationRequest(
+            stationEntity.MacAddress,
+            stationEntity.ApiPort!.Value,
+            stationEntity.ApiVersion!.Value);
+
         IActionResult response = await controllerUnderTest.RegisterStation(request);
 
         response.AssertBadRequestResult();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+    }
+
+    [Test]
+    public async Task RegistrationReturnsInternalServerErrorIfRepositoryUpdateDuringRegistrationOfKnownStationFails()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationEntityBeforeUpdate = randomizer.NextStationEntity();
+
+        StationEntity updatedStationEntity = stationEntityBeforeUpdate with
+        {
+            IpAddress = randomizer.NextIpAddress(),
+            /* There is no validation if successive heartbeat timestamps are chronological.
+             * In real scenario it is enforced by the usage of TimeProvider instance instead of FakeTimeProvider.
+             */
+            LastHeartbeat = randomizer.NextDateTimeOffset()
+        };
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            TestDataGenerator.CreateHttpContextAccessorFake(updatedStationEntity.IpAddress);
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        stationsRepositoryMock.Setup(mock => mock
+            .GetSingleStationAsync(
+                filterById: false,
+                id: It.IsAny<long?>(),
+                filterByIpAddress: false,
+                ipAddress: It.IsAny<IPAddress?>(),
+                filterByMacAddress: true,
+                macAddress: stationEntityBeforeUpdate.MacAddress))
+            .ReturnsAsync(stationEntityBeforeUpdate);
+
+        var timeProviderStub = new FakeTimeProvider();
+        timeProviderStub.SetUtcNow(updatedStationEntity.LastHeartbeat);
+
+        var loggerMock = new FakeLogger<StationsController>();
+
+        var controllerUnderTest = new StationsController(
+            httpContextAccessorStub.Object,
+            stationsRepositoryMock.Object,
+            timeProviderStub,
+            loggerMock);
+
+        var request = new StationRegistrationStationRequest(
+            updatedStationEntity.MacAddress,
+            updatedStationEntity.ApiPort!.Value,
+            updatedStationEntity.ApiVersion!.Value);
+
+        IActionResult response = await controllerUnderTest.RegisterStation(request);
+
+        stationsRepositoryMock.Verify(mock => mock
+            .UpdateStationAsync(
+                updatedStationEntity.Id,
+                updateIpAddress: true,
+                ipAddress: updatedStationEntity.IpAddress,
+                updateApiPort: true,
+                apiPort: updatedStationEntity.ApiPort,
+                updateApiVersion: true,
+                apiVersion: updatedStationEntity.ApiVersion,
+                updateLastHeartbeat: true,
+                lastHeartbeat: updatedStationEntity.LastHeartbeat),
+            Times.Once);
+
+        response.AssertInternalServerError();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -264,7 +359,10 @@ public sealed class StationsControllerTests
 
         StationEntity updatedStationEntity = stationEntityBeforeUpdate with
         {
-            LastHeartbeat = randomizer.NextDateTimeOffset()   // Successive heartbeat timestamps do not need to be chronological.
+            /* There is no validation if successive heartbeat timestamps are chronological.
+             * In real scenario it is enforced by the usage of TimeProvider instance instead of FakeTimeProvider.
+             */
+            LastHeartbeat = randomizer.NextDateTimeOffset()
         };
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
@@ -284,6 +382,10 @@ public sealed class StationsControllerTests
                 updatedStationEntity.Id,
                 updateIpAddress: false,
                 ipAddress: null,
+                updateApiPort: false,
+                apiPort: null,
+                updateApiVersion: false,
+                apiVersion: null,
                 updateLastHeartbeat: true,
                 lastHeartbeat: updatedStationEntity.LastHeartbeat))
             .ReturnsAsync(updatedStationEntity);
@@ -299,18 +401,22 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
+        IActionResult response = await controllerUnderTest.UpdateHeartbeatTimestamp();
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(
                 updatedStationEntity.Id,
                 updateIpAddress: false,
                 ipAddress: null,
+                updateApiPort: false,
+                apiPort: null,
+                updateApiVersion: false,
+                apiVersion: null,
                 updateLastHeartbeat: true,
                 lastHeartbeat: updatedStationEntity.LastHeartbeat),
             Times.Once);
 
-        updateResult.AssertNoContentResult();
+        response.AssertNoContentResult();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -332,7 +438,11 @@ public sealed class StationsControllerTests
 
         StationEntity updatedStationEntity = stationEntity with
         {
-            LastHeartbeat = randomizer.NextDateTimeOffset()   // Successive heartbeat timestamps do not need to be chronological.
+            /* 
+             * There is no validation if successive heartbeat timestamps are chronological.
+             * In real scenario it is enforced by the usage of TimeProvider instance instead of FakeTimeProvider.
+             */
+            LastHeartbeat = randomizer.NextDateTimeOffset()
         };
 
         var stationsRepositoryStub = new Mock<IStationsRepository>();
@@ -345,9 +455,9 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
+        IActionResult response = await controllerUnderTest.UpdateHeartbeatTimestamp();
 
-        updateResult.AssertBadRequestResult();
+        response.AssertBadRequestResult();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
