@@ -80,5 +80,8 @@ internal static class IActionResultExtensions
 
     public static void AssertNotFoundResult(this IActionResult actionResultUnderTest, int expectedStatusCode = StatusCodes.Status404NotFound) =>
         AssertStatusCodeActionResult<NotFoundResult>(actionResultUnderTest, expectedStatusCode);
+
+    public static void AssertInternalServerError(this IActionResult actionResultUnderTest, int expectedStatusCode = StatusCodes.Status500InternalServerError) =>
+        AssertStatusCodeActionResult<StatusCodeResult>(actionResultUnderTest, expectedStatusCode);
     #endregion
 }
