@@ -100,7 +100,7 @@ public class StationsController : BaseController
 
             DateTimeOffset newStationHeartbeatTimestamp = _timeProvider.GetUtcNow();
 
-            _logger.LogDebug("Creating new station entity in repository: StationMacAddress=[{StationMacAddress}], StationIpAddress=[{IpAddress}], " +
+            _logger.LogDebug("Creating new station entity: StationMacAddress=[{StationMacAddress}], StationIpAddress=[{IpAddress}], " +
                 "StationApiPort=[{StationApiPort}], StationApiVersion=[{StationApiVersion}], LastHeartbeat=[{LastHeartbeat}]",
                 request.StationMacAddress,
                 stationIpAddress,
