@@ -401,7 +401,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.UpdateHeartbeatTimestamp();
+        IActionResult response = await controllerUnderTest.ProcessHeartbeatSignal();
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(
@@ -455,7 +455,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.UpdateHeartbeatTimestamp();
+        IActionResult response = await controllerUnderTest.ProcessHeartbeatSignal();
 
         response.AssertBadRequestResult();
 
@@ -484,7 +484,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        IActionResult updateResult = await controllerUnderTest.UpdateHeartbeatTimestamp();
+        IActionResult updateResult = await controllerUnderTest.ProcessHeartbeatSignal();
 
         updateResult.AssertNotFoundResult();
 
