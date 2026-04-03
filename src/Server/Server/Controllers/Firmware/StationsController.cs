@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Server.Controllers;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
@@ -72,7 +70,9 @@ public class StationsController : BaseController
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
+            _logger.LogWarning(
+                "Station registration request rejected: Message=[{Message}]",
+                "Failed to determine client IP address.");
 
             return BadRequest();
         }
@@ -153,7 +153,9 @@ public class StationsController : BaseController
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
+            _logger.LogWarning(
+                "Processing heartbeat signal failed: Message=[{Message}]",
+                "Failed to determine client IP address.");
 
             return BadRequest();
         }
@@ -171,8 +173,9 @@ public class StationsController : BaseController
 
         if (knownStationEntity is null)
         {
-            _logger.LogWarning("Failed to process heartbeat signal:");
-            _logger.LogDebug("Station entity not found:");
+            _logger.LogWarning(
+                "Processing heartbeat signal failed: Message=[{Message}]",
+                "Station entity not found:");
 
             return NotFound();
         }
