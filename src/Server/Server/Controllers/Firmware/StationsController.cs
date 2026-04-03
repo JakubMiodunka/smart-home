@@ -149,7 +149,7 @@ public class StationsController : BaseController
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPut("heartbeat")]
-    public async Task<IActionResult> UpdateHeartbeatTimestamp()
+    public async Task<IActionResult> ProcessHeartbeatSignal()
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
