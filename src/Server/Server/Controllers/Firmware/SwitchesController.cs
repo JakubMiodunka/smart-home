@@ -75,7 +75,9 @@ public class SwitchesController : BaseController
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
-            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
+            _logger.LogWarning(
+                "Switch registration request rejected: Message=[{Message}]",
+                "Failed to determine client IP address.");
 
             return BadRequest();
         }
@@ -85,7 +87,9 @@ public class SwitchesController : BaseController
             stationIpAddress,
             request.SwitchLocalId);
 
-        _logger.LogDebug("Searching for parent station entity: StationIpAddress=[{StationIpAddress}]", stationIpAddress);
+        _logger.LogDebug(
+            "Searching for parent station entity: StationIpAddress=[{StationIpAddress}]",
+            stationIpAddress);
 
         StationEntity? parentStationEntity =
             await _stationsRepository.GetSingleStationAsync(
@@ -94,8 +98,9 @@ public class SwitchesController : BaseController
 
         if (parentStationEntity is null)
         {
-            _logger.LogWarning("Failed to process switch registration request:");
-            _logger.LogDebug("Parent station entity not found:");
+            _logger.LogWarning(
+                "Failed to process switch registration request: Message=[{Message}]",
+                "Parent station entity not found.");
 
             return NotFound();
         }
@@ -119,7 +124,7 @@ public class SwitchesController : BaseController
         if (knownSwitchEntity is null)
         {
             _logger.LogDebug("Switch entity not found:");
-            _logger.LogDebug("Registering switch as a new device within the system:");
+            _logger.LogInformation("Registering switch as a new device within the system:");
 
             _logger.LogDebug(
                 "Creating new switch entity: StationId=[{StationId}], LocalId=[{LocalId}], ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
@@ -141,7 +146,10 @@ public class SwitchesController : BaseController
         else
         {
             _logger.LogDebug("Switch entity found: SwitchId=[{Id}]", knownSwitchEntity.Id);
-            _logger.LogDebug("Registering switch as already known device:");
+
+            _logger.LogInformation(
+                "Registering switch as already known device: SwitchId=[{Id}]",
+                knownSwitchEntity.Id);
 
             // Nothing to be done.
 
