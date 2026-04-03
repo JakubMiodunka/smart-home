@@ -25,33 +25,35 @@ public sealed class StationsControllerTests
     public void InstantiationPossible()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryStub.Object,
+            stationsRepositoryMock.Object,
             timeProviderStub,
             loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
+        stationsRepositoryMock.AssertThatNoDataModifications();
     }
 
     [Test]
     public void InstantiationImpossibleUsingNullReferenceAsHttpContextAccessor()
     {
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             null!,
-            stationsRepositoryStub.Object,
+            stationsRepositoryMock.Object,
             timeProviderStub,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+        stationsRepositoryMock.AssertThatNoDataModifications();
     }
 
     [Test]
@@ -74,32 +76,34 @@ public sealed class StationsControllerTests
     public void InstantiationImpossibleUsingNullReferenceAsTimeProvider()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<StationsController>();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryStub.Object,
+            stationsRepositoryMock.Object,
             null!,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+        stationsRepositoryMock.AssertThatNoDataModifications();
     }
 
     [Test]
     public void InstantiationImpossibleUsingNullReferenceAsLogger()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
 
         TestDelegate actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryStub.Object,
+            stationsRepositoryMock.Object,
             timeProviderStub,
             null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+        stationsRepositoryMock.AssertThatNoDataModifications();
     }
     #endregion
 
@@ -142,6 +146,7 @@ public sealed class StationsControllerTests
             stationEntity.ApiVersion!.Value);
 
         IActionResult response = await controllerUnderTest.RegisterStation(request);
+        response.AssertNoContentResult();
 
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(
@@ -152,7 +157,18 @@ public sealed class StationsControllerTests
                 stationEntity.LastHeartbeat),
             Times.Once);
 
-        response.AssertNoContentResult();
+        stationsRepositoryMock.Verify(mock => mock
+            .UpdateStationAsync(
+                It.IsAny<long>(),
+                It.IsAny<bool>(),
+                It.IsAny<IPAddress?>(),
+                It.IsAny<bool>(),
+                It.IsAny<int?>(),
+                It.IsAny<bool>(),
+                It.IsAny<byte?>(),
+                It.IsAny<bool>(),
+                It.IsAny<DateTimeOffset?>()),
+            Times.Never);
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -218,6 +234,16 @@ public sealed class StationsControllerTests
             updatedStationEntity.ApiVersion!.Value);
 
         IActionResult response = await controllerUnderTest.RegisterStation(request);
+        response.AssertNoContentResult();
+
+        stationsRepositoryMock.Verify(mock => mock
+            .CreateStationAsync(
+                It.IsAny<PhysicalAddress>(),
+                It.IsAny<IPAddress?>(),
+                It.IsAny<int?>(),
+                It.IsAny<byte?>(),
+                It.IsAny<DateTimeOffset>()),
+            Times.Never);
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(
@@ -231,8 +257,6 @@ public sealed class StationsControllerTests
                 updateLastHeartbeat: true,
                 lastHeartbeat: updatedStationEntity.LastHeartbeat),
             Times.Once);
-
-        response.AssertNoContentResult();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -252,13 +276,13 @@ public sealed class StationsControllerTests
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
 
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryStub.Object,
+            stationsRepositoryMock.Object,
             timeProviderStub,
             loggerMock);
 
@@ -268,8 +292,9 @@ public sealed class StationsControllerTests
             stationEntity.ApiVersion!.Value);
 
         IActionResult response = await controllerUnderTest.RegisterStation(request);
-
         response.AssertBadRequestResult();
+
+        stationsRepositoryMock.AssertThatNoDataModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -325,6 +350,16 @@ public sealed class StationsControllerTests
             updatedStationEntity.ApiVersion!.Value);
 
         IActionResult response = await controllerUnderTest.RegisterStation(request);
+        response.AssertInternalServerError();
+
+        stationsRepositoryMock.Verify(mock => mock
+            .CreateStationAsync(
+                It.IsAny<PhysicalAddress>(),
+                It.IsAny<IPAddress?>(),
+                It.IsAny<int?>(),
+                It.IsAny<byte?>(),
+                It.IsAny<DateTimeOffset>()),
+            Times.Never);
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(
@@ -338,8 +373,6 @@ public sealed class StationsControllerTests
                 updateLastHeartbeat: true,
                 lastHeartbeat: updatedStationEntity.LastHeartbeat),
             Times.Once);
-
-        response.AssertInternalServerError();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -404,6 +437,16 @@ public sealed class StationsControllerTests
             loggerMock);
 
         IActionResult response = await controllerUnderTest.ProcessHeartbeatSignal();
+        response.AssertNoContentResult();
+
+        stationsRepositoryMock.Verify(mock => mock
+            .CreateStationAsync(
+                It.IsAny<PhysicalAddress>(),
+                It.IsAny<IPAddress?>(),
+                It.IsAny<int?>(),
+                It.IsAny<byte?>(),
+                It.IsAny<DateTimeOffset>()),
+            Times.Never);
 
         stationsRepositoryMock.Verify(mock => mock
             .UpdateStationAsync(
@@ -417,8 +460,6 @@ public sealed class StationsControllerTests
                 updateLastHeartbeat: true,
                 lastHeartbeat: updatedStationEntity.LastHeartbeat),
             Times.Once);
-
-        response.AssertNoContentResult();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -447,19 +488,20 @@ public sealed class StationsControllerTests
             LastHeartbeat = randomizer.NextDateTimeOffset()
         };
 
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
         var loggerMock = new FakeLogger<StationsController>();
 
         var controllerUnderTest = new StationsController(
             httpContextAccessorStub.Object,
-            stationsRepositoryStub.Object,
+            stationsRepositoryMock.Object,
             timeProviderStub,
             loggerMock);
 
         IActionResult response = await controllerUnderTest.ProcessHeartbeatSignal();
-
         response.AssertBadRequestResult();
+
+        stationsRepositoryMock.AssertThatNoDataModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -488,8 +530,9 @@ public sealed class StationsControllerTests
             loggerMock);
 
         IActionResult updateResult = await controllerUnderTest.ProcessHeartbeatSignal();
-
         updateResult.AssertNotFoundResult();
+
+        stationsRepositoryMock.AssertThatNoDataModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
