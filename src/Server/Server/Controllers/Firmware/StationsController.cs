@@ -78,9 +78,9 @@ public class StationsController : BaseController
         }
 
         _logger.LogInformation(
-            "Processing station registration request: StationIpAddress=[{StationIpAddress}], StationMacAddress=[{MacAddress}]",
-            stationIpAddress,
-            request.StationMacAddress);
+            "Processing station registration request: StationMacAddress=[{MacAddress}], StationIpAddress=[{StationIpAddress}]",
+            request.StationMacAddress,
+            stationIpAddress);
 
         _logger.LogDebug("Searching for station entity: StationMacAddress=[{StationMacAddress}]", request.StationMacAddress);
 
@@ -91,30 +91,56 @@ public class StationsController : BaseController
 
         if (knownStationEntity is null)
         {
-            _logger.LogDebug("Station entity not found:");
-            _logger.LogDebug("Registering station as a new device within the system:");
+            _logger.LogDebug("Station entity not found: StationMacAddress=[{MacAddress}]", request.StationMacAddress);
+
+            _logger.LogInformation(
+                "Registering station as a new device within the system: StationMacAddress=[{MacAddress}], StationIpAddress=[{StationIpAddress}]",
+                request.StationMacAddress,
+                stationIpAddress);
+
+            DateTimeOffset newStationHeartbeatTimestamp = _timeProvider.GetUtcNow();
+
+            _logger.LogDebug("Creating new station entity in repository: StationMacAddress=[{StationMacAddress}], StationIpAddress=[{IpAddress}], " +
+                "StationApiPort=[{StationApiPort}], StationApiVersion=[{StationApiVersion}], LastHeartbeat=[{LastHeartbeat}]",
+                request.StationMacAddress,
+                stationIpAddress,
+                request.StationApiPort,
+                request.StationApiVersion,
+                newStationHeartbeatTimestamp);
 
             StationEntity newStationEntity = await _stationsRepository.CreateStationAsync(
                 request.StationMacAddress,
                 stationIpAddress,
                 request.StationApiPort,
                 request.StationApiVersion,
-                _timeProvider.GetUtcNow());
+                newStationHeartbeatTimestamp);
 
-            _logger.LogInformation("Station registration successful: StationId=[{StationId}]", newStationEntity.Id);
+            _logger.LogDebug("Repository updated successfully: StationId=[{StationId}]", newStationEntity.Id);
+
+            _logger.LogInformation(
+                "Station registration successful: StationId=[{StationId}], StationIpAddress=[{StationIpAddress}]",
+                newStationEntity.Id,
+                newStationEntity.IpAddress);
 
             return NoContent();
         }
 
         _logger.LogDebug("Station entity found: StationId=[{Id}]", knownStationEntity.Id);
-        _logger.LogDebug("Registering station as already known device:");
+        _logger.LogInformation(
+            "Registering station as already known device: StationId=[{Id}], StationIpAddress=[{StationIpAddress}]",
+            knownStationEntity.Id,
+            stationIpAddress);
 
-        DateTimeOffset heartbeatTimestamp = _timeProvider.GetUtcNow();
+        DateTimeOffset knownStationHeartbeatTimestamp = _timeProvider.GetUtcNow();
 
         _logger.LogDebug(
-            "Updating station details: StationIpAddress=[{IpAddress}], LastHeartbeat=[{LastHeartbeat}]",
+            "Updating station details: StationId=[{StationId}], StationIpAddress=[{IpAddress}], StationApiPort=[{StationApiPort}], " +
+            "StationApiVersion=[{StationApiVersion}], LastHeartbeat=[{LastHeartbeat}]",
+            knownStationEntity.Id,
             stationIpAddress,
-            heartbeatTimestamp);
+            request.StationApiPort,
+            request.StationApiVersion,
+            knownStationHeartbeatTimestamp);
 
         StationEntity? updatedStationEntity = await _stationsRepository.UpdateStationAsync(
            knownStationEntity.Id,
@@ -125,19 +151,26 @@ public class StationsController : BaseController
            updateApiVersion: true,
            apiVersion: request.StationApiVersion,
            updateLastHeartbeat: true,
-           lastHeartbeat: heartbeatTimestamp);
+           lastHeartbeat: knownStationHeartbeatTimestamp);
 
         if (updatedStationEntity is null)
         {
-            _logger.LogError("Failed to update repository: StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+            _logger.LogError(
+                "Failed to process station registration request: Message=[{Message}], StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+                "Failed to update repository.",
                 knownStationEntity.Id,
                 stationIpAddress);
 
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        _logger.LogDebug("Repository updated successfully:");
-        _logger.LogInformation("Station registration successful:");
+        _logger.LogDebug(
+            "Repository updated successfully: StationId=[{StationId}]", updatedStationEntity.Id);
+
+        _logger.LogInformation(
+            "Station registration successful: StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+            updatedStationEntity.Id,
+            updatedStationEntity.IpAddress);
 
         return NoContent();
     }
@@ -174,34 +207,43 @@ public class StationsController : BaseController
         if (knownStationEntity is null)
         {
             _logger.LogWarning(
-                "Processing heartbeat signal failed: Message=[{Message}]",
-                "Station entity not found:");
+                "Processing heartbeat signal failed: Message=[{Message}], StationIpAddress=[{StationIpAddress}]",
+                "Station entity not found.",
+                stationIpAddress);
 
             return NotFound();
         }
 
         _logger.LogDebug("Station entity found: StationId=[{Id}]", knownStationEntity.Id);
 
-        DateTimeOffset heartbeatTimestamp = _timeProvider.GetUtcNow();
+        DateTimeOffset newHeartbeatTimestamp = _timeProvider.GetUtcNow();
 
-        _logger.LogDebug("Updating station details: LastHeartbeat=[{LastHeartbeat}]", heartbeatTimestamp);
+        _logger.LogDebug(
+            "Updating station details: StationId=[{Id}], LastHeartbeat=[{LastHeartbeat}]",
+            knownStationEntity.Id, newHeartbeatTimestamp);
 
         StationEntity? updatedStationEntity = await _stationsRepository.UpdateStationAsync(
             knownStationEntity.Id,
             updateLastHeartbeat: true,
-            lastHeartbeat: heartbeatTimestamp);
+            lastHeartbeat: newHeartbeatTimestamp);
 
         if (updatedStationEntity is null)
         {
-            _logger.LogError("Failed to update repository: StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+            _logger.LogError(
+                "Failed to process heartbeat signal: Message=[{Message}], StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+                 "Failed to update repository.",
                 knownStationEntity.Id,
                 stationIpAddress);
 
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        _logger.LogDebug("Repository updated successfully:");
-        _logger.LogInformation("Heartbeat signal processed successfully:");
+        _logger.LogDebug("Repository updated successfully: StationId=[{StationId}]", updatedStationEntity.Id);
+
+        _logger.LogInformation(
+            "Heartbeat signal processed successfully: StationId=[{StationId}], StationIpAddress=[{IpAddress}]",
+            updatedStationEntity.Id,
+            updatedStationEntity.IpAddress);
 
         return NoContent();
     }

@@ -273,7 +273,8 @@ public sealed class StationsControllerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
     [Test]
@@ -342,7 +343,8 @@ public sealed class StationsControllerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
 
@@ -461,7 +463,8 @@ public sealed class StationsControllerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
     [Test]
@@ -490,7 +493,8 @@ public sealed class StationsControllerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
 }
