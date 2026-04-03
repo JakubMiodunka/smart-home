@@ -22,8 +22,6 @@ public class SwitchesController : BaseController
     private readonly ILogger<SwitchesController> _logger;
     #endregion
 
-    // TODO: Add unit tests.
-    // TODO: Concider edge cases.
     #region Instationation
     /// <summary>
     /// Creates an new controller instance.
@@ -70,13 +68,14 @@ public class SwitchesController : BaseController
     {
         if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
         {
-            _logger.LogWarning("Request rejected: Message=[{Message}]", "Failed to determine client IP address.");
+            _logger.LogWarning("Request for getting collection of switches rejected: Message=[{Message}]",
+                "Failed to determine client IP address.");
 
             return BadRequest();
         }
 
         _logger.LogInformation(
-            "Processing request to return collection of switches: ClientIpAddress=[{ClientIpAddress}]",
+            "Processing request for getting collection of switches: ClientIpAddress=[{ClientIpAddress}]",
             clientIpAddress);
 
         SwitchEntity[] allSwitches = await _switchesRepository.GetMultipleSwitchesAsync();
