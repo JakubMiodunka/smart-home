@@ -36,8 +36,8 @@ public sealed class SwitchesControllerTests
                 loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
-        stationsRepositoryMock.AssertThatNoDataModifications();
-        switchesRepositoryMock.AssertThatNoDataModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -55,8 +55,8 @@ public sealed class SwitchesControllerTests
                 loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-        stationsRepositoryMock.AssertThatNoDataModifications();
-        switchesRepositoryMock.AssertThatNoDataModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -74,7 +74,7 @@ public sealed class SwitchesControllerTests
                 loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-        stationsRepositoryMock.AssertThatNoDataModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -92,7 +92,7 @@ public sealed class SwitchesControllerTests
                 loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-        switchesRepositoryMock.AssertThatNoDataModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -110,8 +110,8 @@ public sealed class SwitchesControllerTests
                 null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-        stationsRepositoryMock.AssertThatNoDataModifications();
-        switchesRepositoryMock.AssertThatNoDataModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
     #endregion
 
@@ -124,7 +124,7 @@ public sealed class SwitchesControllerTests
         StationEntity parentStationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
 
@@ -186,7 +186,7 @@ public sealed class SwitchesControllerTests
                 It.IsAny<bool?>()),
             Times.Never);
 
-        stationsRepositoryMock.AssertThatNoDataModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -201,7 +201,7 @@ public sealed class SwitchesControllerTests
         StationEntity parentStationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
 
         var stationsRepositorymock = new Mock<IStationsRepository>();
 
@@ -256,8 +256,8 @@ public sealed class SwitchesControllerTests
         var expectedResponse = new SwitchRegistrationServerResponse(knownSwitchEntity.Id, knownSwitchEntity.ExpectedState);
         response.AssertOkObjectResult(expectedValue: expectedResponse);
 
-        switchesRepositoryMock.AssertThatNoDataModifications();
-        stationsRepositorymock.AssertThatNoDataModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositorymock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -275,7 +275,7 @@ public sealed class SwitchesControllerTests
         };
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity() with
         {
@@ -297,8 +297,8 @@ public sealed class SwitchesControllerTests
         
         response.AssertBadRequestResult();
 
-        switchesRepositoryMock.AssertThatNoDataModifications();
-        stationsRepositoryMock.AssertThatNoDataModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -313,7 +313,7 @@ public sealed class SwitchesControllerTests
         StationEntity stationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
 
         SwitchEntity newSwitchEntity = randomizer.NextSwitchEntity() with
         {
@@ -337,8 +337,8 @@ public sealed class SwitchesControllerTests
 
         response.AssertNotFoundResult();
 
-        switchesRepositoryMock.AssertThatNoDataModifications();
-        stationsRepositoryMock.AssertThatNoDataModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -356,7 +356,7 @@ public sealed class SwitchesControllerTests
         StationEntity stationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
 
         var stationsRepositoryStub = new Mock<IStationsRepository>();
 
@@ -438,7 +438,7 @@ public sealed class SwitchesControllerTests
                 actualState: switchEntityAfterUpdate.ActualState),
             Times.Once);
 
-        stationsRepositoryStub.AssertThatNoDataModifications();
+        stationsRepositoryStub.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -456,7 +456,7 @@ public sealed class SwitchesControllerTests
         };
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity() with
         {
@@ -479,8 +479,8 @@ public sealed class SwitchesControllerTests
 
         response.AssertBadRequestResult();
 
-        switchesRepositoryMock.AssertThatNoDataModifications();
-        stationsRepositoryMock.AssertThatNoDataModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -496,7 +496,7 @@ public sealed class SwitchesControllerTests
         StationEntity unregisteredStationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(unregisteredStationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(unregisteredStationEntity.IpAddress);
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity() with
         {
@@ -519,8 +519,8 @@ public sealed class SwitchesControllerTests
 
         response.AssertNotFoundResult();
 
-        switchesRepositoryMock.AssertThatNoDataModifications();
-        stationsRepositoryMock.AssertThatNoDataModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -536,7 +536,7 @@ public sealed class SwitchesControllerTests
         StationEntity parentStationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
 
         var stationsRepositoryMock = new Mock<IStationsRepository>();
 
@@ -570,8 +570,8 @@ public sealed class SwitchesControllerTests
 
         response.AssertNotFoundResult();
 
-        switchesRepositoryMock.AssertThatNoDataModifications();
-        stationsRepositoryMock.AssertThatNoDataModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -587,7 +587,7 @@ public sealed class SwitchesControllerTests
         StationEntity stationEntity = randomizer.NextStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
-            TestDataGenerator.CreateHttpContextAccessorFake(stationEntity.IpAddress);
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
 
         var stationsRepositoryStub = new Mock<IStationsRepository>();
 
@@ -659,11 +659,12 @@ public sealed class SwitchesControllerTests
                 actualState: switchEntityAfterUpdate.ActualState),
             Times.Once);
 
-        stationsRepositoryStub.AssertThatNoDataModifications();
+        stationsRepositoryStub.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
 }
