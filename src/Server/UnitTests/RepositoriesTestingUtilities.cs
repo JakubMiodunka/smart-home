@@ -1,17 +1,13 @@
 ﻿using Moq;
 using SmartHome.Server.Data.Repositories;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Text;
 
 namespace UnitTests;
 
-// TODO: Rework
-internal static class RepositoryTestUtils
+internal static class RepositoriesTestingUtilities
 {
-    public static void AssertThatNoDataModifications(this Mock<IStationsRepository> repositoryMock)
+    public static void AssertNoContentModifications(this Mock<IStationsRepository> repositoryMock)
     {
         repositoryMock.Verify(mock => mock
             .CreateStationAsync(
@@ -37,7 +33,7 @@ internal static class RepositoryTestUtils
     }
 
 
-    public static void AssertThatNoDataModifications(this Mock<ISwitchesRepository> repositoryMock)
+    public static void AssertNoContentModifications(this Mock<ISwitchesRepository> repositoryMock)
     {
         repositoryMock.Verify(mock =>
             mock.CreateSwitchAsync(
