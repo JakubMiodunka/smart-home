@@ -7,6 +7,7 @@ using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Services.Processors;
 using System.Net;
+using UnitTests;
 
 namespace SmartHome.UnitTests.Server.Services;
 
@@ -24,19 +25,22 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         TimeSpan maxHeartbeatInterval = randomizer.NextTimeSpan(
             from: TimeSpan.FromMicroseconds(1));
 
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
 
         TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
-            stationsRepositoryStub.Object,
-            switchesRepositoryStub.Object,
+            stationsRepositoryMock.Object,
+            switchesRepositoryMock.Object,
             timeProviderStub,
             maxHeartbeatInterval,
             loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
+
+        stationsRepositoryMock.AssertNoContentModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -47,18 +51,20 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         TimeSpan maxHeartbeatInterval = randomizer.NextTimeSpan(
             from: TimeSpan.FromMicroseconds(1));
 
-        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
 
         TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
             null!,
-            switchesRepositoryStub.Object,
+            switchesRepositoryMock.Object,
             timeProviderStub,
             maxHeartbeatInterval,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -69,18 +75,20 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         TimeSpan maxHeartbeatInterval = randomizer.NextTimeSpan(
             from: TimeSpan.FromMicroseconds(1));
 
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
 
         TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
-            stationsRepositoryStub.Object,
+            stationsRepositoryMock.Object,
             null!,
             timeProviderStub,
             maxHeartbeatInterval,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+
+        stationsRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -91,18 +99,21 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         TimeSpan maxHeartbeatInterval = randomizer.NextTimeSpan(
             from: TimeSpan.FromMicroseconds(1));
 
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var loggerStub = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
 
         TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
-            stationsRepositoryStub.Object,
-            switchesRepositoryStub.Object,
+            stationsRepositoryMock.Object,
+            switchesRepositoryMock.Object,
             null!,
             maxHeartbeatInterval,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+
+        stationsRepositoryMock.AssertNoContentModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -113,18 +124,21 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         TimeSpan maxHeartbeatInterval = randomizer.NextTimeSpan(
             from: TimeSpan.FromMicroseconds(1));
 
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var timeProviderStub = new FakeTimeProvider();
 
         TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
-            stationsRepositoryStub.Object,
-            switchesRepositoryStub.Object,
+            stationsRepositoryMock.Object,
+            switchesRepositoryMock.Object,
             timeProviderStub,
             maxHeartbeatInterval,
             null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+
+        stationsRepositoryMock.AssertNoContentModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -133,18 +147,21 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
     {
         var maxHeartbeatInterval = TimeSpan.FromMicroseconds(invalidMaxHeartbeatInterval);
 
-        var stationsRepositoryStub = new Mock<IStationsRepository>();
-        var switchesRepositoryStub = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var timeProviderStub = new FakeTimeProvider();
 
         TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
-            stationsRepositoryStub.Object,
-            switchesRepositoryStub.Object,
+            stationsRepositoryMock.Object,
+            switchesRepositoryMock.Object,
             timeProviderStub,
             maxHeartbeatInterval,
             null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+
+        stationsRepositoryMock.AssertNoContentModifications();
+        switchesRepositoryMock.AssertNoContentModifications();
     }
     #endregion
 
@@ -181,9 +198,13 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
                 id: offlineStation.Id,
                 updateIpAddress: true,
                 ipAddress: null,
+                updateApiPort:true,
+                apiPort: null,
+                updateApiVersion: true,
+                apiVersion: null,
                 updateLastHeartbeat: false,
                 lastHeartbeat: null))
-            .ReturnsAsync(offlineStation with { IpAddress = null });
+            .ReturnsAsync(offlineStation with { IpAddress = null, ApiPort = null, ApiVersion = null });
 
         var switchesRepositoryStub = new Mock<ISwitchesRepository>();
         var loggerMock = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
@@ -200,11 +221,15 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
 
         stationsRepositoryMock.Verify (mock => mock
             .UpdateStationAsync(
-                offlineStation.Id,
+                id: offlineStation.Id,
                 updateIpAddress: true,
                 ipAddress: null,
+                updateApiPort: true,
+                apiPort: null,
+                updateApiVersion: true,
+                apiVersion: null,
                 updateLastHeartbeat: false,
-                lastHeartbeat: It.IsAny<DateTimeOffset?>()),
+                lastHeartbeat: null),
             Times.Once);
 
         // Not using named arguments as update method for this station shall not be invoked at all.
@@ -213,6 +238,10 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
                 onlineStation.Id,
                 It.IsAny<bool>(),
                 It.IsAny<IPAddress?>(),
+                It.IsAny<bool>(),
+                It.IsAny<int?>(),
+                It.IsAny<bool>(),
+                It.IsAny<byte?>(),
                 It.IsAny<bool>(),
                 It.IsAny<DateTimeOffset?>()),
             Times.Never);
@@ -272,9 +301,13 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
                 id: offlineStation.Id,
                 updateIpAddress: true,
                 ipAddress: null,
+                updateApiPort:true,
+                apiPort: null,
+                updateApiVersion: true,
+                apiVersion: null,
                 updateLastHeartbeat: false,
                 lastHeartbeat: null))
-            .ReturnsAsync(offlineStation with { IpAddress = null });
+            .ReturnsAsync(offlineStation with { IpAddress = null, ApiPort = null, ApiVersion = null });
 
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
 
