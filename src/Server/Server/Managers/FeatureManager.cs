@@ -55,8 +55,7 @@ public abstract class FeatureManager
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
 
         /*
-         * TODO:
-         * Collect information about which protocol station is using,
+         * TODO: Collect information about which protocol station is using,
          * so that creation of HTTP client can be more flexible and adapted to specific station types.
          */
 
