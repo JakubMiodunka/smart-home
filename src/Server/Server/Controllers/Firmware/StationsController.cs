@@ -126,6 +126,7 @@ public class StationsController : BaseController
         }
 
         _logger.LogDebug("Station entity found: StationId=[{Id}]", knownStationEntity.Id);
+
         _logger.LogInformation(
             "Registering station as already known device: StationId=[{Id}], StationIpAddress=[{StationIpAddress}]",
             knownStationEntity.Id,

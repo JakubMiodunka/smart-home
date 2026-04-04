@@ -39,7 +39,7 @@ public sealed class SwitchManager : FeatureManager, ISwitchManager
     private readonly ISwitchesRepository _switchesRepository;
     private readonly ILogger<SwitchManager> _logger;
 
-    public SwitchEntity ManagedSwitch { get; init; }
+    public SwitchEntity ManagedSwitch { get; private set; }
     #endregion
 
     #region Instantiation
@@ -106,8 +106,6 @@ public sealed class SwitchManager : FeatureManager, ISwitchManager
 
             return true;
         }
-
-        await _switchesRepository.UpdateSwitchAsync(ManagedSwitch.Id, updateExpectedState: true, expectedState: expectedSwitchState);
 
         if (await _stationsRepository.GetSingleStationAsync(filterById: true, id: ManagedSwitch.StationId) is not StationEntity parentStation)
         {
@@ -185,10 +183,31 @@ public sealed class SwitchManager : FeatureManager, ISwitchManager
 
         if (wasRequestSuccessful)
         {
-            await _switchesRepository.UpdateSwitchAsync(
-                ManagedSwitch.Id,
-                updateActualState: true,
-                actualState: expectedSwitchState);
+            /*
+             * Expected and actual switch state shall be updated at the same time to avoid unintentional state changes.
+             * If only the expected state would be changed while the station is offline,
+             * the switch would trigger an unintended physical change immediately upon the station's return to online status,
+             * specifically in the moment, when station is registering the switch.
+             */
+            SwitchEntity? updatedSwitchEntity = 
+                await _switchesRepository.UpdateSwitchAsync(
+                    ManagedSwitch.Id,
+                    updateExpectedState: true, 
+                    expectedState: expectedSwitchState,
+                    updateActualState: true,
+                    actualState: expectedSwitchState);
+
+            if (updatedSwitchEntity is null)
+            {
+                _logger.LogError(
+                    "Attempting to change state of switch failed: Message=[{Message}], SwitchId=[{SwitchId}]",
+                    "Repository update failed.",
+                    ManagedSwitch.Id);
+
+                return false;
+            }
+
+            ManagedSwitch = ManagedSwitch with { ActualState = expectedSwitchState };
 
             _logger.LogInformation("Attempting to change state of switch successful:");
         }

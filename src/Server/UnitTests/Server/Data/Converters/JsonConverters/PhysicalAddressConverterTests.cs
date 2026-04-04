@@ -33,7 +33,7 @@ public sealed class BackgroundProcessorServiceTests
 
         TestDelegate actionUnderTest = () =>
         {
-            Utf8JsonReader jsonReader = TestDataGenerator.CreateJsonReader(macAddress.ToString());
+            Utf8JsonReader jsonReader = FakeDataGenerationUtilities.CreateJsonReader(macAddress.ToString());
             converterUnderTest.Read(ref jsonReader, null!, jsonSerializerOptions);
         };
 
@@ -51,7 +51,7 @@ public sealed class BackgroundProcessorServiceTests
 
         TestDelegate actionUnderTest = () =>
         {
-            Utf8JsonReader jsonReader = TestDataGenerator.CreateJsonReader(macAddress.ToString());
+            Utf8JsonReader jsonReader = FakeDataGenerationUtilities.CreateJsonReader(macAddress.ToString());
             converterUnderTest.Read(ref jsonReader, macAddress.GetType(), null!);
         };
 
