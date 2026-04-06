@@ -39,6 +39,10 @@ public sealed class SwitchManager : FeatureManager, ISwitchManager
     private readonly ISwitchesRepository _switchesRepository;
     private readonly ILogger<SwitchManager> _logger;
 
+    /// <remarks>
+    /// This property reflects the most recent state of the switch, 
+    /// updated automatically whenever any property is modified by this manager instance.
+    /// </remarks>
     public SwitchEntity ManagedSwitch { get; private set; }
     #endregion
 
