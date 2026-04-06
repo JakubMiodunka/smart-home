@@ -352,7 +352,8 @@ public sealed class StationsControllerTests
             updatedStationEntity.ApiVersion!.Value);
 
         IActionResult response = await controllerUnderTest.RegisterStation(request);
-        response.AssertInternalServerError();
+
+        response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
 
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(
@@ -584,7 +585,8 @@ public sealed class StationsControllerTests
             loggerMock);
 
         IActionResult response = await controllerUnderTest.ProcessHeartbeatSignal();
-        response.AssertInternalServerError();
+
+        response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
 
         stationsRepositoryMock.Verify(mock => mock
             .CreateStationAsync(
@@ -610,7 +612,7 @@ public sealed class StationsControllerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
