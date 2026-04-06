@@ -640,7 +640,7 @@ public sealed class SwitchesControllerTests
         var request = new SwitchUpdateStationRequest(switchEntityAfterUpdate.ActualState.Value);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntityAfterUpdate.Id, request);
 
-        response.AssertInternalServerError();
+        response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
 
         switchesRepositoryMock.Verify(mock =>
             mock.CreateSwitchAsync(

@@ -204,7 +204,7 @@ public class SwitchesController : BaseController
             return NoContent();
         }
 
-        _logger.LogInformation(
+        _logger.LogWarning(
             "Failed to process switch update request: Message=[{Message}], SwitchId=[{SwitchId}], ClientIpAddress=[{ClientIpAddress}], " +
             "ExpectedSwitchState=[{ExpectedSwitchState}], ActualSwitchState=[{ActualSwitchState}]",
             "Unable to update switch.",
