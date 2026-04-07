@@ -51,12 +51,20 @@ public sealed class SwitchManagerFactory : ISwitchManagerFactory
 
     #region Interactions
     /// <inheritdoc cref="ISwitchManagerFactory.CreateFor(SwitchEntity)"/>
-    public ISwitchManager CreateFor(SwitchEntity switchEntity) =>
-        new SwitchManager(
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one required reference-type argument is a <see langword="null"/> reference.
+    /// </exception>
+    public ISwitchManager CreateFor(SwitchEntity switchEntity)
+    {
+        ArgumentNullException.ThrowIfNull(switchEntity);
+
+        return new SwitchManager(
             switchEntity,
             _httpClientFactory,
             _stationsRepository,
             _switchesRepository,
             _loggerFactory.CreateLogger<SwitchManager>());
+    }
+        
     #endregion
 }
