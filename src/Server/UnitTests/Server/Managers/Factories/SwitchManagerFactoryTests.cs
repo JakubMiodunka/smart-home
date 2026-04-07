@@ -7,8 +7,9 @@ using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Managers;
 using SmartHome.Server.Managers.Factories;
 using SmartHome.UnitTests;
+using UnitTests;
 
-namespace UnitTests.Server.Managers.Factories;
+namespace SmartHome.UnitTests.Server.Managers.Factories;
 
 [Category("UnitTest")]
 [TestOf(typeof(SwitchManagerFactory))]

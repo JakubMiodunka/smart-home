@@ -311,7 +311,6 @@ public sealed class SwitchesControllerTests
     #endregion
 
     #region Switch update
-    // TODO: Finish this section.
     [Test]
     public async Task UpdatePossible()
     {
@@ -347,7 +346,7 @@ public sealed class SwitchesControllerTests
         };
 
         var switchManagerMock = new Mock<ISwitchManager>();
-        switchManagerMock.SetupGet(mock => mock.ManagedSwitch).Returns(updatedSwitchEntity);    // TODO: Get rid of it.
+        switchManagerMock.SetupGet(mock => mock.ManagedSwitch).Returns(updatedSwitchEntity);
 
         switchManagerMock.Setup(mock => 
             mock.TryChangeState(
@@ -483,7 +482,7 @@ public sealed class SwitchesControllerTests
             .ReturnsAsync(switchEntity);
 
         var switchManagerMock = new Mock<ISwitchManager>();
-        switchManagerMock.SetupGet(mock => mock.ManagedSwitch).Returns(switchEntity);    // TODO: Get rid of it.
+        switchManagerMock.SetupGet(mock => mock.ManagedSwitch).Returns(switchEntity);
 
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         
