@@ -8,9 +8,11 @@ namespace SmartHome.Server.Managers;
 public abstract class FeatureManager
 {
     #region Properties
+    private readonly Lazy<HttpClient> _lazyHttpClient;
     private readonly ILogger<FeatureManager> _logger;
 
-    protected readonly HttpClient _httpClient;
+    protected HttpClient _httpClient =>
+        _lazyHttpClient.Value;
     #endregion
 
     #region Instantiation
@@ -32,7 +34,7 @@ public abstract class FeatureManager
         ArgumentNullException.ThrowIfNull(logger);
 
         _logger = logger;
-        _httpClient = CreateHttpClient(httpClientFactory, httpClientTimeout);
+        _lazyHttpClient = new Lazy<HttpClient>(() => CreateHttpClient(httpClientFactory, httpClientTimeout));
     }
     #endregion
 
