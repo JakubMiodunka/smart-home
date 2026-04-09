@@ -3,7 +3,7 @@ using SmartHome.Server.Data.Repositories;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace UnitTests;
+namespace SmartHome.UnitTests;
 
 internal static class RepositoriesTestingUtilities
 {
@@ -31,7 +31,6 @@ internal static class RepositoriesTestingUtilities
                 It.IsAny<DateTimeOffset?>()),
             Times.Never);
     }
-
 
     public static void AssertNoContentModifications(this Mock<ISwitchesRepository> repositoryMock)
     {

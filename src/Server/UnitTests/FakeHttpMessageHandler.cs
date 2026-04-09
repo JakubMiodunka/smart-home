@@ -47,7 +47,7 @@ internal static class RequestSnapshotTestingUtilities
     }
 }
 
-internal sealed class FakeDelegatingHandler : DelegatingHandler
+internal sealed class FakeHttpMessageHandler : DelegatingHandler
 {
     #region Properties
     private readonly Func<HttpRequestMessage, HttpResponseMessage>? _requestHandler;
@@ -61,7 +61,7 @@ internal sealed class FakeDelegatingHandler : DelegatingHandler
     #endregion
 
     #region Instantiation
-    internal FakeDelegatingHandler(
+    internal FakeHttpMessageHandler(
         Func<HttpRequestMessage, HttpResponseMessage>? requestHandler = null)
     {
         _requestHandler = requestHandler;
