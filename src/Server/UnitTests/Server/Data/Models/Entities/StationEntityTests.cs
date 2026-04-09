@@ -3,7 +3,7 @@ using SmartHome.Server.Data.Models.Entities;
 using SmartHome.UnitTests;
 using System.Net;
 
-namespace UnitTests.Server.Data.Models.Entities;
+namespace SmartHome.UnitTests.Server.Data.Models.Entities;
 
 [Category("UnitTest")]
 [TestOf(typeof(StationEntity))]

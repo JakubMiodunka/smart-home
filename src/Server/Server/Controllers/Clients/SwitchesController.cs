@@ -189,7 +189,7 @@ public class SwitchesController : BaseController
 
         ISwitchManager switchManager = _switchManagerFactory.CreateFor(switchEntity);
         bool wasUpdateSuccessful = await switchManager.TryChangeState(request.ExpectedSwitchState, cancellationToken);
-        switchEntity = switchManager.ManagedSwitch; // TODO: Better to return updated switch entity from manager TryChangeState method.
+        switchEntity = switchManager.ManagedSwitch;
 
         if (wasUpdateSuccessful)
         {

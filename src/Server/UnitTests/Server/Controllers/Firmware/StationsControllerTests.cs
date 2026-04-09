@@ -9,11 +9,10 @@ using SmartHome.Server.Controllers.Firmware;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
-using SmartHome.UnitTests;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace UnitTests.Server.Controllers.Firmware;
+namespace SmartHome.UnitTests.Server.Controllers.Firmware;
 
 [Category("UnitTest")]
 [TestOf(typeof(StationsController))]
