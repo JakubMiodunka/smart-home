@@ -71,11 +71,18 @@ public static class SwitchEntityExtensions
     /// Absolute URL of API endpoint which controls the switch.
     /// <see langword="null"/> if endpoint is considered as unreachable.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
+    /// </exception>
+    /// /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="parentStation"/> is not the parent station of <paramref name="switchEntity"/>.
+    /// </exception>
     /// <exception cref="NotSupportedException">
     /// Thrown when generation of switch URL is not supported for API version of <paramref name="parentStation"/>.
     /// </exception>
     public static Uri? SwitchUrl(this SwitchEntity switchEntity, StationEntity parentStation)
     {
+        ArgumentNullException.ThrowIfNull(parentStation, nameof(parentStation));
         ArgumentOutOfRangeException.ThrowIfNotEqual(switchEntity.StationId, parentStation.Id, nameof(parentStation));
 
         if (parentStation.BaseApiUrl() is not Uri stationApiUrl) return null;

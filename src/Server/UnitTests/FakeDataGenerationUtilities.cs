@@ -107,6 +107,41 @@ internal static class FakeDataGenerationUtilities
         return new StationEntity(id, macAddress, ipAddress, apiPort, apiVersion, lastHeartbeat);
     }
 
+    public static StationEntity NextOfflineStationEntity(this Randomizer randomizer)
+    {
+        var allVariantsOfOfflineStationEntity = new StationEntity[]
+            {
+                randomizer.NextStationEntity() with
+                {
+                IpAddress = null,
+                    ApiPort = null,
+                    ApiVersion = null
+                },
+                randomizer.NextStationEntity() with
+                {
+                    IpAddress = randomizer.NextIpAddress(),
+                    ApiPort = null,
+                    ApiVersion = null
+                },
+                randomizer.NextStationEntity() with
+                {
+                    IpAddress = null,
+                    ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
+                    ApiVersion = null
+                },
+                randomizer.NextStationEntity() with
+                {
+                    IpAddress = null,
+                    ApiPort = null,
+                    ApiVersion = randomizer.NextByte(1, byte.MaxValue)
+                }
+            };
+
+        int index = randomizer.Next(allVariantsOfOfflineStationEntity.Count());
+        return allVariantsOfOfflineStationEntity[index];
+    }
+    
+
     public static SwitchEntity NextSwitchEntity(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));

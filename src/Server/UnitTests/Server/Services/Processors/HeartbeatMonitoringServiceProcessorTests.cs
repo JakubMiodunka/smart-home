@@ -7,7 +7,6 @@ using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Services.Processors;
 using System.Net;
-using UnitTests;
 
 namespace SmartHome.UnitTests.Server.Services;
 
