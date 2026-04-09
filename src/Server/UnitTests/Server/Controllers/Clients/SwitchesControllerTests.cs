@@ -10,10 +10,9 @@ using SmartHome.Server.Data.Models.Requests;
 using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Managers;
 using SmartHome.Server.Managers.Factories;
-using SmartHome.UnitTests;
 using System.Net;
 
-namespace UnitTests.Server.Controllers.Clients;
+namespace SmartHome.UnitTests.Server.Controllers.Clients;
 
 [Category("UnitTest")]
 [TestOf(typeof(SwitchesController))]
@@ -182,7 +181,7 @@ public sealed class SwitchesControllerTests
             switchManagerFactoryStub.Object,
             loggerMock);
 
-        long nonExistingSwitchEntityId = default;
+        long nonExistingSwitchEntityId = randomizer.NextInt64(1, long.MaxValue);
         while (switchEntity.Id == nonExistingSwitchEntityId)
         {
             nonExistingSwitchEntityId = randomizer.NextInt64(1, long.MaxValue);

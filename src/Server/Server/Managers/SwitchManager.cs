@@ -153,15 +153,18 @@ public sealed class SwitchManager : FeatureManager, ISwitchManager
             }
             else
             {
-                _logger.LogWarning(
-                    "Response received: StatusCode=[{StatusCode}], Body=[{Body}]",
+                _logger.LogError(
+                    "Attempting to change state of switch failed: Message=[{Message}], StatusCode=[{StatusCode}], Body=[{Body}]",
+                    "Unexpected station response received.",
                     response.StatusCode,
                     await response.Content.ReadAsStringAsync(cancellationToken));
+                  
+                return false;
             }
         }
         catch (HttpRequestException exception)
         {
-            _logger.LogWarning(
+            _logger.LogError(
                 exception,
                 "Exception thrown during request sending: ExceptionType=[{ExceptionType}], StatusCode=[{StatusCode}]",
                 exception.GetType().FullName,
@@ -169,56 +172,51 @@ public sealed class SwitchManager : FeatureManager, ISwitchManager
 
             return false;
         }
-        catch (OperationCanceledException exception)
+        catch (OperationCanceledException exception) when (exception.InnerException is TimeoutException)
         {
-            if (exception.InnerException is TimeoutException)
-            {
-                _logger.LogWarning(
+            _logger.LogWarning(
                     exception,
                     "Station failed to respond within the allowed timeframe: Timeout=[{Timeout}]",
                     _httpClient.Timeout);
 
-                return false;
-            }
-
+            return false;
+        }
+        catch (OperationCanceledException exception)
+        {
             _logger.LogInformation(exception, "Stopping request sending due to cancellation request:");
             return false;
         }
 
-        if (wasRequestSuccessful)
+        /*
+         * Expected and actual switch state shall be updated at the same time to avoid unintentional state changes.
+         * If only the expected state would be changed while the station is offline,
+         * the switch would trigger an unintended physical change immediately upon the station's return to online status,
+         * specifically in the moment, when station is registering the switch.
+         */
+        SwitchEntity? updatedSwitchEntity =
+            await _switchesRepository.UpdateSwitchAsync(
+                ManagedSwitch.Id,
+                updateExpectedState: true,
+                expectedState: expectedSwitchState,
+                updateActualState: true,
+                actualState: expectedSwitchState);
+
+        if (updatedSwitchEntity is null)
         {
-            /*
-             * Expected and actual switch state shall be updated at the same time to avoid unintentional state changes.
-             * If only the expected state would be changed while the station is offline,
-             * the switch would trigger an unintended physical change immediately upon the station's return to online status,
-             * specifically in the moment, when station is registering the switch.
-             */
-            SwitchEntity? updatedSwitchEntity = 
-                await _switchesRepository.UpdateSwitchAsync(
-                    ManagedSwitch.Id,
-                    updateExpectedState: true, 
-                    expectedState: expectedSwitchState,
-                    updateActualState: true,
-                    actualState: expectedSwitchState);
+            _logger.LogError(
+                "Attempting to change state of switch failed: Message=[{Message}], SwitchId=[{SwitchId}]",
+                "Repository update failed.",
+                ManagedSwitch.Id);
 
-            if (updatedSwitchEntity is null)
-            {
-                _logger.LogError(
-                    "Attempting to change state of switch failed: Message=[{Message}], SwitchId=[{SwitchId}]",
-                    "Repository update failed.",
-                    ManagedSwitch.Id);
-
-                return false;
-            }
-
-            ManagedSwitch = ManagedSwitch with { ActualState = expectedSwitchState };
-
-            _logger.LogInformation("Attempting to change state of switch successful:");
+            return false;
         }
-        else
-        {
-            _logger.LogWarning("Attempting to change state of switch failed:");
-        }
+
+        ManagedSwitch = ManagedSwitch with { ActualState = expectedSwitchState };
+
+        _logger.LogInformation("Attempting to change state of switch successful: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
+                ManagedSwitch.Id,
+                ManagedSwitch.ExpectedState,
+                ManagedSwitch.ActualState);
 
         return wasRequestSuccessful;
     }
