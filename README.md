@@ -3,10 +3,14 @@
 ## Description
 
 This repository provides an [IoT](https://en.wikipedia.org/wiki/Internet_of_things "Wikipedia article") ecosystem
-designed to transition standard residential spaces into modern smart-home environments. The system architecture is 
-centered around a single server instance that orchestrates a distributed network of stations within a single household.
-Communication is established over the local Wi-Fi network, leveraging the infrastructure existing nowadays in most
-households to facilitate data exchange between the central controller and the individual hardware nodes.
+designed to transition standard residential spaces into modern 
+[smart-home](https://en.wikipedia.org/wiki/Home_automation "Wikipedia article") environments. The system architecture
+is centered around a single server instance that orchestrates a distributed network of stations within a single household.
+Communication is established over the local [Wi-Fi](https://en.wikipedia.org/wiki/Wi-Fi "Wikipedia article") network,
+leveraging the infrastructure existing nowadays in most households to facilitate data exchange between the central
+controller and the individual hardware nodes. Primary communication within the system is driven by
+[RESTful](https://en.wikipedia.org/wiki/REST "Wikipedia article") [HTTP](https://en.wikipedia.org/wiki/HTTP "Wikipedia article")
+[APIs]( https://en.wikipedia.org/wiki/API "Wikipedia article") exposed and utilized by all parts of the system.
 
 A core principle of the system is its feature-oriented model. Rather than maintaining a library of supported devices,
 the server treats hardware nodes as unknown entities until the point of registration. Upon connecting, each station 
@@ -25,11 +29,13 @@ a unified, custom-tailored ecosystem.
 
 The primary objective of developing this repository was to gain hands-on educational value in the following fields:
 
-* Understand the interactions between each application layer, from low-level firmware through the backend to the frontend interface.
+* Understanding the interactions between each application layer, from low-level firmware through the backend to the frontend interface.
 * Understanding of database design and the effective use of [SQL](https://en.wikipedia.org/wiki/SQL "Wikipedia article") and 
 [SQL Server](https://learn.microsoft.com/en-us/sql/sql-server/what-is-sql-server?view=sql-server-ver17 "Microsoft Learn article").
-* Refreshing and refining skills in firmware development.
-* Practical implementation of [ADO.NET](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/ "Microsoft Learn article") basics.
+* Refining proficiency in [C language](https://en.wikipedia.org/wiki/C_(programming_language) "Wikipedia article")
+in context of firmware development.
+* Practical implementation of
+[ADO.NET](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/ "Microsoft Learn article") basics.
 * Architecture and design of end-to-end IoT systems.
 
 Beyond the technical milestones, this project is driven by the enjoyment of the engineering craft.
@@ -50,51 +56,57 @@ The project is designed for continuous expansion across all layers of the stack.
 Future functional updates will extend the system's capabilities beyond binary switching to include linear control modules,
 such as light dimmers, and the integration of environmental telemetry to track measurements like temperature
 and humidity across rooms within the household. To move beyond the current reliance on manual HTTP requests via tools like
-cURL or Postman, a dedicated graphical client application is planned to provide a more intuitive and fluid interaction with the system.
-On the hardware side, the project will expand to include specific station models accompanied by electronic schematics and 3D models.
-These assets will cover protective enclosures and also functional mechanical components required for specialized station operations.
-Furthermore, development will focus on iterative improvements to code quality and the systematic strengthening of cybersecurity
-to transition the system from a foundational prototype to a hardened, production-ready smart home solution.
+[cURL](https://curl.se/ "cURL website"), [Postman](https://www.postman.com/ "Postman website")
+or [Insomnia](https://insomnia.rest/ "Insomnia website"), a dedicated graphical client application is planned to provide
+a more intuitive and fluid interaction with the system. On the hardware side, the project will expand to include comprehensive
+designs for specific station models, accompanied by electronic schematics and 3D CAD models. These assets will cover protective
+enclosures and also functional mechanical components required for specialized station operations.
+Furthermore, development will focus on iterative improvements to code quality and the systematic strengthening
+of cybersecurity to transition the system from a foundational prototype to a hardened, production-ready smart-home solution.
 
 ## Repository Structure
 
-* */src/firmware* - Source code for the station's firmware. Implemented in the C language.
-* */src/server* - Source code for the central server responsible for managing the system and aggregating data from all components.
-Implemented in ADO.NET.
-* */doc* - General project documentation. 
-* */doc/server/html* - HTML-based server code documentation, automatically generated using
-[DoxyGen](https://www.doxygen.nl/ "DoxyGen website"). View the content by opening *index.html* in Your browser of choice.
+* [*/src/Firmware*](./src/Firmware/) - Source code for the station's firmware.
+Implemented in [Arduino](https://www.arduino.cc/ "Arduino website") ecosystem.
+* [*/src/Server*](./src/Server/) - Source code for the central server responsible for managing the system
+and aggregating data from all components.
+Implemented in [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language) "Wikipedia article") and ADO.NET.
+* [*/doc/Server/html*](./doc/Server/html) - HTML-based server code documentation, automatically generated using
+[DoxyGen](https://www.doxygen.nl/ "DoxyGen website"). View the content by opening
+[*index.html*](./doc/Server/html/index.html) in Your browser of choice.
 
 ## Getting Started 
 
-TODO: Refine this section
-
 ### Server Setup
-The backend infrastructure requires *SQL Server 2022*. For a streamlined deployment, it is recommended to use Docker and [Official SQL Server Docker Image](https://hub.docker.com/_/microsoft-mssql-server).
 
-* Initialize your instance by deploying the schema located in the `Database` project.
-* Update the connection string within `Program.cs` to match your SQL Server credentials.
-* he application is configured to bind to `localhost` by default. To enable communication with external hardware nodes, update the network interface settings in the `launchsettings.json` file to match your host's local IP address.
+The backend infrastructure requires instance of SQL Server 2022. For a streamlined deployment, it is recommended
+to use [Docker](https://www.docker.com/ "Docker website") and [Official SQL Server Docker Image](https://hub.docker.com/_/microsoft-mssql-server).
 
-Note: As this project is currently in development, file-oriented configuration management (such as `.json` or `.env` files) has not yet been implemented.
+* Initialize your instance by deploying the schema located in the [*Database.sqlproj*](./src/Server/Database/Database.sqlproj).
+* Update the connection string within [*Program.cs*](./src/Server/Server/Program.cs) to match your SQL Server credentials.
+* The application is configured to bind to *localhost* by default. To enable communication with external hardware nodes,
+update the network interface settings in the [*launchSettings.json*](./src/Server/Server/Properties/launchSettings.json)
+file to match your host's local IP address.
+
+Note: As this project is currently in development, file-oriented configuration management has not yet been implemented.
 All configurations are handled directly within the source code.
 
 ### Node Deployment
-Hardware stations are built using the *NodeMCU (ESP8266)* platform. You will need the *Arduino IDE* to flash the firmware.
 
-* Open the firmware source code in the Arduino IDE.
-* Compile and upload the code to your NodeMCU board.
-* The current firmware implementation includes a single **Binary Switch** utility, which is configured to control the state of the onboard LED.
+Hardware stations are built using the NodeMCU (ESP8266) platform. You will need the Arduino IDE to flash the firmware.
 
-### Interactions with the System
+* Open the Arduino IDE and configure it to support NodeMCU by
+following the [official tutorial](https://projecthub.arduino.cc/PatelDarshil/getting-started-with-nodemcu-esp8266-on-arduino-ide-b193c3)
+* Open the [*generic_firmware.ino*](./src/Firmware/generic_firmware/generic_firmware.ino) in the Arduino IDE,
+compile and upload the code to your NodeMCU board.
+* The current firmware implementation includes a single on/off switch utility, which is configured to control the state of the build-in LED.
 
-As the frontend interface is currently under development, all interactions with the server must be performed via direct API calls. You can use tools such as **cURL**, **Postman**, or **Insomnia** to communicate with the system.
+### Interactions With The System
 
-* **API Discovery:** Once a node registers, the server exposes its utilities via RESTful endpoints.
-* **Control Flow:** Commands are sent to the server, which then coordinates the specific action with the registered hardware node.
-
-*Note:** Detailed API documentation and a collection of sample requests will be added as the system expands.
-
+As the frontend interface is currently not available, all interactions with the server must be performed via direct API calls.
+You can use tools such as cURL, Postman, Insomnia or the built-in Visual Studio HTTP Client to communicate with the system.
+For specific request structures and endpoint examples, please inspect 
+the [*Server.http*](./src/Server/Server/Server.http) file located in the repository.
 
 ## Project versioning
 
