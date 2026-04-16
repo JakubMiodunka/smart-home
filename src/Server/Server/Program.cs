@@ -7,7 +7,7 @@ using SmartHome.Server.Managers.Factories;
 using SmartHome.Server.Services;
 using SmartHome.Server.Services.Processors;
 
-const string ConnectionString = "Server=127.0.0.1;Database=smart_home;User Id=smart_home_controller;Password=1234; Encrypt=True; TrustServerCertificate=True";
+const string ConnectionString = "Connection string not specified."; // TODO: Provide connection string to SQL server instance here.
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +22,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
 });
 
-// TODO: Clean DI configuration.
 // Dependency injection configuration
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHttpContextAccessor();

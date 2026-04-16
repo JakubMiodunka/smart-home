@@ -1,43 +1,24 @@
 @Server_HostAddress = http://localhost:5236
 
-### StationsController.RegisterStation
+### SmartHome.Server.Controllers.Clients.GetSwitches
 
-POST {{Server_HostAddress}}/api/v1/stations
+GET {{Server_HostAddress}}/api/clients/v1/switches
+Accept: application/json
+CONTENT-TYPE: application/json
+
+### SmartHome.Server.Controllers.Clients.GetSwitch
+### Note: Update switch identifier in URL.
+
+GET {{Server_HostAddress}}/api/clients/v1/switches/1
+Accept: application/json
+CONTENT-TYPE: application/json
+
+### SmartHome.Server.Controllers.Clients.GetSwitches
+### Note: Update switch identifier in URL and expected switch state in body.
+
+PATCH {{Server_HostAddress}}/api/clients/v1/switches/1
 Accept: application/json
 CONTENT-TYPE: application/json
 {
-    "macAddress": "001A2B3C4D4B"
+  "sxpectedSwitchState" : true
 }
-
-### StationsController.GetStation
-
-GET {{Server_HostAddress}}/api/v1/stations/10002
-Accept: application/json
-CONTENT-TYPE: application/json
-
-### ElectricalSwitchesController.RegisterElectricalSwitch
-
-POST {{Server_HostAddress}}/api/v1/electrical-switches
-Accept: application/json
-CONTENT-TYPE: application/json
-{
-    "stationId": 10002,
-    "localId" : 1,
-    "isClosed": null
-}
-
-### StationsController.GetElectricalSwitch
-
-GET {{Server_HostAddress}}/api/v1/electrical-switches/1
-Accept: application/json
-CONTENT-TYPE: application/json
-
-###
-
-### StationsController.ChangeStateOfElectricalSwitch
-
-PUT {{Server_HostAddress}}/api/v1/electrical-switches/1/state/true
-Accept: application/json
-CONTENT-TYPE: application/json
-
-###
