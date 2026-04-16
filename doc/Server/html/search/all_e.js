@@ -1,0 +1,6 @@
+var searchData=
+[
+  ['updatestationasync_0',['UpdateStationAsync',['../interface_smart_home_1_1_server_1_1_data_1_1_database_1_1_database_client.html#a159c87e0d17295cea75d04ed1232c651',1,'SmartHome.Server.Data.Database.DatabaseClient.UpdateStationAsync()'],['../interface_smart_home_1_1_server_1_1_data_1_1_repositories_1_1_i_stations_repository.html#a6e5dc14912a28fadc91cf08e5f2a7203',1,'SmartHome.Server.Data.Repositories.IStationsRepository.UpdateStationAsync()']]],
+  ['updateswitch_1',['UpdateSwitch',['../class_smart_home_1_1_server_1_1_controllers_1_1_clients_1_1_switches_controller.html#ac1eb90da0b368c9446608f79d552937e',1,'SmartHome.Server.Controllers.Clients.SwitchesController.UpdateSwitch()'],['../class_smart_home_1_1_server_1_1_controllers_1_1_firmware_1_1_switches_controller.html#a19069f61f3151c9b4c45276897d25aa3',1,'SmartHome.Server.Controllers.Firmware.SwitchesController.UpdateSwitch()']]],
+  ['updateswitchasync_2',['UpdateSwitchAsync',['../interface_smart_home_1_1_server_1_1_data_1_1_database_1_1_database_client.html#a3d355609b0b63174bfa63af6e0616eb8',1,'SmartHome.Server.Data.Database.DatabaseClient.UpdateSwitchAsync()'],['../interface_smart_home_1_1_server_1_1_data_1_1_repositories_1_1_i_switches_repository.html#ac4570e6097a130645a95082af71e3def',1,'SmartHome.Server.Data.Repositories.ISwitchesRepository.UpdateSwitchAsync()']]]
+];
