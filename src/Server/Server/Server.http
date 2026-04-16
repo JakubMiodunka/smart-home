@@ -1,0 +1,24 @@
+@Server_HostAddress = http://localhost:5236
+
+### SmartHome.Server.Controllers.Clients.GetSwitches
+
+GET {{Server_HostAddress}}/api/clients/v1/switches
+Accept: application/json
+CONTENT-TYPE: application/json
+
+### SmartHome.Server.Controllers.Clients.GetSwitch
+### Note: Update switch identifier in URL.
+
+GET {{Server_HostAddress}}/api/clients/v1/switches/1
+Accept: application/json
+CONTENT-TYPE: application/json
+
+### SmartHome.Server.Controllers.Clients.GetSwitches
+### Note: Update switch identifier in URL and expected switch state in body.
+
+PATCH {{Server_HostAddress}}/api/clients/v1/switches/1
+Accept: application/json
+CONTENT-TYPE: application/json
+{
+  "sxpectedSwitchState" : true
+}

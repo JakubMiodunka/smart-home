@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Database/Database.sqlproj" Id="19e0b0a7-6df8-4bbf-9d9f-60bb078ed37a">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="Server/Server.csproj" />
+  <Project Path="UnitTests/UnitTests.csproj" Id="5c99477b-8dc9-46c4-bcfc-7f9edc979e93" />
+</Solution>

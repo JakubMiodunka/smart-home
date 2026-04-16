@@ -1,0 +1,138 @@
+﻿using SmartHome.Server.Data.Models.Entities;
+using System.Net;
+using System.Net.NetworkInformation;
+
+namespace SmartHome.Server.Data.Repositories;
+
+/// <summary>
+/// Defines interactions with repositories aggregating details about stations within the system.
+/// </summary>
+public interface IStationsRepository
+{
+    /// <summary>
+    /// Creates a new representation of station within the repository.
+    /// </summary>
+    /// <param name="macAddress">
+    /// MAC address of the station.
+    /// Shall be unique within the repository.
+    /// </param>
+    /// <param name="ipAddress">
+    /// IP address of the station.
+    /// Set to <see langword="null"/> if station is offline and address is unknown.
+    /// </param>
+    /// <param name="apiPort">
+    /// The network port on which the station's control service is listening.
+    /// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/>.
+    /// Set to <see langword="null"/> if station is offline and port is unknown.
+    /// </param>
+    /// <param name="apiVersion">
+    /// Version of the API exposed by the station.
+    /// Set to <see langword="null"/> if station is offline and its API version is unknown.
+    /// </param>
+    /// <param name="lastHeartbeat">
+    /// Timestamp of the last heartbeat signal received from the station.
+    /// </param>
+    /// <returns>
+    /// Station model saved within the repository.
+    /// </returns>
+    Task<StationEntity> CreateStationAsync(
+        PhysicalAddress macAddress,
+        IPAddress? ipAddress,
+        int? apiPort,
+        byte? apiVersion,
+        DateTimeOffset lastHeartbeat);
+
+    /// <summary>
+    /// Retrieves single station from the repository basing on provided criteria.
+    /// </summary>
+    /// <param name="filterById">
+    /// <see langword="true"/>, if filtering by ID shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="id">
+    /// Value of ID by which stations shall be filtered.
+    /// Ignored if value of <paramref name="filterById"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <param name="filterByIpAddress">
+    /// <see langword="true"/>, if filtering by IP address shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="ipAddress">
+    /// Value of IP address by which stations shall be filtered.
+    /// Ignored if value of <paramref name="filterByIpAddress"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <param name="filterByMacAddress">
+    /// <see langword="true"/>, if filtering by MAC address shall be applied, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="macAddress">
+    /// Value of MAC address by which stations shall be filtered.
+    /// Ignored if value of <paramref name="filterByMacAddress"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <returns>
+    /// The station that matches the provided criteria, or <see langword="null"/> reference if no match is found.
+    /// </returns>
+    Task<StationEntity?> GetSingleStationAsync(
+        bool filterById = false, long? id = null,
+        bool filterByIpAddress = false, IPAddress? ipAddress = null,
+        bool filterByMacAddress = false, PhysicalAddress? macAddress = null);
+
+    /// <summary>
+    /// Retrieves multiple stations from the repository basing on provided criteria.
+    /// </summary>
+    /// <remarks>
+    /// Currently there is no need to filter stations by any criteria,
+    /// but method is already prepared to introduce filtering.
+    /// </remarks>
+    /// <returns>
+    /// Collection of stations that matches the provided criteria.
+    /// </returns>
+    Task<StationEntity[]> GetMultipleStationsAsync();
+
+    /// <summary>
+    /// Updates properties of specified station.
+    /// </summary>
+    /// <remarks>
+    /// Currently updating station IP address is needed, but method is already prepared
+    /// to support multiple properties update if it will be needed in the future.
+    /// </remarks>
+    /// <param name="id">
+    /// Specifies which station shall be updated.
+    /// </param>
+    /// <param name="updateIpAddress">
+    /// <see langword="true"/> if IP address of specified station shall be updated, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="ipAddress">
+    /// New IP address of the station.
+    /// Ignored if value of <paramref name="updateIpAddress"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <param name="updateApiPort">
+    /// <see langword="true"/> if API port of specified station shall be updated, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="apiPort">
+    /// New station API port.
+    /// Shall be in range from <see cref="IPEndPoint.MinPort"/> to <see cref="IPEndPoint.MaxPort"/>.
+    /// Set to <see langword="null"/> if station is offline and port is unknown.
+    /// Ignored if value of <paramref name="updateApiPort"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <param name="updateApiVersion">
+    /// <see langword="true"/> if API version of specified station shall be updated, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="apiVersion">
+    /// New station API version. Set to <see langword="null"/> if station is offline and its API version is unknown.
+    /// Ignored if value of <paramref name="updateApiVersion"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <param name="updateLastHeartbeat">
+    /// <see langword="true"/> if timestamp of last heartbeat signal shall be updated, <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="lastHeartbeat">
+    /// Updated value of last heartbeat signal timestamp.
+    /// Ignored if value of <paramref name="updateLastHeartbeat"/> is set to <see langword="false"/>.
+    /// </param>
+    /// <returns>
+    /// The updated station model saved within the repository.
+    /// If the specified station does not exist, <see langword="null"/> reference is returned.
+    /// </returns>
+    Task<StationEntity?> UpdateStationAsync(long id,
+        bool updateIpAddress = false, IPAddress? ipAddress = null,
+        bool updateApiPort = false, int? apiPort = null,
+        bool updateApiVersion = false, byte? apiVersion = null,
+        bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null);
+}

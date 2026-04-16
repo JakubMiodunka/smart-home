@@ -1,0 +1,19 @@
+# Firmware secrets.
+src\Firmware\generic_firmware\secrets.cpp
+
+# Visual Studio cache directory.
+.vs/
+src/.vs/
+src/Server/.vs/
+
+# Directories used during application build.
+src/Server/Server/bin/
+src/Server/Server/obj/
+
+src/Server/Database/bin/
+src/Server/Database/obj/
+src/Server/Database/Database.jfm
+src/Server/Database/Database.dbmdl
+
+src/Server/UnitTests/bin/
+src/Server/UnitTests/obj/
