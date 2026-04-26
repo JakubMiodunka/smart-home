@@ -1,0 +1,249 @@
+﻿using SmartHome.Server.Data.Models.Entities;
+using System.Net;
+
+namespace SmartHome.Server.ApiClients.StationApi;
+
+/// <summary>
+/// An HTTP client designed for communication with a specific station API.
+/// </summary>
+/// <remarks>
+/// Responsible solely for the transport layer and HTTP client configuration. 
+/// It is the caller's responsibility to ensure that the endpoint URL, 
+/// HTTP method, and request body are valid and logically correct.
+/// </remarks>
+public interface IStationApiClient
+{
+    /// <summary>
+    /// Sends an asynchronous HTTP request to the station associated with this client.
+    /// </summary>
+    /// <param name="endpointUrl">
+    /// Absolute URL of the station API endpoint.
+    /// </param>
+    /// <param name="httpMethod">
+    /// HTTP method to be used for the request.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the asynchronous operation.
+    /// </param>
+    /// <param name="requestBody">
+    /// The object to be serialized into the HTTP request body,
+    /// or <see langword="null"/> if no body is required.
+    /// </param>
+    /// <returns>
+    /// HTTP status code returned by the station API if 
+    /// the request was processed successfully, <see langword="null"/> otherwise.
+    /// </returns>
+    Task<HttpStatusCode?> SendRequestAsync(
+        Uri endpointUrl,
+        HttpMethod httpMethod,
+        CancellationToken cancellationToken,
+        object? requestBody = null);
+}
+
+/// TODO: Add unit tests.
+/// <remarks>
+/// While currently station entity hold in client body is used for enriched logging,
+/// it's main purpose is to allow configuration of the communication 
+/// layer based on station-specific properties.
+/// Now configuration is static and applied to all stations, 
+/// but in the future some station-specific configuration may be required.
+/// </remarks>
+/// <inheritdoc cref="IStationApiClient"/>
+public sealed class StationApiClient : IStationApiClient
+{
+    #region Properties
+    private readonly StationEntity _station;
+    private readonly HttpClient _httpClient;
+    private readonly ILogger<StationApiClient> _logger;
+    #endregion
+
+    #region Instantiation
+    /// <summary>
+    /// Initializes a new instance of the client for a specific station API.
+    /// </summary>
+    /// <param name="station">
+    /// Station, which shall be associated with created client.
+    /// </param>
+    /// <param name="httpClientFactory">
+    /// Factory which shall be used to obtain instances of <see cref="HttpClient"/> class.
+    /// Those will be used to communicate with station associated with the client.
+    /// </param>
+    /// <param name="httpClientTimeout">
+    /// The maximum time to wait for a station API response.
+    /// </param>
+    /// <param name="logger">
+    /// Logger instance, which shall be used by the created client.
+    /// </param>
+    public StationApiClient(
+        StationEntity station,
+        IHttpClientFactory httpClientFactory,
+        TimeSpan httpClientTimeout,
+        ILogger<StationApiClient> logger)
+    {
+        ArgumentNullException.ThrowIfNull(station);
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _station = station;
+        _logger = logger;
+        _httpClient = CreateHttpClient(httpClientFactory, httpClientTimeout);
+    }
+    #endregion
+
+    #region Utilities
+    /// <summary>
+    /// Creates HTTP client complementary to communicate with the associated station API.
+    /// </summary>
+    /// <param name="httpClientFactory">
+    /// Factory which shall be used to obtain instance of <see cref="HttpClient"/> class.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time to wait for a station API response.
+    /// </param>
+    /// <returns>
+    /// HTTP client complementary to communicate with the associated station API.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the value of at least one argument is outside its valid range.
+    /// </exception>
+    private HttpClient CreateHttpClient(IHttpClientFactory httpClientFactory, TimeSpan timeout)
+    {
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
+
+        /*
+         * TODO: Collect information about which protocol station is using,
+         * so that creation of HTTP client can be more flexible and adapted to specific station types.
+         */
+
+        HttpClient httpClient = httpClientFactory.CreateClient();
+        httpClient.DefaultRequestVersion = HttpVersion.Version10;   // ESP8266's web server only supports only HTTP 1.0.
+        httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        httpClient.Timeout = timeout;
+
+        return httpClient;
+    }
+
+    /// <summary>
+    /// Serializes the request model into an <see cref="HttpContent"/> instance and pre-processes the data.
+    /// </summary>
+    /// <remarks>
+    /// Returns an abstract <see cref="HttpContent"/> to allow for easier migration between serialization formats.
+    /// </remarks>
+    /// <param name="request">
+    /// The object to be serialized into the HTTP request body.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation, returning the serialized <see cref="HttpContent"/>.
+    /// </returns>
+    private async Task<HttpContent> AsHttpContent(object? request)
+    {
+        var requestContent = JsonContent.Create(request);
+
+        if (_httpClient.DefaultRequestVersion <= HttpVersion.Version10)
+        {
+            /*
+             * Forces full serialization of the request body before transmission.
+             * This ensures the 'Content-Length' header is sent instead of 'Transfer-Encoding: chunked',
+             * which is not supported by the HTTP below version 1.0.
+             * Simple server running on ESP8266 does not support chunked transfer encoding, so this is required to ensure compatibility.
+             */
+            _logger.LogDebug("Buffering request content to calculate Content-Length and prevent chunked transfer:");
+            await requestContent.LoadIntoBufferAsync();
+        }
+
+        return requestContent;
+    }
+    #endregion
+
+    #region Interactions
+    /// <inheritdoc cref="IStationApiClient"/>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown, when at least one of provided arguments is invalid.
+    /// </exception>
+    public async Task<HttpStatusCode?> SendRequestAsync(
+        Uri endpointUrl,
+        HttpMethod httpMethod,
+        CancellationToken cancellationToken,
+        object? requestBody = null)
+    {
+        ArgumentNullException.ThrowIfNull(endpointUrl);
+        ArgumentNullException.ThrowIfNull(httpMethod);
+
+        if (!endpointUrl.IsAbsoluteUri)
+        {
+            throw new ArgumentException(
+                $"Endpoint URL is not absolute: {endpointUrl}",
+                nameof(endpointUrl));
+        }
+
+        _logger.LogInformation(
+            "Attempting to sent station API request: StationId=[{StationId}], " +
+            "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
+            _station.Id,
+            endpointUrl,
+            httpMethod,
+            requestBody);
+
+        using var request = new HttpRequestMessage(httpMethod, endpointUrl)
+        {
+            Content = requestBody is null ? null : await AsHttpContent(requestBody)
+        };
+
+        try
+        {
+            /*
+             * Methods as HttpClient.PatchAsJsonAsync are avoided here because they uses chunked transfer encoding,
+             * which is not supported by certain station types (e.g. stations based on the ESP8266 
+             * chip running a server using the ESP8266WebServer library).
+             */
+            using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+
+            _logger.Log(
+                response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
+                "Station API response received: StationId=[{StationId}], StatusCode=[{StatusCode}]",
+                _station.Id,
+                response.StatusCode);
+
+            return response.StatusCode;
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Exception thrown while sending station API request: " +
+                "StationId=[{StationId}], ExceptionType=[{ExceptionType}], Message=[{Message}]",
+                _station.Id,
+                exception.GetType().FullName,
+                exception.Message);
+
+            return null;
+        }
+        catch (OperationCanceledException exception) when (exception.InnerException is TimeoutException)
+        {
+            _logger.LogWarning(
+                    exception,
+                    "Station failed to respond within the allowed timeframe: StationId=[{StationId}], Timeout=[{Timeout}]",
+                    _station.Id,
+                    _httpClient.Timeout);
+
+            return null;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogInformation(
+                exception,
+                "Sending station API request cancelled: StationId=[{StationId}]",
+                _station.Id);
+
+            return null;
+        }
+    }
+    #endregion
+}
