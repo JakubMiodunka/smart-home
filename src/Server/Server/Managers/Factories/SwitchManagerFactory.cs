@@ -1,4 +1,5 @@
-﻿using SmartHome.Server.Data.Models.Entities;
+﻿using SmartHome.Server.ApiClients.StationApi;
+using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Managers.Factories;
@@ -14,57 +15,44 @@ public interface ISwitchManagerFactory
     /// <param name="switchEntity">
     /// Entity of switch which shall be controlled by created manager.
     /// </param>
+    /// <param name="parentStation">
+    /// Entity of station, that controls the specified switch.
+    /// </param>
     /// <returns>
     /// An <see cref="SwitchManager"/> instance that allows performing operations on the switch.
     /// </returns>
-    ISwitchManager CreateFor(SwitchEntity switchEntity);
+    ISwitchManager CreateFor(SwitchEntity switchEntity, StationEntity parentStation);
 }
 
 /// <inheritdoc cref="ISwitchManagerFactory"/>
 public sealed class SwitchManagerFactory : ISwitchManagerFactory
 {
     #region Properties
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IStationsRepository _stationsRepository;
-    private readonly ISwitchesRepository _switchesRepository;
+    private readonly IStationApiClientsFactory _stationApiClientsFactory;
     private readonly ILoggerFactory _loggerFactory;
     #endregion
 
-    #region Instationation
+    #region Instantiation
+    /// TODO: Add doc-string.
     public SwitchManagerFactory(
-        IHttpClientFactory httpClientFactory,
-        IStationsRepository stationsRepository,
-        ISwitchesRepository switchesRepository,
+        IStationApiClientsFactory stationApiClientsFactory,
         ILoggerFactory loggerFactory)
     {
-        ArgumentNullException.ThrowIfNull(httpClientFactory);
-        ArgumentNullException.ThrowIfNull(stationsRepository);
-        ArgumentNullException.ThrowIfNull(switchesRepository);
+        ArgumentNullException.ThrowIfNull(stationApiClientsFactory);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        _httpClientFactory = httpClientFactory;
-        _stationsRepository = stationsRepository;
-        _switchesRepository = switchesRepository;
+        _stationApiClientsFactory = stationApiClientsFactory;
         _loggerFactory = loggerFactory;
     }
     #endregion
 
     #region Interactions
     /// <inheritdoc cref="ISwitchManagerFactory.CreateFor(SwitchEntity)"/>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown, when at least one required reference-type argument is a <see langword="null"/> reference.
-    /// </exception>
-    public ISwitchManager CreateFor(SwitchEntity switchEntity)
-    {
-        ArgumentNullException.ThrowIfNull(switchEntity);
-
-        return new SwitchManager(
+    public ISwitchManager CreateFor(SwitchEntity switchEntity, StationEntity parentStation) =>
+        new SwitchManager(
             switchEntity,
-            _httpClientFactory,
-            _stationsRepository,
-            _switchesRepository,
+            parentStation,
+            _stationApiClientsFactory,
             _loggerFactory.CreateLogger<SwitchManager>());
-    }
-        
     #endregion
 }
