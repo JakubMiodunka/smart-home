@@ -1,4 +1,5 @@
 using Dapper;
+using SmartHome.Server.ApiClients.StationApi;
 using SmartHome.Server.Data.Converters.JsonConverters;
 using SmartHome.Server.Data.Converters.TypeHandlers;
 using SmartHome.Server.Data.Database;
@@ -39,10 +40,9 @@ builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
+builder.Services.AddSingleton<IStationApiClientsFactory>(serviceProvider => serviceProvider.GetRequiredService<StationApiClientsFactory>());
 builder.Services.AddSingleton<ISwitchManagerFactory>(serviceProvider => new SwitchManagerFactory(
-    serviceProvider.GetRequiredService<IHttpClientFactory>(),
-    serviceProvider.GetRequiredService<IStationsRepository>(),
-    serviceProvider.GetRequiredService<ISwitchesRepository>(),
+    serviceProvider.GetRequiredService<IStationApiClientsFactory>(),
     serviceProvider.GetRequiredService<ILoggerFactory>()));
 
 builder.Services.AddHostedService(serviceProvider =>
