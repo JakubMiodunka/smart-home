@@ -25,50 +25,78 @@ public sealed class SwitchesControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
     public void InstantiationImpossibleUsingNullReferenceAsHttpContextAccessor()
     {
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () => new SwitchesController(
             null!,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
     public void InstantiationImpossibleUsingNullReferenceAsSwitchesRepository()
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             null!,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
+        stationsRepositoryMock.AssertNoContentModifications();
+    }
+
+    [Test]
+    public void InstantiationImpossibleUsingNullReferenceAsStationsRepository()
+    {
+        var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
+        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
+        var loggerStub = new FakeLogger<SwitchesController>();
+
+        TestDelegate actionUnderTest = () => new SwitchesController(
+            httpContextAccessorStub.Object,
+            switchesRepositoryMock.Object,
+            null!,
+            switchManagerFactoryStub.Object,
+            loggerStub);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -76,16 +104,19 @@ public sealed class SwitchesControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
         TestDelegate actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             null!,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -93,16 +124,19 @@ public sealed class SwitchesControllerTests
     {
         var httpContextAccessorStub = new Mock<IHttpContextAccessor>();
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
 
         TestDelegate actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
     }
     #endregion
 
@@ -130,12 +164,14 @@ public sealed class SwitchesControllerTests
                 localId: null))
             .ReturnsAsync(switchEntity);
 
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerMock = new FakeLogger<SwitchesController>();
 
         var controllerUnderTest = new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerMock);
 
@@ -143,6 +179,7 @@ public sealed class SwitchesControllerTests
         response.AssertOkObjectResult(expectedValue: switchEntity);
 
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -172,12 +209,14 @@ public sealed class SwitchesControllerTests
                 localId: null))
             .ReturnsAsync(switchEntity);
 
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerMock = new FakeLogger<SwitchesController>();
 
         var controllerUnderTest = new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerMock);
 
@@ -191,6 +230,7 @@ public sealed class SwitchesControllerTests
         response.AssertNotFoundResult();
 
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -220,12 +260,14 @@ public sealed class SwitchesControllerTests
                 localId: null))
             .ReturnsAsync(switchEntity);
 
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerMock = new FakeLogger<SwitchesController>();
 
         var controllerUnderTest = new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerMock);
 
@@ -233,6 +275,7 @@ public sealed class SwitchesControllerTests
         response.AssertBadRequestResult();
 
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -259,12 +302,14 @@ public sealed class SwitchesControllerTests
             .GetMultipleSwitchesAsync())
             .ReturnsAsync(repositoryContent);
 
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerMock = new FakeLogger<SwitchesController>();
 
         var controllerUnderTest = new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerMock);
 
@@ -272,6 +317,7 @@ public sealed class SwitchesControllerTests
         response.AssertOkObjectResult(expectedValue: repositoryContent);
 
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -288,12 +334,14 @@ public sealed class SwitchesControllerTests
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(remoteIpAddress: null);
 
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerMock = new FakeLogger<SwitchesController>();
 
         var controllerUnderTest = new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerMock);
 
@@ -301,6 +349,7 @@ public sealed class SwitchesControllerTests
         response.AssertBadRequestResult();
 
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -321,7 +370,7 @@ public sealed class SwitchesControllerTests
 
         bool expectedState = randomizer.NextBool();
         bool? actualState = randomizer.NextBool() ? !expectedState : null;
-        SwitchEntity switchEntityBeforeUpdate = randomizer.NextSwitchEntity() with
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity() with
         {
             ExpectedState = expectedState,
             ActualState = actualState
@@ -332,31 +381,51 @@ public sealed class SwitchesControllerTests
         switchesRepositoryMock.Setup(mock => mock
             .GetSingleSwitchAsync(
                 filterById: true,
-                id: switchEntityBeforeUpdate.Id,
+                id: switchEntity.Id,
                 filterByStationId: false,
                 stationId: null,
                 filterByLocalId: false,
                 localId: null))
-            .ReturnsAsync(switchEntityBeforeUpdate);
+            .ReturnsAsync(switchEntity);
 
-        SwitchEntity updatedSwitchEntity = switchEntityBeforeUpdate with
-        { 
-            ActualState = switchEntityBeforeUpdate.ExpectedState
+        switchesRepositoryMock.Setup(mock => mock
+            .UpdateSwitchAsync(
+                id: switchEntity.Id,
+                updateExpectedState: true,
+                expectedState: switchEntity.ExpectedState,
+                updateActualState: true,
+                actualState: switchEntity.ExpectedState))
+            .ReturnsAsync(switchEntity with { ActualState = switchEntity.ExpectedState });
+
+        StationEntity parentStation = randomizer.NextStationEntity() with
+        {
+            Id = switchEntity.StationId
         };
 
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        stationsRepositoryMock.Setup(mock => mock
+            .GetSingleStationAsync(
+               filterById: true,
+                id: parentStation.Id,
+                filterByIpAddress: false,
+                ipAddress: null,
+                filterByMacAddress: false,
+                macAddress: null))
+            .ReturnsAsync(parentStation);
+
         var switchManagerMock = new Mock<ISwitchManager>();
-        switchManagerMock.SetupGet(mock => mock.ManagedSwitch).Returns(updatedSwitchEntity);
 
         switchManagerMock.Setup(mock => 
             mock.TryChangeState(
-                switchEntityBeforeUpdate.ExpectedState,
+                switchEntity.ExpectedState,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
 
-        switchManagerFactoryStub.Setup(
-                mock => mock.CreateFor(switchEntityBeforeUpdate))
+        switchManagerFactoryStub.Setup(mock => mock
+            .CreateFor(switchEntity, parentStation))
             .Returns(switchManagerMock.Object);
 
         var loggerMock = new FakeLogger<SwitchesController>();
@@ -364,26 +433,29 @@ public sealed class SwitchesControllerTests
         var controllerUnderTest = new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
+            stationsRepositoryMock.Object,
             switchManagerFactoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateClientRequest(switchEntityBeforeUpdate.ExpectedState);
-        IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntityBeforeUpdate.Id, request, CancellationToken.None);
+        var request = new SwitchUpdateClientRequest(switchEntity.ExpectedState);
+        IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
         response.AssertNoContentResult();
 
         switchManagerMock.Verify(mock =>
             mock.TryChangeState(
-                switchEntityBeforeUpdate.ExpectedState,
+                switchEntity.ExpectedState,
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
         switchesRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
+    // TODO: Adjust test cases below.
     [Test]
     public async Task UpdateReturnsBadRequestIfClientIpAddressCannotBeDetermined()
     {
