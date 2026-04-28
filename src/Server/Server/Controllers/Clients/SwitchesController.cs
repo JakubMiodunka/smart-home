@@ -18,6 +18,7 @@ public class SwitchesController : BaseController
 {
     #region Properties
     private readonly ISwitchesRepository _switchesRepository;
+    private readonly IStationsRepository _stationsRepository;
     private readonly ISwitchManagerFactory _switchManagerFactory;
     private readonly ILogger<SwitchesController> _logger;
     #endregion
@@ -30,6 +31,9 @@ public class SwitchesController : BaseController
     /// Provides access to the <see cref="HttpContext"/> of the current request.
     /// </param>
     /// <param name="switchesRepository">
+    /// Switches repository which shall be used by this controller.
+    /// </param>
+    /// <param name="stationsRepository">
     /// Stations repository which shall be used by this controller.
     /// </param>
     /// <param name="switchManagerFactory">
@@ -44,14 +48,17 @@ public class SwitchesController : BaseController
     public SwitchesController(
         IHttpContextAccessor httpContextAccessor,
         ISwitchesRepository switchesRepository,
+        IStationsRepository stationsRepository,
         ISwitchManagerFactory switchManagerFactory,
         ILogger<SwitchesController> logger) : base(httpContextAccessor)
     {
         ArgumentNullException.ThrowIfNull(switchesRepository, nameof(switchesRepository));
+        ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
         ArgumentNullException.ThrowIfNull(switchManagerFactory, nameof(switchManagerFactory));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         _switchesRepository = switchesRepository;
+        _stationsRepository = stationsRepository;
         _switchManagerFactory = switchManagerFactory;
         _logger = logger;
     }
@@ -163,55 +170,117 @@ public class SwitchesController : BaseController
         }
 
         _logger.LogInformation(
-            "Processing switch update request: ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}], ExpectedSwitchState=[{ExpectedSwitchState}]",
-            clientIpAddress,
+            "Processing switch update request: SwitchId=[{SwitchId}], " +
+            "ExpectedSwitchState=[{ExpectedSwitchState}], ClientIpAddress=[{ClientIpAddress}]",
             switchId,
-            request.ExpectedSwitchState);
+            request.ExpectedSwitchState,
+            clientIpAddress);
 
-        SwitchEntity? switchEntity = await _switchesRepository.GetSingleSwitchAsync(filterById: true, id: switchId);
-    
-        if (switchEntity is null)
+        if (await _switchesRepository.GetSingleSwitchAsync(
+                filterById: true,
+                id: switchId) is not SwitchEntity switchEntity)
         {
             _logger.LogWarning(
-                "Failed to process switch update request: Message=[{Message}], SwitchId=[{SwitchId}], ClientIpAddress=[{ClientIpAddress}]",
+                "Failed to process switch update request: Message=[{Message}], " +
+                "SwitchId=[{SwitchId}], ClientIpAddress=[{ClientIpAddress}]",
                 "Switch not found.",
                 switchId,
                 clientIpAddress);
 
             return NotFound();
         }
-        
-        _logger.LogDebug("Attempting to change switch state: SwitchId=[{SwitchId}], " +
+
+        if (await _stationsRepository.GetSingleStationAsync(
+            filterById: true,
+            id: switchEntity.StationId) is not StationEntity parentStation)
+        {
+            _logger.LogError(
+                "Failed to process switch update request: Message=[{Message}], SwitchId=[{SwitchId}], " +
+                "StationId=[{StationId}], ClientIpAddress=[{ClientIpAddress}]",
+                "Parent station not found.",
+                switchEntity.Id,
+                switchEntity.StationId,
+                clientIpAddress);
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        _logger.LogDebug("Attempting to change switch state: SwitchId=[{SwitchId}], StationId=[{StationId}], " +
             "ExpectedSwitchState=[{ExpectedSwitchState}], ActualSwitchState=[{ActualSwitchState}]",
             switchEntity.Id,
+            parentStation.Id,
             request.ExpectedSwitchState,
             switchEntity.ActualState);
 
-        ISwitchManager switchManager = _switchManagerFactory.CreateFor(switchEntity);
-        bool wasUpdateSuccessful = await switchManager.TryChangeState(request.ExpectedSwitchState, cancellationToken);
-        switchEntity = switchManager.ManagedSwitch;
+        ISwitchManager switchManager = _switchManagerFactory.CreateFor(switchEntity, parentStation);
 
-        if (wasUpdateSuccessful)
+        if (await switchManager.TryChangeState(request.ExpectedSwitchState, cancellationToken))
         {
-            _logger.LogInformation(
-                "Switch update request processed successfully: ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}, " +
-                "ExpectedSwitchState=[{ExpectedSwitchState}], ActualSwitchState=[{ActualSwitchState}]",
-                clientIpAddress,
+            _logger.LogDebug("Attempt to change switch state successful: SwitchId=[{SwitchId}]," +
+                "StationId=[{StationId}], ActualSwitchState=[{ActualSwitchState}]",
                 switchEntity.Id,
-                switchEntity.ExpectedState,
-                switchEntity.ActualState);
-            
+                switchEntity.StationId,
+                request.ExpectedSwitchState);
+
+            if (await _switchesRepository.UpdateSwitchAsync(
+                switchEntity.Id,
+                updateExpectedState: true,
+                expectedState: request.ExpectedSwitchState,
+                updateActualState: true,
+                actualState: request.ExpectedSwitchState) is null)
+            {
+                _logger.LogError(
+                    "Failed to process switch update request: Message=[{Message}], SwitchId=[{SwitchId}], " +
+                    "StationId=[{StationId}], ClientIpAddress=[{ClientIpAddress}]",
+                    "Switches repository update failed.",
+                    switchEntity.Id,
+                    parentStation.Id,
+                    clientIpAddress);
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            _logger.LogInformation(
+                "Switch update request processed successfully: Message=[{Message}], SwitchId=[{SwitchId}]," +
+                "StationId=[{StationId}], ActualSwitchState=[{ActualSwitchState}], ClientIpAddress=[{ClientIpAddress}]",
+                "Actual switch state changed.",
+                switchEntity.Id,
+                parentStation.Id,
+                request.ExpectedSwitchState,
+                clientIpAddress);
+
             return NoContent();
         }
 
-        _logger.LogWarning(
-            "Failed to process switch update request: Message=[{Message}], SwitchId=[{SwitchId}], ClientIpAddress=[{ClientIpAddress}], " +
-            "ExpectedSwitchState=[{ExpectedSwitchState}], ActualSwitchState=[{ActualSwitchState}]",
-            "Unable to update switch.",
+        _logger.LogDebug(
+            "Unable to change actual switch state: SwitchId=[{SwitchId}], StationId=[{StationId}]",
             switchEntity.Id,
-            clientIpAddress,
-            switchEntity.ExpectedState,
-            switchEntity.ActualState);
+            parentStation.Id);
+
+        if (await _switchesRepository.UpdateSwitchAsync(
+                switchEntity.Id,
+                updateExpectedState: true,
+                expectedState: request.ExpectedSwitchState) is null)
+        {
+            _logger.LogError(
+                "Failed to process switch update request: Message=[{Message}], SwitchId=[{SwitchId}], " +
+                "StationId=[{StationId}], ClientIpAddress=[{ClientIpAddress}]",
+                "Switches repository update failed.",
+                switchEntity.Id,
+                parentStation.Id,
+                clientIpAddress);
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        _logger.LogInformation(
+            "Switch update request processed successfully: Message=[{Message}], SwitchId=[{SwitchId}], " +
+            "StationId=[{StationId}], ExpectedSwitchState=[{ExpectedSwitchState}], ClientIpAddress=[{ClientIpAddress}]",
+            "Expected switch state changed.",
+            switchEntity.Id,
+            parentStation.Id,
+            request.ExpectedSwitchState,
+            clientIpAddress);
 
         return StatusCode(StatusCodes.Status503ServiceUnavailable);
     }
