@@ -53,8 +53,17 @@ public sealed class StationApiClient : IStationApiClient
 {
     #region Properties
     private readonly StationEntity _station;
-    private readonly HttpClient _httpClient;
+    private readonly Lazy<HttpClient> _lazyWrappedHttpClient;
     private readonly ILogger<StationApiClient> _logger;
+
+    /// <remarks>
+    /// The <see cref="HttpClient"/> is wrapped in <see cref="Lazy{T}"/> primarily to enhance testability. 
+    /// By deferring the initialization and configuration of the client, it is possible to instantiate 
+    /// the class in a unit testing context without providing a fully configured 
+    /// <see cref="IHttpClientFactory"/> during construction.
+    /// </remarks>
+    private HttpClient WrappedHttpClient => 
+        _lazyWrappedHttpClient.Value;
     #endregion
 
     #region Instantiation
@@ -86,7 +95,7 @@ public sealed class StationApiClient : IStationApiClient
 
         _station = station;
         _logger = logger;
-        _httpClient = CreateHttpClient(httpClientFactory, httpClientTimeout);
+        _lazyWrappedHttpClient = new Lazy<HttpClient>(() => CreateHttpClient(httpClientFactory, httpClientTimeout));
     }
     #endregion
 
@@ -143,7 +152,7 @@ public sealed class StationApiClient : IStationApiClient
     {
         var requestContent = JsonContent.Create(request);
 
-        if (_httpClient.DefaultRequestVersion <= HttpVersion.Version10)
+        if (WrappedHttpClient.DefaultRequestVersion <= HttpVersion.Version10)
         {
             /*
              * Forces full serialization of the request body before transmission.
@@ -203,7 +212,7 @@ public sealed class StationApiClient : IStationApiClient
              * which is not supported by certain station types (e.g. stations based on the ESP8266 
              * chip running a server using the ESP8266WebServer library).
              */
-            using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            using HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
 
             _logger.Log(
                 response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
@@ -231,7 +240,7 @@ public sealed class StationApiClient : IStationApiClient
                     exception,
                     "Station failed to respond within the allowed timeframe: StationId=[{StationId}], Timeout=[{Timeout}]",
                     _station.Id,
-                    _httpClient.Timeout);
+                    WrappedHttpClient.Timeout);
 
             return null;
         }

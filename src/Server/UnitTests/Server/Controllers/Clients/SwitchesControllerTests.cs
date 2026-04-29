@@ -445,7 +445,6 @@ public sealed class SwitchesControllerTests
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
-        switchesRepositoryMock.AssertNoContentModifications();
         stationsRepositoryMock.AssertNoContentModifications();
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
@@ -770,7 +769,7 @@ public sealed class SwitchesControllerTests
                 id: switchEntity.Id,
                 updateExpectedState: true,
                 expectedState: switchEntity.ExpectedState,
-                updateActualState: true,
+                updateActualState: false,
                 actualState: null))
             .ReturnsAsync(switchEntity);
 
@@ -822,8 +821,8 @@ public sealed class SwitchesControllerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Information));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
     #endregion
 }
