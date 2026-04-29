@@ -5,7 +5,7 @@ namespace SmartHome.Server.ApiClients.StationApi;
 /// <summary>
 /// Factory for creating station API clients.
 /// </summary>
-public interface IStationApiClientsFactory
+public interface IStationApiClientFactory
 {
     /// <summary>
     /// Creates client dedicated for communication with a specified station API.
@@ -17,14 +17,13 @@ public interface IStationApiClientsFactory
     /// The maximum time to wait for a station API response.
     /// </param>
     /// <returns>
-    /// HTTP client configured for the specified station.
+    /// An <see cref="IStationApiClient"/> instance configured to communicate with the specified station.
     /// </returns>
     IStationApiClient CreateFor(StationEntity stationEntity, TimeSpan connectionTimeout);
 }
 
-/// TODO: Add unit tests.
-/// <inheritdoc cref="IStationApiClientsFactory"/>
-public sealed class StationApiClientsFactory : IStationApiClientsFactory
+/// <inheritdoc cref="IStationApiClientFactory"/>
+public sealed class StationApiClientFactory : IStationApiClientFactory
 {
     #region Properties
     private readonly IHttpClientFactory _httpClientFactory;
@@ -44,10 +43,10 @@ public sealed class StationApiClientsFactory : IStationApiClientsFactory
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
-    public StationApiClientsFactory(IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory)
+    public StationApiClientFactory(IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory)
     {
-        ArgumentNullException.ThrowIfNull(httpClientFactory);
-        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(httpClientFactory, nameof(httpClientFactory));
+        ArgumentNullException.ThrowIfNull(loggerFactory, nameof(loggerFactory));
 
         _httpClientFactory = httpClientFactory;
         _loggerFactory = loggerFactory;
@@ -55,7 +54,7 @@ public sealed class StationApiClientsFactory : IStationApiClientsFactory
     #endregion
 
     #region Interactions
-    /// <inheritdoc cref="IStationApiClientsFactory"/>
+    /// <inheritdoc cref="IStationApiClientFactory"/>
     public IStationApiClient CreateFor(StationEntity stationEntity, TimeSpan connectionTimeout) =>
         new StationApiClient(
             stationEntity,
