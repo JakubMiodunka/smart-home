@@ -27,7 +27,7 @@ public interface ISwitchManagerFactory
 public sealed class SwitchManagerFactory : ISwitchManagerFactory
 {
     #region Properties
-    private readonly IStationApiClientsFactory _stationApiClientsFactory;
+    private readonly IStationApiClientFactory _stationApiClientsFactory;
     private readonly ILoggerFactory _loggerFactory;
     #endregion
 
@@ -45,7 +45,7 @@ public sealed class SwitchManagerFactory : ISwitchManagerFactory
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
     public SwitchManagerFactory(
-        IStationApiClientsFactory stationApiClientsFactory,
+        IStationApiClientFactory stationApiClientsFactory,
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(stationApiClientsFactory, nameof(stationApiClientsFactory));
