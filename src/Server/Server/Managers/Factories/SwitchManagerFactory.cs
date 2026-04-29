@@ -1,6 +1,5 @@
 ﻿using SmartHome.Server.ApiClients.StationApi;
 using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Managers.Factories;
 
@@ -19,7 +18,7 @@ public interface ISwitchManagerFactory
     /// Entity of station, that controls the specified switch.
     /// </param>
     /// <returns>
-    /// An <see cref="SwitchManager"/> instance that allows performing operations on the switch.
+    /// An <see cref="ISwitchManager"/> instance that allows performing operations on the switch.
     /// </returns>
     ISwitchManager CreateFor(SwitchEntity switchEntity, StationEntity parentStation);
 }
@@ -33,13 +32,24 @@ public sealed class SwitchManagerFactory : ISwitchManagerFactory
     #endregion
 
     #region Instantiation
-    /// TODO: Add doc-string.
+    /// <summary>
+    /// Creates a new instance of <see cref="SwitchManagerFactory"/>.
+    /// </summary>
+    /// <param name="stationApiClientsFactory">
+    /// Factory, which shall be used to obtain station API clients for created managers.
+    /// </param>
+    /// <param name="loggerFactory">
+    /// Factory, which shall be used to obtain loggers for created managers.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
+    /// </exception>
     public SwitchManagerFactory(
         IStationApiClientsFactory stationApiClientsFactory,
         ILoggerFactory loggerFactory)
     {
-        ArgumentNullException.ThrowIfNull(stationApiClientsFactory);
-        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(stationApiClientsFactory, nameof(stationApiClientsFactory));
+        ArgumentNullException.ThrowIfNull(loggerFactory, nameof(loggerFactory));
 
         _stationApiClientsFactory = stationApiClientsFactory;
         _loggerFactory = loggerFactory;
