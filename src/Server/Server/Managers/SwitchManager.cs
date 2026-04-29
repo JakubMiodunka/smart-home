@@ -8,6 +8,9 @@ namespace SmartHome.Server.Managers;
 /// <summary>
 /// Manages the state of a specific switch on a remote station.
 /// </summary>
+/// <remarks>
+/// Does not update details of managed switch in any repository, that's the responsibility of the caller.
+/// </remarks>
 public interface ISwitchManager
 {
     /// <summary>
