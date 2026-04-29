@@ -40,9 +40,9 @@ builder.Services.AddSingleton(new DatabaseClient(ConnectionString));
 builder.Services.AddSingleton<IDatabaseClient>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
 builder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
-builder.Services.AddSingleton<IStationApiClientsFactory>(serviceProvider => serviceProvider.GetRequiredService<StationApiClientsFactory>());
+builder.Services.AddSingleton<IStationApiClientFactory>(serviceProvider => serviceProvider.GetRequiredService<StationApiClientFactory>());
 builder.Services.AddSingleton<ISwitchManagerFactory>(serviceProvider => new SwitchManagerFactory(
-    serviceProvider.GetRequiredService<IStationApiClientsFactory>(),
+    serviceProvider.GetRequiredService<IStationApiClientFactory>(),
     serviceProvider.GetRequiredService<ILoggerFactory>()));
 
 builder.Services.AddHostedService(serviceProvider =>

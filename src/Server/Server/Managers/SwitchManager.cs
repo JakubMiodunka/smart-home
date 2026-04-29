@@ -37,7 +37,7 @@ public sealed class SwitchManager : ISwitchManager
     // TODO: Move this value to some cinfiguration file.
     private static readonly TimeSpan s_httpClientTimeout = TimeSpan.FromMilliseconds(5000);
 
-    private readonly IStationApiClientsFactory _stationApiClientsFactory;
+    private readonly IStationApiClientFactory _stationApiClientsFactory;
     private readonly ILogger<SwitchManager> _logger;
 
     /// <remarks>
@@ -74,7 +74,7 @@ public sealed class SwitchManager : ISwitchManager
     public SwitchManager(
         SwitchEntity managedSwitch,
         StationEntity switchParentStation,
-        IStationApiClientsFactory stationApiClientsFactory,
+        IStationApiClientFactory stationApiClientsFactory,
         ILogger<SwitchManager> logger)
     {
         ArgumentNullException.ThrowIfNull(managedSwitch);

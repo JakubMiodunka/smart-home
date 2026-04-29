@@ -19,7 +19,7 @@ public sealed class SwitchManagerFactoryTests
     [Test]
     public void InstantiationPossible()
     {
-        var stationApiClientsFactoryStub = new Mock<IStationApiClientsFactory>();
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
         TestDelegate actionUnderTest = () => new SwitchManagerFactory(
@@ -44,7 +44,7 @@ public sealed class SwitchManagerFactoryTests
     [Test]
     public void InstantiationImpossibleUsingNullReferenceAsLoggerFactory()
     {
-        var stationApiClientsFactoryStub = new Mock<IStationApiClientsFactory>();
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
         TestDelegate actionUnderTest = () => new SwitchManagerFactory(
@@ -61,7 +61,7 @@ public sealed class SwitchManagerFactoryTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var stationApiClientsFactoryStub = new Mock<IStationApiClientsFactory>();
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
         loggerFactoryStub.Setup(factory => factory
@@ -77,6 +77,7 @@ public sealed class SwitchManagerFactoryTests
         ISwitchManager switchManager = factoryUnderTest.CreateFor(switchEntity, parentStation);
 
         Assert.That(switchManager, Is.Not.Null);
+        Assert.That(switchManager, Is.InstanceOf<SwitchManager>());
     }
     #endregion
 }
