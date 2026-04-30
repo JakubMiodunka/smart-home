@@ -251,7 +251,7 @@ public sealed class StationApiClient : IStationApiClient
                 "Sending station API request cancelled: StationId=[{StationId}]",
                 _station.Id);
 
-            return null;
+            throw;
         }
     }
     #endregion
