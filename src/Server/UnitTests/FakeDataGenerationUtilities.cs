@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Testing.Platform.Extensions.Messages;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Data.Models.Entities;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -92,6 +94,9 @@ internal static class FakeDataGenerationUtilities
 
         return new IPAddress(ipAddress);
     }
+
+    public static int NextPort(this Randomizer randomizer) =>
+        randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1);
 
     public static StationEntity NextStationEntity(this Randomizer randomizer)
     {
