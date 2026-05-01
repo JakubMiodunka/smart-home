@@ -27,11 +27,11 @@ internal static class RequestSnapshotTestingUtilities
         if (expectedHttpMethod == HttpMethod.Get)
         {
             Assert.That(request.RawContent, Is.Null);
-
+        
             Assert.That(
                 request.Headers.Accept,
                 Has.Some.Matches<MediaTypeWithQualityHeaderValue>(headerValue => headerValue.MediaType == "application/json"));
-
+        
             return;
         }
 
