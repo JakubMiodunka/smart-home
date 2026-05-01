@@ -73,7 +73,7 @@ public sealed class StationApiClientFactoryTests
             loggerFactoryStub.Object);
 
         StationEntity stationEntity = randomizer.NextStationEntity();
-        TimeSpan timeout = randomizer.NextTimeSpan(from: TimeSpan.FromMicroseconds(1));
+        TimeSpan timeout = randomizer.NextTimeSpan(from: StationApiClient.MinTimeout, to: StationApiClient.MaxTimeout);
         IStationApiClient apiClient = factoryUnderTest.CreateFor(stationEntity, timeout);
 
         Assert.That(apiClient, Is.Not.Null);

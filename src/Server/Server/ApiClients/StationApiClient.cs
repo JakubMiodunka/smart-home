@@ -1,5 +1,6 @@
 ﻿using SmartHome.Server.Data.Models.Entities;
 using System.Net;
+using System.Net.Http.Headers;
 
 namespace SmartHome.Server.ApiClients.StationApi;
 
@@ -52,6 +53,9 @@ public interface IStationApiClient
 public sealed class StationApiClient : IStationApiClient
 {
     #region Properties
+    public static readonly TimeSpan MinTimeout = TimeSpan.FromMicroseconds(1);
+    public static readonly TimeSpan MaxTimeout = TimeSpan.FromTicks(int.MaxValue);
+
     private readonly StationEntity _station;
     private readonly Lazy<HttpClient> _lazyWrappedHttpClient;
     private readonly ILogger<StationApiClient> _logger;
@@ -77,7 +81,7 @@ public sealed class StationApiClient : IStationApiClient
     /// Factory which shall be used to obtain instances of <see cref="HttpClient"/> class.
     /// Those will be used to communicate with station associated with the client.
     /// </param>
-    /// <param name="httpClientTimeout">
+    /// <param name="timeout">
     /// The maximum time to wait for a station API response.
     /// </param>
     /// <param name="logger">
@@ -86,16 +90,18 @@ public sealed class StationApiClient : IStationApiClient
     public StationApiClient(
         StationEntity station,
         IHttpClientFactory httpClientFactory,
-        TimeSpan httpClientTimeout,
+        TimeSpan timeout,
         ILogger<StationApiClient> logger)
     {
         ArgumentNullException.ThrowIfNull(station);
         ArgumentNullException.ThrowIfNull(httpClientFactory);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeout, MinTimeout);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(timeout, MaxTimeout);
 
         _station = station;
         _logger = logger;
-        _lazyWrappedHttpClient = new Lazy<HttpClient>(() => CreateHttpClient(httpClientFactory, httpClientTimeout));
+        _lazyWrappedHttpClient = new Lazy<HttpClient>(() => CreateHttpClient(httpClientFactory, timeout));
     }
     #endregion
 
@@ -108,6 +114,7 @@ public sealed class StationApiClient : IStationApiClient
     /// </param>
     /// <param name="timeout">
     /// The maximum time to wait for a station API response.
+    /// It is assumed, that this value is within valid range - no validation will be performed.
     /// </param>
     /// <returns>
     /// HTTP client complementary to communicate with the associated station API.
@@ -121,13 +128,11 @@ public sealed class StationApiClient : IStationApiClient
     private HttpClient CreateHttpClient(IHttpClientFactory httpClientFactory, TimeSpan timeout)
     {
         ArgumentNullException.ThrowIfNull(httpClientFactory);
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
-
+        
         /*
          * TODO: Collect information about which protocol station is using,
          * so that creation of HTTP client can be more flexible and adapted to specific station types.
          */
-
         HttpClient httpClient = httpClientFactory.CreateClient();
         httpClient.DefaultRequestVersion = HttpVersion.Version10;   // ESP8266's web server only supports only HTTP 1.0.
         httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
@@ -200,10 +205,16 @@ public sealed class StationApiClient : IStationApiClient
             httpMethod,
             requestBody);
 
-        using var request = new HttpRequestMessage(httpMethod, endpointUrl)
+        using HttpRequestMessage request = new HttpRequestMessage(httpMethod, endpointUrl)
         {
             Content = requestBody is null ? null : await AsHttpContent(requestBody)
         };
+
+        // TODO: Refine
+        if (request.Content is null && httpMethod == HttpMethod.Get)
+        {
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        }
 
         try
         {
@@ -246,7 +257,7 @@ public sealed class StationApiClient : IStationApiClient
         }
         catch (OperationCanceledException exception)
         {
-            _logger.LogInformation(
+            _logger.LogWarning(
                 exception,
                 "Sending station API request cancelled: StationId=[{StationId}]",
                 _station.Id);
