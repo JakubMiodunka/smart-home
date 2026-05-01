@@ -23,12 +23,12 @@ public interface IStationApiClient
     /// <param name="httpMethod">
     /// HTTP method to be used for the request.
     /// </param>
-    /// <param name="cancellationToken">
-    /// A token to cancel the asynchronous operation.
-    /// </param>
     /// <param name="requestBody">
     /// The object to be serialized into the HTTP request body,
     /// or <see langword="null"/> if no body is required.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the asynchronous operation.
     /// </param>
     /// <returns>
     /// HTTP status code returned by the station API if 
@@ -37,8 +37,8 @@ public interface IStationApiClient
     Task<HttpStatusCode?> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
-        CancellationToken cancellationToken,
-        object? requestBody = null);
+        object? requestBody,
+        CancellationToken cancellationToken);
 }
 
 /// TODO: Add unit tests.
@@ -138,6 +138,14 @@ public sealed class StationApiClient : IStationApiClient
         httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
         httpClient.Timeout = timeout;
 
+        /*
+         * Methods as HttpClient.GetAsJsonAsync automatically adds 'Accept: application/json' header to the request,
+         * but since those methods are not used in this class, the header needs to be added manually.
+         * For now all communication with station APIs is expected to be in JSON format, so this header is added here by default.
+         */
+        httpClient.DefaultRequestHeaders.Accept.Clear();
+        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
         return httpClient;
     }
 
@@ -155,6 +163,10 @@ public sealed class StationApiClient : IStationApiClient
     /// </returns>
     private async Task<HttpContent> AsHttpContent(object? request)
     {
+        /*
+         * Setting request content to instance of JsonContent class will automatically 
+         * add 'Content-Type: application/json; charset=utf-8' header to the request.
+         */
         var requestContent = JsonContent.Create(request);
 
         if (WrappedHttpClient.DefaultRequestVersion <= HttpVersion.Version10)
@@ -184,8 +196,8 @@ public sealed class StationApiClient : IStationApiClient
     public async Task<HttpStatusCode?> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
-        CancellationToken cancellationToken,
-        object? requestBody = null)
+        object? requestBody,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(endpointUrl);
         ArgumentNullException.ThrowIfNull(httpMethod);
@@ -209,12 +221,6 @@ public sealed class StationApiClient : IStationApiClient
         {
             Content = requestBody is null ? null : await AsHttpContent(requestBody)
         };
-
-        // TODO: Refine
-        if (request.Content is null && httpMethod == HttpMethod.Get)
-        {
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        }
 
         try
         {

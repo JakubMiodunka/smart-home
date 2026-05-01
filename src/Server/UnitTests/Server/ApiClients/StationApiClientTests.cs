@@ -5,7 +5,6 @@ using NUnit.Framework.Internal;
 using SmartHome.Server.ApiClients.StationApi;
 using SmartHome.Server.Data.Models.Entities;
 using System.Net;
-using static SmartHome.UnitTests.FakeDataGenerationUtilities;
 
 namespace SmartHome.UnitTests.Server.ApiClients;
 
@@ -92,7 +91,7 @@ public sealed class StationApiClientTests
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
 
-    [TestCase(10)]  // Equl to 1 microsecond.
+    [TestCase(10)]  // Equal to 1 microsecond.
     [TestCase(int.MaxValue)]
     public void InstantiationPossibleUsingValidTimeout(long timeoutTicks)
     {
@@ -162,14 +161,14 @@ public sealed class StationApiClientTests
             loggerMock);
 
         Uri endpointUrl = randomizer.NextHttpUrl();
-        var httpMethod = HttpMethod.Put;
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
         GenericHttpRequestBody requestBody = randomizer.NextHttpRequestBody();
 
         HttpStatusCode? statusCode = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
-            CancellationToken.None,
-            requestBody);
+            requestBody,
+            CancellationToken.None);
 
         Assert.That(statusCode, Is.EqualTo(responseStatusCode));
 
@@ -194,25 +193,34 @@ public sealed class StationApiClientTests
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         StationEntity stationEntity = randomizer.NextStationEntity();
-        TimeSpan timeout = randomizer.NextTimeSpan(from: StationApiClient.MinTimeout, to: StationApiClient.MaxTimeout);
+
+        HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
+        var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
+        httpClientFactoryStub.Setup(factory => factory
+            .CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
         var loggerStub = new FakeLogger<StationApiClient>();
 
         var clientUnderTest = new StationApiClient(
             stationEntity,
             httpClientFactoryStub.Object,
-            timeout,
+            StationApiClient.MaxTimeout,
             loggerStub);
 
-        var httpMethod = HttpMethod.Get;
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
 
         AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             null!,
             httpMethod,
+            null,
             CancellationToken.None);
 
         Assert.ThrowsAsync<ArgumentNullException>(actionUnderTest);
+        Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
     }
 
     [TestCase]
@@ -221,26 +229,35 @@ public sealed class StationApiClientTests
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         StationEntity stationEntity = randomizer.NextStationEntity();
-        TimeSpan timeout = randomizer.NextTimeSpan(from: StationApiClient.MinTimeout, to: StationApiClient.MaxTimeout);
+
+        HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
+        var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
+        httpClientFactoryStub.Setup(factory => factory
+            .CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
         var loggerStub = new FakeLogger<StationApiClient>();
 
         var clientUnderTest = new StationApiClient(
             stationEntity,
             httpClientFactoryStub.Object,
-            timeout,
+            StationApiClient.MaxTimeout,
             loggerStub);
 
         Uri endpointUrl = randomizer.NextHttpUrl(UriKind.Relative);
-        var httpMethod = HttpMethod.Get;
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
 
         AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
+            null,
             CancellationToken.None);
 
         Assert.ThrowsAsync<ArgumentException>(actionUnderTest);
+        Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
     }
 
     [Test]
@@ -249,15 +266,22 @@ public sealed class StationApiClientTests
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         StationEntity stationEntity = randomizer.NextStationEntity();
-        TimeSpan timeout = randomizer.NextTimeSpan(from: StationApiClient.MinTimeout, to: StationApiClient.MaxTimeout);
+
+        HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
+        var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
+        httpClientFactoryStub.Setup(factory => factory
+            .CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
         var loggerStub = new FakeLogger<StationApiClient>();
 
         var clientUnderTest = new StationApiClient(
             stationEntity,
             httpClientFactoryStub.Object,
-            timeout,
+            StationApiClient.MaxTimeout,
             loggerStub);
 
         Uri endpointUrl = randomizer.NextHttpUrl();
@@ -265,9 +289,11 @@ public sealed class StationApiClientTests
         AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             endpointUrl,
             null!,
+            null,
             CancellationToken.None);
 
         Assert.ThrowsAsync<ArgumentNullException>(actionUnderTest);
+        Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
     }
 
     [Test]
@@ -294,11 +320,12 @@ public sealed class StationApiClientTests
             loggerMock);
 
         Uri endpointUrl = randomizer.NextHttpUrl();
-        var httpMethod = HttpMethod.Get;
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
 
         HttpStatusCode? statusCode = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
+            null,
             CancellationToken.None);
 
         Assert.That(statusCode, Is.Null);
@@ -325,7 +352,8 @@ public sealed class StationApiClientTests
 
         StationEntity stationEntity = randomizer.NextStationEntity();
 
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new OperationCanceledException(null, new TimeoutException()));
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => 
+            throw new OperationCanceledException(null, new TimeoutException()));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
@@ -342,11 +370,12 @@ public sealed class StationApiClientTests
             loggerMock);
 
         Uri endpointUrl = randomizer.NextHttpUrl();
-        var httpMethod = HttpMethod.Get;
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
 
         HttpStatusCode? statusCode = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
+            null,
             CancellationToken.None);
 
         Assert.That(statusCode, Is.Null);
@@ -367,7 +396,7 @@ public sealed class StationApiClientTests
     }
 
     [Test]
-    public async Task SendingRequestThrowsExceptionWhenOparationIsCancelled()
+    public async Task SendingRequestThrowsExceptionWhenOperationIsCancelled()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -390,11 +419,12 @@ public sealed class StationApiClientTests
             loggerMock);
 
         Uri endpointUrl = randomizer.NextHttpUrl();
-        var httpMethod = HttpMethod.Get;
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
 
         AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
+            null,
             CancellationToken.None);
 
         Assert.ThrowsAsync<OperationCanceledException>(actionUnderTest);

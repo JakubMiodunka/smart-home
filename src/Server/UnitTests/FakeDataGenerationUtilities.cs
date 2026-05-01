@@ -1,16 +1,17 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.Testing.Platform.Extensions.Messages;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Data.Models.Entities;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
 namespace SmartHome.UnitTests;
+
+/// <seealso cref="FakeDataGenerationUtilities.NextHttpRequestBody(Randomizer)"/>
+public sealed record GenericHttpRequestBody(bool? Value1, int? Value2, string? Value3);
 
 internal static class FakeDataGenerationUtilities
 {
@@ -38,14 +39,24 @@ internal static class FakeDataGenerationUtilities
     }
 
     #region Randomizer extensions
+    public static T PickFrom<T>(this Randomizer randomizer, IEnumerable<T> values)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+        ArgumentNullException.ThrowIfNull(values, nameof(values));
+        if (values.Count() == 0) throw new ArgumentException("No values to pick from:", nameof(values));
+
+        int index = randomizer.Next(values.Count());
+
+        return values.ElementAt(index);
+    }
+
     public static bool? NextNullableBool(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
         var values = new bool?[] { true, false, null };
-        int index = randomizer.Next(values.Count());
 
-        return values[index];
+        return randomizer.PickFrom(values);
     }
 
     /// <remarks>
@@ -114,10 +125,16 @@ internal static class FakeDataGenerationUtilities
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
-        var values = new HttpMethod[] { HttpMethod.Get, HttpMethod.Post, HttpMethod.Put, HttpMethod.Delete, HttpMethod.Patch };
-        int index = randomizer.Next(values.Count());
+        var values = new HttpMethod[]
+        {
+            HttpMethod.Get,
+            HttpMethod.Post,
+            HttpMethod.Put,
+            HttpMethod.Delete,
+            HttpMethod.Patch
+        };
 
-        return values[index];
+        return randomizer.PickFrom(values);
     }
 
     public static HttpStatusCode NextSuccessfulHttpStatusCode(this Randomizer randomizer)
@@ -138,9 +155,7 @@ internal static class FakeDataGenerationUtilities
             HttpStatusCode.IMUsed
         };
 
-        int index = randomizer.Next(values.Count());
-
-        return values[index];
+        return randomizer.PickFrom(values);
     }
 
     public static Uri NextHttpUrl(this Randomizer randomizer, UriKind uriKind = UriKind.Absolute)
@@ -160,8 +175,6 @@ internal static class FakeDataGenerationUtilities
 
         throw new NotSupportedException($"Uri kind not supported: UriKind=[{uriKind}]");
     }
-
-    public sealed record GenericHttpRequestBody(bool? Value1, int? Value2, string? Value3);
 
     public static GenericHttpRequestBody NextHttpRequestBody(this Randomizer randomizer)
     {
@@ -219,8 +232,7 @@ internal static class FakeDataGenerationUtilities
                 }
             };
 
-        int index = randomizer.Next(allVariantsOfOfflineStationEntity.Count());
-        return allVariantsOfOfflineStationEntity[index];
+        return randomizer.PickFrom(allVariantsOfOfflineStationEntity);
     }
     
     public static SwitchEntity NextSwitchEntity(this Randomizer randomizer)
