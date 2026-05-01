@@ -24,21 +24,14 @@ internal static class RequestSnapshotTestingUtilities
         Assert.That(request.Url, Is.EqualTo(expectedUri));
         Assert.That(request.Method, Is.EqualTo(expectedHttpMethod));
 
-        if (expectedHttpMethod == HttpMethod.Get)
-        {
-            Assert.That(request.RawContent, Is.Null);
-        
-            Assert.That(
+        Assert.That(
                 request.Headers.Accept,
                 Has.Some.Matches<MediaTypeWithQualityHeaderValue>(headerValue => headerValue.MediaType == "application/json"));
-        
-            return;
-        }
+
+        if (request.RawContent is null) return;
 
         Assert.That(request.ContentHeaders?.ContentType?.MediaType, Is.EqualTo("application/json"));
         Assert.That(request.ContentHeaders?.ContentType?.CharSet, Is.EqualTo("utf-8").IgnoreCase);
-
-        Assert.That(request.RawContent, Is.Not.Null);
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         T? requestBody = JsonSerializer.Deserialize<T>(request.RawContent, options);
