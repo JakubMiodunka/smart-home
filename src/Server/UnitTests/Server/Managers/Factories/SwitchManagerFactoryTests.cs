@@ -73,7 +73,7 @@ public sealed class SwitchManagerFactoryTests
             loggerFactoryStub.Object);
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        StationEntity parentStation = randomizer.NextStationEntity() with { Id = switchEntity.StationId };
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with { Id = switchEntity.StationId };
         ISwitchManager switchManager = factoryUnderTest.CreateFor(switchEntity, parentStation);
 
         Assert.That(switchManager, Is.Not.Null);

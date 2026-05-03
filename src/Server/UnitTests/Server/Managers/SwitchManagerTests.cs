@@ -2,15 +2,15 @@
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
+using SmartHome.Server.ApiClients.StationApi;
 using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Models.Requests;
-using SmartHome.Server.Data.Repositories;
 using SmartHome.Server.Managers;
 using System.Net;
 
 namespace SmartHome.UnitTests.Server.Managers;
 
-/*
+
 [Category("UnitTest")]
 [TestOf(typeof(SwitchManager))]
 [Author("Jakub Miodunka")]
@@ -22,93 +22,88 @@ public sealed class SwitchManagerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
+        {
+            Id = switchEntity.StationId
+        };
+
+        var stationApiClientFactory = new Mock<IStationApiClientFactory>();
         var loggerStub = new FakeLogger<SwitchManager>();
 
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-
-        TestDelegate actionUnderTest = () => new SwitchManager(
-            switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
-            loggerStub);
+        SwitchManager? managerUnderTest = null;
+        TestDelegate actionUnderTest = () => managerUnderTest =
+            new SwitchManager(
+                switchEntity,
+                stationEntity,
+                stationApiClientFactory.Object,
+                loggerStub);
 
         Assert.DoesNotThrow(actionUnderTest);
 
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
+        Assert.That(managerUnderTest, Is.Not.Null);
+        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
+        Assert.That(managerUnderTest.SwitchParentStation, Is.EqualTo(stationEntity));
     }
 
     [Test]
-    public void InstantiationImpossibleUsingNullReferenceAsHttpClientFactory()
+    public void InstantiationImpossibleUsingNullReferenceAsManagedSwitch()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
+
+        var stationApiClientFactory = new Mock<IStationApiClientFactory>();
         var loggerStub = new FakeLogger<SwitchManager>();
 
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-
         TestDelegate actionUnderTest = () => new SwitchManager(
-            switchEntity,
             null!,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
+            stationEntity,
+            stationApiClientFactory.Object,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
-    }
-
-    public void InstantiationImpossibleUsingNullReferenceAsStationsRepository()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var loggerStub = new FakeLogger<SwitchManager>();
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-
-        TestDelegate actionUnderTest = () => new SwitchManager(
-            switchEntity,
-            httpClientFactoryStub.Object,
-            null!,
-            switchesRepositoryMock.Object,
-            loggerStub);
-
-        Assert.Throws<ArgumentNullException>(actionUnderTest);
-
-        switchesRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
-    public void InstantiationImpossibleUsingNullReferenceAsSwitchesRepository()
+    public void InstantiationImpossibleUsingNullReferenceAsParentStation()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var loggerStub = new FakeLogger<SwitchManager>();
-
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+
+        var stationApiClientFactory = new Mock<IStationApiClientFactory>();
+        var loggerStub = new FakeLogger<SwitchManager>();
 
         TestDelegate actionUnderTest = () => new SwitchManager(
             switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
+            null!,
+            stationApiClientFactory.Object,
+            loggerStub);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+    }
+
+    [Test]
+    public void InstantiationImpossibleUsingNullReferenceAsStationApiClientFactory()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
+        {
+            Id = switchEntity.StationId
+        };
+
+        var loggerStub = new FakeLogger<SwitchManager>();
+
+        TestDelegate actionUnderTest = () => new SwitchManager(
+            switchEntity,
+            stationEntity,
             null!,
             loggerStub);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-
-        stationsRepositoryMock.AssertNoContentModifications();
     }
 
     [Test]
@@ -116,260 +111,202 @@ public sealed class SwitchManagerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
+        {
+            Id = switchEntity.StationId
+        };
+
+        var stationApiClientFactory = new Mock<IStationApiClientFactory>();
 
         TestDelegate actionUnderTest = () => new SwitchManager(
             switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
+            stationEntity,
+            stationApiClientFactory.Object,
             null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
     }
+
+    [Test]
+    public void InstantiationImpossibleUsingStationWhichIsNotSwitchParentStation()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
+        
+        while (stationEntity.Id == switchEntity.StationId)
+        {
+            stationEntity = stationEntity with
+            {
+                Id = randomizer.NextInt64(1, long.MaxValue)
+            };
+        }
+
+        var stationApiClientFactory = new Mock<IStationApiClientFactory>();
+        var loggerStub = new FakeLogger<SwitchManager>();
+
+        TestDelegate actionUnderTest = () => new SwitchManager(
+            switchEntity,
+            stationEntity,
+            stationApiClientFactory.Object,
+            loggerStub);
+
+        Assert.Throws<ArgumentException>(actionUnderTest);
+    }
+
     #endregion
 
     #region Switch state change
     [Test]
-    public async Task SwitchStateChangeSuccessfulExpectedStateIsNotEqualToActualState()
+    public async Task SwitchStateChangeSuccessfulIfExpectedSwitchStateIsNotEqualToItsActualState()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-
-        httpClientFactoryStub.Setup(factory => factory
-            .CreateClient(It.IsAny<string>()))
-            .Returns(httpClient);
-
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        switchEntity = switchEntity with
         {
+            ActualState = !switchEntity.ExpectedState
+        };
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
+        {
+            Id = switchEntity.StationId,
             ApiVersion = 1
         };
 
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
+        var request = new SwitchUpdateServerRequest(switchEntity.ExpectedState);
+        
+        var stationApiClientMock = new Mock<IStationApiClient>();
+        stationApiClientMock.Setup(mock => mock
+            .SendRequestAsync(
+                endpointUrl,
+                HttpMethod.Patch,
+                request,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(HttpStatusCode.NoContent);
 
-        stationsRepositoryMock.Setup(repository => repository
-            .GetSingleStationAsync(
-                filterById: true,
-                id: stationEntity.Id,
-                filterByIpAddress: false,
-                ipAddress: null,
-                filterByMacAddress: false,
-                macAddress: null))
-            .ReturnsAsync(stationEntity);
-
-        SwitchEntity switchEntityBeforeUpdate = randomizer.NextSwitchEntity();
-        switchEntityBeforeUpdate = switchEntityBeforeUpdate with
-        {
-            StationId = stationEntity.Id,
-            ActualState = !switchEntityBeforeUpdate.ExpectedState
-        };
-
-        SwitchEntity updatedSwitchEntity = switchEntityBeforeUpdate with
-        {
-            ActualState = switchEntityBeforeUpdate.ExpectedState
-        };
-
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-
-        switchesRepositoryMock.Setup(repository => repository
-            .UpdateSwitchAsync(
-                    switchEntityBeforeUpdate.Id,
-                    updateExpectedState: true,
-                    expectedState: updatedSwitchEntity.ExpectedState,
-                    updateActualState: true,
-                    actualState: updatedSwitchEntity.ActualState))
-            .ReturnsAsync(updatedSwitchEntity);
+        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
+        stationApiClientFactoryStub.Setup(mock => mock
+            .CreateFor(stationEntity, It.IsAny<TimeSpan>()))
+            .Returns(stationApiClientMock.Object);
 
         var loggerMock = new FakeLogger<SwitchManager>();
 
         var managerUnderTest = new SwitchManager(
-            switchEntityBeforeUpdate,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
+            switchEntity,
+            stationEntity,
+            stationApiClientFactoryStub.Object,
             loggerMock);
 
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntityBeforeUpdate));
-
-        bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntityBeforeUpdate.ExpectedState, CancellationToken.None);
+        bool wasAttemptSuccessful = 
+            await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
 
         Assert.That(wasAttemptSuccessful, Is.True);
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(updatedSwitchEntity));
 
-        Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
-
-        RequestSnapshot request = httpMessageHandlerMock.SentRequests.Single();
-
-        await request.AssertJsonRequest(
-            expectedUri: switchEntityBeforeUpdate.SwitchUrl(stationEntity)!,
-            expectedHttpMethod: HttpMethod.Patch,
-            expectedRequestBody: new SwitchUpdateServerRequest(switchEntityBeforeUpdate.ExpectedState));
-
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        switchesRepositoryMock.Verify(mock =>
-            mock.CreateSwitchAsync(
-                It.IsAny<long>(),
-                It.IsAny<byte>(),
-                It.IsAny<bool>(),
-                It.IsAny<bool?>()),
-            Times.Never);
-
-        switchesRepositoryMock.Verify(repository => repository
-            .UpdateSwitchAsync(
-                switchEntityBeforeUpdate.Id,
-                updateExpectedState: true,
-                expectedState: updatedSwitchEntity.ExpectedState,
-                updateActualState: true,
-                actualState: updatedSwitchEntity.ActualState),
+        stationApiClientMock.Verify(client => client
+            .SendRequestAsync(
+                endpointUrl,
+                HttpMethod.Patch,
+                request,
+                It.IsAny<CancellationToken>()),
             Times.Once);
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Information));
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
-    public async Task SwitchStateChangeSuccessfulWithoutSendingHttpRequestIfExpectedSwitchStateIsEqualToItsActualState()
+    public async Task SwitchStateChangeSuccessfulIfExpectedSwitchStateIsEqualToItsActualState()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var delegatingHandlerMock = new FakeHttpMessageHandler();
-        var httpClient = new HttpClient(delegatingHandlerMock);
-
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-
-        httpClientFactoryStub.Setup(factory => factory
-            .CreateClient(It.IsAny<string>()))
-            .Returns(httpClient);
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var loggerMock = new FakeLogger<SwitchManager>();
-
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        switchEntity = switchEntity with { ActualState = switchEntity.ExpectedState };
+        switchEntity = switchEntity with
+        {
+            ActualState = switchEntity.ExpectedState
+        };
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
+        {
+            Id = switchEntity.StationId,
+            ApiVersion = 1
+        };
+
+        var stationApiClientMock = new Mock<IStationApiClient>();
+        
+        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
+        stationApiClientFactoryStub.Setup(mock => mock
+            .CreateFor(stationEntity, It.IsAny<TimeSpan>()))
+            .Returns(stationApiClientMock.Object);
+
+        var loggerMock = new FakeLogger<SwitchManager>();
 
         var managerUnderTest = new SwitchManager(
             switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
+            stationEntity,
+            stationApiClientFactoryStub.Object,
             loggerMock);
 
         bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
 
         Assert.That(wasAttemptSuccessful, Is.True);
-        Assert.That(delegatingHandlerMock.WasAnyRequestSent, Is.False);
 
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
+        stationApiClientMock.Verify(client => client
+            .SendRequestAsync(
+                It.IsAny<Uri>(),
+                It.IsAny<HttpMethod>(),
+                It.IsAny<object?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Information));
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
-    public async Task SwitchStateChangeFailsIfSwitchParentStationNotFound()
+    public async Task SwitchStateChangeFailsIfParentStationIsOffline()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-        var stationsRepositoryMock = new Mock<IStationsRepository>();     
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var loggerMock = new FakeLogger<SwitchManager>();
-
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        switchEntity = switchEntity with
+        StationEntity stationEntity = randomizer.NextOfflineStationEntity() with
         {
-            ActualState = !switchEntity.ExpectedState
+            Id = switchEntity.StationId
         };
 
-        var managerUnderTest = new SwitchManager(
-            switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
-            loggerMock);
+        var stationApiClientMock = new Mock<IStationApiClient>();
 
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
+        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
+        stationApiClientFactoryStub.Setup(mock => mock
+            .CreateFor(stationEntity, It.IsAny<TimeSpan>()))
+            .Returns(stationApiClientMock.Object);
 
-        bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
-
-        Assert.That(wasAttemptSuccessful, Is.False);
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
-
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
-    }
-
-    [Test]
-    public async Task SwitchStateChangeFailsIfRequestCannotBeSent()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-        StationEntity stationEntity = randomizer.NextStationEntity() with
-        {
-            IpAddress = null,
-            ApiPort = null,
-            ApiVersion = null
-        };
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-
-        stationsRepositoryMock.Setup(repository => repository
-            .GetSingleStationAsync(
-                filterById: true,
-                id: stationEntity.Id,
-                filterByIpAddress: false,
-                ipAddress: null,
-                filterByMacAddress: false,
-                macAddress: null))
-            .ReturnsAsync(stationEntity);
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        switchEntity = switchEntity with
-        {
-            StationId = stationEntity.Id,
-            ActualState = !switchEntity.ExpectedState
-        };
-
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var loggerMock = new FakeLogger<SwitchManager>();
 
         var managerUnderTest = new SwitchManager(
             switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
+            stationEntity,
+            stationApiClientFactoryStub.Object,
             loggerMock);
-
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
 
         bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
 
         Assert.That(wasAttemptSuccessful, Is.False);
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
 
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
+        stationApiClientMock.Verify(client => client
+            .SendRequestAsync(
+                It.IsAny<Uri>(),
+                It.IsAny<HttpMethod>(),
+                It.IsAny<object?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -378,196 +315,58 @@ public sealed class SwitchManagerTests
     }
 
     [Test]
-    public async Task SwitchStateChangeFailsIfReceivedUnexpectedResponse()
+    public async Task SwitchStateChangeFailsIfRequestSendingFails()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        // HTTP 404 NotFound typically indicates that remote is reachable but called endpoint is not found.
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-
-        httpClientFactoryStub.Setup(factory => factory
-            .CreateClient(It.IsAny<string>()))
-            .Returns(httpClient);
-
-        StationEntity stationEntity = randomizer.NextStationEntity() with
-        {
-            ApiVersion = 1
-        };
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-
-        stationsRepositoryMock.Setup(repository => repository
-            .GetSingleStationAsync(
-                filterById: true,
-                id: stationEntity.Id,
-                filterByIpAddress: false,
-                ipAddress: null,
-                filterByMacAddress: false,
-                macAddress: null))
-            .ReturnsAsync(stationEntity);
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
         switchEntity = switchEntity with
         {
-            StationId = stationEntity.Id,
             ActualState = !switchEntity.ExpectedState
         };
 
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var loggerMock = new FakeLogger<SwitchManager>();
-
-        var managerUnderTest = new SwitchManager(
-            switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
-            loggerMock);
-
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
-
-        bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
-
-        Assert.That(wasAttemptSuccessful, Is.False);
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
-
-        Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
-
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
-    }
-
-    [Test]
-    public async Task SwitchStateChangeFailsIfHttpClientThrowsHttpRequestException()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new HttpRequestException());
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-
-        httpClientFactoryStub.Setup(factory => factory
-            .CreateClient(It.IsAny<string>()))
-            .Returns(httpClient);
-
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
+            Id = switchEntity.StationId,
             ApiVersion = 1
         };
 
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        var stationApiClientMock = new Mock<IStationApiClient>();
+        stationApiClientMock.Setup(mock => mock
+            .SendRequestAsync(
+                It.IsAny<Uri>(),
+                It.IsAny<HttpMethod>(),
+                It.IsAny<object?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as HttpStatusCode?);
 
-        stationsRepositoryMock.Setup(repository => repository
-            .GetSingleStationAsync(
-                filterById: true,
-                id: stationEntity.Id,
-                filterByIpAddress: false,
-                ipAddress: null,
-                filterByMacAddress: false,
-                macAddress: null))
-            .ReturnsAsync(stationEntity);
+        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
+        stationApiClientFactoryStub.Setup(mock => mock
+            .CreateFor(stationEntity, It.IsAny<TimeSpan>()))
+            .Returns(stationApiClientMock.Object);
 
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        switchEntity = switchEntity with
-        {
-            StationId = stationEntity.Id,
-            ActualState = !switchEntity.ExpectedState
-        };
-
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var loggerMock = new FakeLogger<SwitchManager>();
 
         var managerUnderTest = new SwitchManager(
             switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
+            stationEntity,
+            stationApiClientFactoryStub.Object,
             loggerMock);
-
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
 
         bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
 
         Assert.That(wasAttemptSuccessful, Is.False);
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
 
-        Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
+        Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
+        var request = new SwitchUpdateServerRequest(switchEntity.ExpectedState);
 
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
-    }
-
-    [Test]
-    public async Task SwitchStateChangeFailsIfHttpClientThrowsTimeoutException()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => 
-            throw new OperationCanceledException(string.Empty, new TimeoutException()));
-
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-
-        httpClientFactoryStub.Setup(factory => factory
-            .CreateClient(It.IsAny<string>()))
-            .Returns(httpClient);
-
-        StationEntity stationEntity = randomizer.NextStationEntity() with
-        {
-            ApiVersion = 1
-        };
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-
-        stationsRepositoryMock.Setup(repository => repository
-            .GetSingleStationAsync(
-                filterById: true,
-                id: stationEntity.Id,
-                filterByIpAddress: false,
-                ipAddress: null,
-                filterByMacAddress: false,
-                macAddress: null))
-            .ReturnsAsync(stationEntity);
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        switchEntity = switchEntity with
-        {
-            StationId = stationEntity.Id,
-            ActualState = !switchEntity.ExpectedState
-        };
-
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var loggerMock = new FakeLogger<SwitchManager>();
-
-        var managerUnderTest = new SwitchManager(
-            switchEntity,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
-            loggerMock);
-
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
-
-        bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
-
-        Assert.That(wasAttemptSuccessful, Is.False);
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
-
-        Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
-
-        stationsRepositoryMock.AssertNoContentModifications();
-        switchesRepositoryMock.AssertNoContentModifications();
+        stationApiClientMock.Verify(client => client
+            .SendRequestAsync(
+                endpointUrl,
+                HttpMethod.Patch,
+                request,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
@@ -576,88 +375,69 @@ public sealed class SwitchManagerTests
     }
 
     [Test]
-    public async Task SwitchStateChangeFailsIfSwitchRepositoryUpdateFails()
+    public async Task SwitchStateChangeFailsIfStationReturnsInvalidStatusCode()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var httpMessageHandlerStub = new FakeHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
-        var httpClient = new HttpClient(httpMessageHandlerStub);
-        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
-
-        httpClientFactoryStub.Setup(factory => factory
-            .CreateClient(It.IsAny<string>()))
-            .Returns(httpClient);
-
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        switchEntity = switchEntity with
         {
+            ActualState = !switchEntity.ExpectedState
+        };
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
+        {
+            Id = switchEntity.StationId,
             ApiVersion = 1
         };
 
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-
-        stationsRepositoryMock.Setup(repository => repository
-            .GetSingleStationAsync(
-                filterById: true,
-                id: stationEntity.Id,
-                filterByIpAddress: false,
-                ipAddress: null,
-                filterByMacAddress: false,
-                macAddress: null))
-            .ReturnsAsync(stationEntity);
-
-        SwitchEntity switchEntityBeforeUpdate = randomizer.NextSwitchEntity();
-        switchEntityBeforeUpdate = switchEntityBeforeUpdate with
+        HttpStatusCode invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        while (invalidStatusCode == HttpStatusCode.NoContent)
         {
-            StationId = stationEntity.Id,
-            ActualState = !switchEntityBeforeUpdate.ExpectedState
-        };
+            invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        }
 
-        SwitchEntity updatedSwitchEntity = switchEntityBeforeUpdate with
-        {
-            ActualState = switchEntityBeforeUpdate.ExpectedState
-        };
+        Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
+        var request = new SwitchUpdateServerRequest(switchEntity.ExpectedState);
 
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
+        var stationApiClientMock = new Mock<IStationApiClient>();
+        stationApiClientMock.Setup(mock => mock
+            .SendRequestAsync(
+                endpointUrl,
+                HttpMethod.Patch,
+                request,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(invalidStatusCode);
+
+        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
+        stationApiClientFactoryStub.Setup(mock => mock
+            .CreateFor(stationEntity, It.IsAny<TimeSpan>()))
+            .Returns(stationApiClientMock.Object);
+
         var loggerMock = new FakeLogger<SwitchManager>();
 
         var managerUnderTest = new SwitchManager(
-            switchEntityBeforeUpdate,
-            httpClientFactoryStub.Object,
-            stationsRepositoryMock.Object,
-            switchesRepositoryMock.Object,
+            switchEntity,
+            stationEntity,
+            stationApiClientFactoryStub.Object,
             loggerMock);
 
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntityBeforeUpdate));
-
-        bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntityBeforeUpdate.ExpectedState, CancellationToken.None);
+        bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
 
         Assert.That(wasAttemptSuccessful, Is.False);
-        Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntityBeforeUpdate));
 
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        switchesRepositoryMock.Verify(mock =>
-            mock.CreateSwitchAsync(
-                It.IsAny<long>(),
-                It.IsAny<byte>(),
-                It.IsAny<bool>(),
-                It.IsAny<bool?>()),
-            Times.Never);
-
-        switchesRepositoryMock.Verify(repository => repository
-            .UpdateSwitchAsync(
-                switchEntityBeforeUpdate.Id,
-                updateExpectedState: true,
-                expectedState: updatedSwitchEntity.ExpectedState,
-                updateActualState: true,
-                actualState: updatedSwitchEntity.ActualState),
+        stationApiClientMock.Verify(client => client
+            .SendRequestAsync(
+                endpointUrl,
+                HttpMethod.Patch,
+                request,
+                It.IsAny<CancellationToken>()),
             Times.Once);
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
     #endregion
 }
-*/

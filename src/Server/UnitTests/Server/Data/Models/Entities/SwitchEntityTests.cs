@@ -43,7 +43,7 @@ public sealed class SwitchEntityTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = randomizer.NextIpAddress(),
             ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
@@ -90,7 +90,7 @@ public sealed class SwitchEntityTests
             stationId = randomizer.NextInt64(1, long.MaxValue);
         }
 
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             Id = stationId
         };
@@ -122,7 +122,7 @@ public sealed class SwitchEntityTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = randomizer.NextIpAddress(),
             ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
