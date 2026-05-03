@@ -120,7 +120,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity parentStationEntity = randomizer.NextStationEntity();
+        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
@@ -197,7 +197,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity parentStationEntity = randomizer.NextStationEntity();
+        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
@@ -268,7 +268,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity parentStationEntity = randomizer.NextStationEntity() with
+        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = null
         };
@@ -309,7 +309,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
@@ -352,7 +352,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
@@ -449,7 +449,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity parentStationEntity = randomizer.NextStationEntity() with
+        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = null
         };
@@ -492,7 +492,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity unregisteredStationEntity = randomizer.NextStationEntity();
+        StationEntity unregisteredStationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(unregisteredStationEntity.IpAddress);
@@ -532,7 +532,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity parentStationEntity = randomizer.NextStationEntity();
+        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
@@ -583,7 +583,7 @@ public sealed class SwitchesControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
