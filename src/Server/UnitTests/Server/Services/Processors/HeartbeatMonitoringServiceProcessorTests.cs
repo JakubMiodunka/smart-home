@@ -176,12 +176,12 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
 
         var timeProviderStub = new FakeTimeProvider();
 
-        StationEntity offlineStation = randomizer.NextStationEntity() with
+        StationEntity offlineStation = randomizer.NextOnlineStationEntity() with
         {
             LastHeartbeat = timeProviderStub.GetUtcNow()
         };
 
-        StationEntity onlineStation = randomizer.NextStationEntity() with
+        StationEntity onlineStation = randomizer.NextOnlineStationEntity() with
         {
             LastHeartbeat = timeProviderStub.GetUtcNow() + maxHeartbeatInterval
         };
@@ -261,7 +261,7 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
 
         var timeProviderStub = new FakeTimeProvider();
 
-        StationEntity offlineStation = randomizer.NextStationEntity() with
+        StationEntity offlineStation = randomizer.NextOnlineStationEntity() with
         {
             LastHeartbeat = timeProviderStub.GetUtcNow()
         };
@@ -275,7 +275,7 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
             ActualState = offlineSwitchState
         };
 
-        StationEntity onlineStation = randomizer.NextStationEntity() with
+        StationEntity onlineStation = randomizer.NextOnlineStationEntity() with
         {
             LastHeartbeat = timeProviderStub.GetUtcNow() + maxHeartbeatInterval
         };

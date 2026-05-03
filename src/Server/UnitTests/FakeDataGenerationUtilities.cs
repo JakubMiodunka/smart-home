@@ -186,7 +186,7 @@ internal static class FakeDataGenerationUtilities
             randomizer.GetString());
     }
 
-    public static StationEntity NextStationEntity(this Randomizer randomizer)
+    public static StationEntity NextOnlineStationEntity(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
@@ -206,25 +206,25 @@ internal static class FakeDataGenerationUtilities
 
         var allVariantsOfOfflineStationEntity = new StationEntity[]
             {
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
-                IpAddress = null,
+                    IpAddress = null,
                     ApiPort = null,
                     ApiVersion = null
                 },
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
                     IpAddress = randomizer.NextIpAddress(),
                     ApiPort = null,
                     ApiVersion = null
                 },
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
                     IpAddress = null,
                     ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
                     ApiVersion = null
                 },
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
                     IpAddress = null,
                     ApiPort = null,

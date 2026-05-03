@@ -395,7 +395,7 @@ public sealed class SwitchesControllerTests
                 actualState: switchEntity.ExpectedState))
             .ReturnsAsync(switchEntity with { ActualState = switchEntity.ExpectedState });
 
-        StationEntity parentStation = randomizer.NextStationEntity() with
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
         {
             Id = switchEntity.StationId
         };
@@ -601,7 +601,7 @@ public sealed class SwitchesControllerTests
                 localId: null))
             .ReturnsAsync(switchEntity);
 
-        StationEntity parentStation = randomizer.NextStationEntity() with
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
         {
             Id = switchEntity.StationId
         };
@@ -686,7 +686,7 @@ public sealed class SwitchesControllerTests
                 localId: null))
             .ReturnsAsync(switchEntity);
 
-        StationEntity parentStation = randomizer.NextStationEntity() with
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
         {
             Id = switchEntity.StationId
         };
@@ -773,7 +773,7 @@ public sealed class SwitchesControllerTests
                 actualState: null))
             .ReturnsAsync(switchEntity);
 
-        StationEntity parentStation = randomizer.NextStationEntity() with
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
         {
             Id = switchEntity.StationId
         };

@@ -19,7 +19,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
         
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
         TimeSpan timeout = randomizer.NextTimeSpan(from: StationApiClient.MinTimeout, to: StationApiClient.MaxTimeout);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
@@ -39,7 +39,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
         TimeSpan timeout = randomizer.NextTimeSpan(from: StationApiClient.MinTimeout, to: StationApiClient.MaxTimeout);
 
         var loggerStub = new FakeLogger<StationApiClient>();
@@ -77,7 +77,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
         TimeSpan timeout = randomizer.NextTimeSpan(from: StationApiClient.MinTimeout, to: StationApiClient.MaxTimeout);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
@@ -97,7 +97,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
         var timeout = TimeSpan.FromTicks(timeoutTicks);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
@@ -119,7 +119,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
         var timeout = TimeSpan.FromTicks(timeoutTicks);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
@@ -141,7 +141,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
@@ -192,7 +192,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
@@ -228,7 +228,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
@@ -265,7 +265,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
@@ -301,7 +301,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new HttpRequestException());
         var httpClient = new HttpClient(httpMessageHandlerMock);
@@ -350,7 +350,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => 
             throw new OperationCanceledException(null, new TimeoutException()));
@@ -400,7 +400,7 @@ public sealed class StationApiClientTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity();
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new OperationCanceledException());
         var httpClient = new HttpClient(httpMessageHandlerMock);

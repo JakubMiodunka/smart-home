@@ -77,10 +77,10 @@ public sealed class SwitchManager : ISwitchManager
         IStationApiClientFactory stationApiClientsFactory,
         ILogger<SwitchManager> logger)
     {
-        ArgumentNullException.ThrowIfNull(managedSwitch);
-        ArgumentNullException.ThrowIfNull(switchParentStation);
-        ArgumentNullException.ThrowIfNull(stationApiClientsFactory);
-        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(managedSwitch, nameof(managedSwitch));
+        ArgumentNullException.ThrowIfNull(switchParentStation, nameof(switchParentStation));
+        ArgumentNullException.ThrowIfNull(stationApiClientsFactory, nameof(stationApiClientsFactory));
+        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         if (managedSwitch.StationId != switchParentStation.Id)
         {
@@ -135,7 +135,8 @@ public sealed class SwitchManager : ISwitchManager
 
         if (responseStatusCode is HttpStatusCode.NoContent)
         {
-            _logger.LogInformation("Attempting to change state of switch successful: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
+            _logger.LogInformation("Attempting to change state of switch successful: SwitchId=[{SwitchId}], " +
+                "ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
                 ManagedSwitch.Id,
                 ManagedSwitch.ExpectedState,
                 ManagedSwitch.ActualState);
@@ -144,7 +145,7 @@ public sealed class SwitchManager : ISwitchManager
             return true;
         }
 
-        _logger.LogError(
+        _logger.LogWarning(
                 "Attempting to change state of switch failed: Message=[{Message}], StatusCode=[{StatusCode}]",
                 "Unexpected station response received.",
                 responseStatusCode);
