@@ -112,7 +112,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var stationEntity = randomizer.NextStationEntity();
+        var stationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub = 
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
@@ -179,7 +179,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntityBeforeUpdate = randomizer.NextStationEntity();
+        StationEntity stationEntityBeforeUpdate = randomizer.NextOnlineStationEntity();
 
         StationEntity updatedStationEntity = stationEntityBeforeUpdate with
         {
@@ -269,7 +269,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = null
         };
@@ -308,7 +308,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var stationEntityBeforeUpdate = randomizer.NextStationEntity();
+        var stationEntityBeforeUpdate = randomizer.NextOnlineStationEntity();
 
         StationEntity updatedStationEntity = stationEntityBeforeUpdate with
         {
@@ -389,7 +389,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var stationEntityBeforeUpdate = randomizer.NextStationEntity();
+        var stationEntityBeforeUpdate = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntityBeforeUpdate.IpAddress);
@@ -473,7 +473,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var stationEntity = randomizer.NextStationEntity() with
+        var stationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = null
         };
@@ -516,7 +516,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var unregisteredStationEntity = randomizer.NextStationEntity();
+        var unregisteredStationEntity = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(unregisteredStationEntity.IpAddress);
@@ -547,7 +547,7 @@ public sealed class StationsControllerTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        var stationEntityBeforeUpdate = randomizer.NextStationEntity();
+        var stationEntityBeforeUpdate = randomizer.NextOnlineStationEntity();
 
         Mock<IHttpContextAccessor> httpContextAccessorStub =
             FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntityBeforeUpdate.IpAddress);
