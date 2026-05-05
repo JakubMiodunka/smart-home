@@ -119,6 +119,8 @@ public sealed class BackgroundProcessorServiceTests
     /// <remarks>
     /// This test is sensitive to timing and CPU scheduling.
     /// Running it in isolation prevents non - deterministic failures caused by resource contention.
+    /// Refer to <see cref="ServiceExecutionTriggeredInSpecifiedInterval"/> for detailed insights
+    /// into the underlying test execution flow and timing synchronization.
     /// </remarks>
     [NonParallelizable]
     [TestCase(1, 100)]
@@ -184,12 +186,7 @@ public sealed class BackgroundProcessorServiceTests
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
-    /// <remarks>
-    /// This test is sensitive to timing and CPU scheduling.
-    /// Running it in isolation prevents non - deterministic failures caused by resource contention.
-    /// Refer to <see cref="ServiceExecutionTriggeredInSpecifiedInterval"/> for detailed insights
-    /// into the underlying test execution flow and timing synchronization.
-    /// </remarks>
+    /// <inheritdoc cref="ServiceExecutionTriggeredInSpecifiedInterval"/>
     [NonParallelizable]
     [TestCase(1, 5)]
     public async Task ExecutionLoopContinuesWhenProcessorThrowsException(
@@ -245,6 +242,65 @@ public sealed class BackgroundProcessorServiceTests
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+    }
+
+    /// <inheritdoc cref="ServiceExecutionTriggeredInSpecifiedInterval"/>
+    [NonParallelizable]
+    [TestCase(1, 5, 2)]
+    public async Task ExecutionLoopInterruptedWhenProcessorOperationIsCancelled(
+        long serviceExecutionInterval,  // Given in milliseconds.
+        int numberOfIntervals,
+        int cancellationServiceLoop)           // In which service execution loop the cancellation should be triggered.
+    {
+        var serviceProcessorMock = new Mock<IBackgroundServiceProcessor>();
+
+        int serviceExecutionCounter = 0;
+        
+        serviceProcessorMock.Setup(processor => processor
+            .ProcessAsync(It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                Interlocked.Increment(ref serviceExecutionCounter);
+
+                if (serviceExecutionCounter == cancellationServiceLoop)
+                {
+                    // Simulated task cancellation.
+                    throw new OperationCanceledException();
+                }
+
+                await Task.CompletedTask;
+            });
+
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(serviceExecutionInterval);
+
+        var timeProviderStub = new FakeTimeProvider();
+        var loggerMock = new FakeLogger<BackgroundProcessorService>();
+
+        var service = new BackgroundProcessorService(
+                serviceProcessorMock.Object,
+                timeProviderStub,
+                executionInterval,
+                loggerMock);
+
+        TimeSpan simulationStep = executionInterval.Add(TimeSpan.FromMicroseconds(1));
+
+        await service.StartAsync(CancellationToken.None);
+
+        await Task.Delay(10);
+
+        for (int currentInterval = 0; currentInterval < numberOfIntervals; currentInterval++)
+        {
+            await Task.Delay(10);
+            timeProviderStub.Advance(simulationStep);
+        }
+
+        await service.StopAsync(CancellationToken.None);
+
+        Assert.That(() => serviceExecutionCounter, Is.EqualTo(cancellationServiceLoop).After(1000, 10));
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
     #endregion
 }
