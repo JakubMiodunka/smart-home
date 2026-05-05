@@ -78,7 +78,7 @@ public sealed class BackgroundProcessorService : BackgroundService
                 {
                     await _processor.ProcessAsync(cancellationToken);
                 }
-                catch (Exception exception)
+                catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     _logger.LogError(
                         exception,
@@ -95,6 +95,8 @@ public sealed class BackgroundProcessorService : BackgroundService
              * Adding extra 'catch' block only to ensure that intended cancellation won't be logged as error.
              */
             _logger.LogDebug("Stopping background service execution due to cancellation request: ProcessorName=[{ProcessorName}]", _processor.ProcessorName);
+            
+            throw;
         }
 
         _logger.LogInformation("Background service execution stopped: ProcessorName=[{ProcessorName}]", _processor.ProcessorName);
