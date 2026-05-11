@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE SP_switches_update
+﻿CREATE PROCEDURE switches_update
     @id BIGINT,  -- Specifies which electrical switch shall be updated.
     @update_expected_state BIT = 0,
     @expected_state BIT = NULL,

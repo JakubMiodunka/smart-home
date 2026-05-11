@@ -162,7 +162,7 @@ public sealed class DatabaseClient : IDatabaseClient
         parameters.Add("@api_version", apiVersion);
         parameters.Add("@last_heartbeat", lastHeartbeat.ToUniversalTime());
 
-        return await CreateEntityAsync<StationEntity>("SP_stations_create", parameters);
+        return await CreateEntityAsync<StationEntity>("stations_create", parameters);
     }
 
     /// <inheritdoc cref="IStationsRepository"/>
@@ -200,7 +200,7 @@ public sealed class DatabaseClient : IDatabaseClient
             parameters.Add("@mac_address", macAddress);
         }
 
-        return await GetSingleEntityAsync<StationEntity>("SP_stations_get", parameters);
+        return await GetSingleEntityAsync<StationEntity>("stations_get", parameters);
     }
 
     /// <inheritdoc cref="IStationsRepository"/>
@@ -208,7 +208,7 @@ public sealed class DatabaseClient : IDatabaseClient
     {
         var parameters = new DynamicParameters();
 
-        return await GetMultipleEntitiesAsync<StationEntity>("SP_stations_get", parameters);
+        return await GetMultipleEntitiesAsync<StationEntity>("stations_get", parameters);
     }
 
     /// <inheritdoc cref="IStationsRepository"/>
@@ -243,7 +243,7 @@ public sealed class DatabaseClient : IDatabaseClient
             parameters.Add("@last_heartbeat", lastHeartbeat?.ToUniversalTime());
         }
 
-        return await GetSingleEntityAsync<StationEntity>("SP_stations_update", parameters);
+        return await GetSingleEntityAsync<StationEntity>("stations_update", parameters);
     }
     #endregion
 
@@ -257,7 +257,7 @@ public sealed class DatabaseClient : IDatabaseClient
         parameters.Add("@expected_state", expectedState);
         parameters.Add("@actual_state", actualState);
 
-        return await CreateEntityAsync<SwitchEntity>("SP_switches_create", parameters);
+        return await CreateEntityAsync<SwitchEntity>("switches_create", parameters);
     }
 
     /// <inheritdoc cref="ISwitchesRepository"/>
@@ -295,7 +295,7 @@ public sealed class DatabaseClient : IDatabaseClient
             parameters.Add("@local_id", localId);
         }
 
-        return await GetSingleEntityAsync<SwitchEntity>("SP_switches_get", parameters);
+        return await GetSingleEntityAsync<SwitchEntity>("switches_get", parameters);
     }
 
     /// <inheritdoc cref="ISwitchesRepository"/>
@@ -311,7 +311,7 @@ public sealed class DatabaseClient : IDatabaseClient
             parameters.Add("@station_id", stationId);
         }
 
-        return await GetMultipleEntitiesAsync<SwitchEntity>("SP_switches_get", parameters);
+        return await GetMultipleEntitiesAsync<SwitchEntity>("switches_get", parameters);
     }
 
     /// <inheritdoc cref="ISwitchesRepository"/>
@@ -338,7 +338,7 @@ public sealed class DatabaseClient : IDatabaseClient
         parameters.Add("@update_actual_state", updateActualState);
         parameters.Add("@actual_state", updateActualState ? actualState : null);
 
-        return await GetSingleEntityAsync<SwitchEntity>("SP_switches_update", parameters);
+        return await GetSingleEntityAsync<SwitchEntity>("switches_update", parameters);
     }
     #endregion
 }

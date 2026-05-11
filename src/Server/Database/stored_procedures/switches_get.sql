@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE SP_switches_get
+﻿CREATE PROCEDURE switches_get
     @filter_by_id BIT = 0,
     @id BIGINT = NULL,
     @filter_by_station_id BIT = 0,
