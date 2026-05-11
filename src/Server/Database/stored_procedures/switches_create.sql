@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE SP_switches_create
+﻿CREATE PROCEDURE switches_create
 	@station_id BIGINT,
     @local_id TINYINT,
 	@expected_state BIT,
