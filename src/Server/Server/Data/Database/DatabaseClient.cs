@@ -4,7 +4,6 @@ using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 using System.Data;
 using System.Net;
-using System.Net.Mail;
 using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Data.Database;
@@ -49,6 +48,33 @@ public sealed class DatabaseClient : IDatabaseClient
     #endregion
 
     #region Anxulary methods
+    /// <summary>
+    /// Executes specified SQL procedure.
+    /// </summary>
+    /// <param name="procedureName">
+    /// Name of the SQL procedure which shall be executred.
+    /// </param>
+    /// <param name="parameters">
+    /// Collection of parameters required to execute the specified procedure.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown, when at least one of provided arguments is invalid.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
+    /// </exception>
+    private async Task ExecuteProcedure(string procedureName, DynamicParameters parameters)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(procedureName, nameof(procedureName));
+        ArgumentNullException.ThrowIfNull(parameters, nameof(parameters));
+
+        using var connection = new SqlConnection(_connectionString);
+        await connection.ExecuteAsync(procedureName, parameters, commandType: CommandType.StoredProcedure);
+    }
+
     /// <summary>
     /// Creates new entity within the database using specified SQL procedure.
     /// </summary>
@@ -244,6 +270,15 @@ public sealed class DatabaseClient : IDatabaseClient
         }
 
         return await GetSingleEntityAsync<StationEntity>("stations_update", parameters);
+    }
+
+    /// <inheritdoc cref="IStationsRepository"/>
+    public async Task MarkStationAsOfflineAsync(long id)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@id", id);
+
+        await ExecuteProcedure("stations_mark_as_offline", parameters);
     }
     #endregion
 

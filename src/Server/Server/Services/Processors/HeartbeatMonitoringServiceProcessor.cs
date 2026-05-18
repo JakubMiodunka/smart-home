@@ -1,4 +1,5 @@
-﻿using SmartHome.Server.Data.Models.Entities;
+﻿using Microsoft.Data.SqlClient;
+using SmartHome.Server.Data.Models.Entities;
 using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Services.Processors;
@@ -94,95 +95,29 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     }
 
     /// <summary>
-    /// Marks specified station as offline.
+    /// Marks specified station and all of its features as offline.
     /// </summary>
     /// <param name="stationId">
-    /// ID of station which shall be marked as offline.
+    /// Identifier of station which shall be marked as offline.
     /// </param>
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation.
     /// </returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when the value of at least one argument is outside its valid range.
-    /// </exception>
-    private async Task MarkStationAsOffline(long stationId)
+    private async Task MarkStationAsOfflineAsync(long stationId)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(stationId, 0, nameof(stationId));
+        _logger.LogDebug("Marking station and all of its features as offline: Id=[{Id}]", stationId);
 
-        _logger.LogDebug("Marking station as offline: Id=[{Id}]", stationId);
-
-        StationEntity? updatedStation = await _stationsRepository.UpdateStationAsync(
-            stationId,
-            updateIpAddress: true,
-            ipAddress: null,
-            updateApiPort: true,
-            apiPort: null,
-            updateApiVersion: true,
-            apiVersion: null);
-
-        if (updatedStation is null)
+        try
         {
-            _logger.LogError("Failed to update repository:");
+            await _stationsRepository.MarkStationAsOfflineAsync(stationId);
+        }
+        catch (SqlException exception)
+        {
+            _logger.LogError(exception, "Failed to update repository:");
             return;
         }
 
         _logger.LogDebug("Repository updated successfully:");
-    }
-
-    /// <summary>
-    /// Marks all switches controlled by specified station as offline.
-    /// </summary>
-    /// <param name="parentStationId">
-    /// The unique identifier of the station whose switches are to be updated.
-    /// </param>
-    /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation.
-    /// </returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when the value of at least one argument is outside its valid range.
-    /// </exception>
-    private async Task MarkStationSwitchesAsOffline(long parentStationId)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(parentStationId, 0, nameof(parentStationId));
-
-        _logger.LogDebug("Searching for switches to mark as offline: ParentStationId=[{ParentStationId}]", parentStationId);
-
-        SwitchEntity[] stationSwitches = await _switchesRepository.GetMultipleSwitchesAsync(
-            filterByStationId: true,
-            stationId: parentStationId);
-
-        SwitchEntity[] switchesToMark = stationSwitches
-            .Where(currentSwitch => currentSwitch.IsOnline())
-            .ToArray();
-
-        if (switchesToMark.Any())
-        {
-            _logger.LogDebug("Found switches to mark as offline: Count=[{Count}]", stationSwitches.Count());
-        }
-        else
-        {
-            _logger.LogDebug("Stations to mark as offline not found: Count=[{Count}]", stationSwitches.Count());
-            return;
-        }
-
-        // List.ForEach is avoided here as it does not support asynchronous operations.
-        foreach (SwitchEntity switchToMark in switchesToMark)
-        {
-            _logger.LogDebug("Marking switch as offline: Id=[{Id}]", switchToMark.Id);
-
-            SwitchEntity? updatedSwitch = await _switchesRepository.UpdateSwitchAsync(
-                switchToMark.Id,
-                updateActualState: true,
-                actualState: null);
-
-            if (updatedSwitch is null)
-            {
-                _logger.LogError("Failed to update repository:");
-                continue;
-            }
-
-            _logger.LogDebug("Repository updated successfully:");
-        }
     }
 
     /// <inheritdoc cref="IBackgroundServiceProcessor">
@@ -194,8 +129,7 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
         // List.ForEach is avoided here as it does not support asynchronous operations.
         foreach (StationEntity station in stationsToMark)
         {
-            await MarkStationAsOffline(station.Id);
-            await MarkStationSwitchesAsOffline(station.Id);
+            await MarkStationAsOfflineAsync(station.Id);
         }
     }
     #endregion
