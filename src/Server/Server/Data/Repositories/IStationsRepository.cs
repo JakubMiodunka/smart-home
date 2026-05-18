@@ -135,4 +135,15 @@ public interface IStationsRepository
         bool updateApiPort = false, int? apiPort = null,
         bool updateApiVersion = false, byte? apiVersion = null,
         bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null);
+
+    /// <summary>
+    /// Marks specified station as offline along with all of its features.
+    /// </summary>
+    /// <param name="id">
+    /// Specifies which station shall be marked as offline.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation.
+    /// </returns>
+    Task MarkStationAsOfflineAsync(long id);
 }
