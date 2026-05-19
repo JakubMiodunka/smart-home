@@ -137,13 +137,13 @@ public interface IStationsRepository
         bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null);
 
     /// <summary>
-    /// Marks specified station as offline along with all of its features.
+    /// Determines which stations can be concidered as offline and marks them as such within the repository.
     /// </summary>
-    /// <param name="id">
-    /// Specifies which station shall be marked as offline.
+    /// <param name="minHeartbeatTimestamp">
+    /// Minimal (inclusive) timestamp of last heartbeat signal received from station for it to be considered as online.
     /// </param>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation.
+    /// Identifiers of stations which were marked as offline.
     /// </returns>
-    Task MarkStationAsOfflineAsync(long id);
+    Task<long[]> MarkOfflineStations(DateTimeOffset minHeartbeatTimestamp);
 }

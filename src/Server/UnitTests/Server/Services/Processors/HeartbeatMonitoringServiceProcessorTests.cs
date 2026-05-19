@@ -10,6 +10,7 @@ using System.Net;
 
 namespace SmartHome.UnitTests.Server.Services;
 
+// TODO: Fix.
 [Category("UnitTest")]
 [TestOf(typeof(HeartbeatMonitoringServiceProcessor))]
 [Author("Jakub Miodunka")]
