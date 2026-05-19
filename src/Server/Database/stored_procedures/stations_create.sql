@@ -28,3 +28,4 @@ BEGIN
 		@api_version,
 		@last_heartbeat)
 END
+GO
