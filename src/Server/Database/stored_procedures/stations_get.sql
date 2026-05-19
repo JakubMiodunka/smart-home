@@ -23,3 +23,4 @@ BEGIN
         (@filter_by_mac_address = 0 OR mac_address IS NOT DISTINCT FROM @mac_address)
     ORDER BY id ASC
 END
+GO
