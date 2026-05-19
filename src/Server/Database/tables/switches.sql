@@ -9,3 +9,4 @@
     CONSTRAINT FK_switches_stations FOREIGN KEY (station_id) REFERENCES stations(id),
     CONSTRAINT UQ_switches_station_id_local_id UNIQUE (station_id, local_id)
 )
+GO
