@@ -49,33 +49,6 @@ public sealed class DatabaseClient : IDatabaseClient
 
     #region Anxulary methods
     /// <summary>
-    /// Executes specified SQL procedure.
-    /// </summary>
-    /// <param name="procedureName">
-    /// Name of the SQL procedure which shall be executred.
-    /// </param>
-    /// <param name="parameters">
-    /// Collection of parameters required to execute the specified procedure.
-    /// </param>
-    /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown, when at least one of provided arguments is invalid.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
-    /// </exception>
-    private async Task ExecuteProcedure(string procedureName, DynamicParameters parameters)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(procedureName, nameof(procedureName));
-        ArgumentNullException.ThrowIfNull(parameters, nameof(parameters));
-
-        using var connection = new SqlConnection(_connectionString);
-        await connection.ExecuteAsync(procedureName, parameters, commandType: CommandType.StoredProcedure);
-    }
-
-    /// <summary>
     /// Creates new entity within the database using specified SQL procedure.
     /// </summary>
     /// <typeparam name="T">
@@ -156,7 +129,7 @@ public sealed class DatabaseClient : IDatabaseClient
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable reference-type argument is a <see langword="null"/> reference.
     /// </exception>
-    private async Task<T[]> GetMultipleEntitiesAsync<T>(string procedureName, DynamicParameters parameters) where T : class
+    private async Task<T[]> GetMultipleEntitiesAsync<T>(string procedureName, DynamicParameters parameters)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(procedureName, nameof(procedureName));
         ArgumentNullException.ThrowIfNull(parameters, nameof(parameters));
@@ -273,12 +246,12 @@ public sealed class DatabaseClient : IDatabaseClient
     }
 
     /// <inheritdoc cref="IStationsRepository"/>
-    public async Task MarkStationAsOfflineAsync(long id)
+    public async Task<long[]> MarkOfflineStations(DateTimeOffset minHeartbeatTimestamp)
     {
         var parameters = new DynamicParameters();
-        parameters.Add("@id", id);
+        parameters.Add("@min_heartbeat_timestamp", minHeartbeatTimestamp);
 
-        await ExecuteProcedure("stations_mark_as_offline", parameters);
+        return await GetMultipleEntitiesAsync<long>("stations_mark_offline", parameters);
     }
     #endregion
 
