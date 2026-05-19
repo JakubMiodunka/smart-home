@@ -24,3 +24,4 @@ BEGIN
 		@expected_state,
 		@actual_state)
 END
+GO

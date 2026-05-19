@@ -11,3 +11,4 @@
     CONSTRAINT UQ_stations_ip_address UNIQUE (ip_address),
     CONSTRAINT CK_api_port CHECK (api_port IS NULL OR (0 <= api_port AND api_port <= 65535))
 )
+GO

@@ -22,3 +22,4 @@ BEGIN
         (@filter_by_local_id = 0 OR local_id IS NOT DISTINCT FROM @local_id)
     ORDER BY id ASC
 END
+GO
