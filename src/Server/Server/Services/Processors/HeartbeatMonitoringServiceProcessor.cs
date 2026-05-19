@@ -1,6 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Data.Repositories;
+﻿using SmartHome.Server.Data.Repositories;
 
 namespace SmartHome.Server.Services.Processors;
 
@@ -15,7 +13,6 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
 {
     #region Properties
     private readonly IStationsRepository _stationsRepository;
-    private readonly ISwitchesRepository _switchesRepository;
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _maxHeartbeatInterval;
     private readonly ILogger<HeartbeatMonitoringServiceProcessor> _logger;
@@ -31,9 +28,6 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// <param name="stationsRepository">
     /// Stations repository which shall be used by created instance.
     /// </param>
-    /// <param name="switchesRepository">
-    /// Switches repository which shall be used by created instance.
-    /// </param>
     /// <param name="timeProvider">
     /// Time reference shall be used by the instance to coordinate time-based operations.
     /// </param>
@@ -48,19 +42,16 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     /// </exception>
     public HeartbeatMonitoringServiceProcessor(
         IStationsRepository stationsRepository,
-        ISwitchesRepository switchesRepository,
         TimeProvider timeProvider,
         TimeSpan maxHeartbeatInterval,
         ILogger<HeartbeatMonitoringServiceProcessor> logger)
     {
         ArgumentNullException.ThrowIfNull(stationsRepository, nameof(stationsRepository));
-        ArgumentNullException.ThrowIfNull(switchesRepository, nameof(switchesRepository));
         ArgumentNullException.ThrowIfNull(timeProvider, nameof(timeProvider));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxHeartbeatInterval, TimeSpan.Zero);
 
         _stationsRepository = stationsRepository;
-        _switchesRepository = switchesRepository;
         _timeProvider = timeProvider;
         _maxHeartbeatInterval = maxHeartbeatInterval;
         _logger = logger;
@@ -68,69 +59,31 @@ public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProc
     #endregion
 
     #region Service processing
-
     /// <summary>
-    /// Searching for stations which shall be marked as offline in repository.
+    /// Determines which stations can be concidered as offline and marks them as such.
     /// </summary>
-    /// <param name="referenceTimestamp">
-    /// Timestamp against which station activity is compared to determine offline state.
-    /// </param>
-    /// <returns>
-    /// Collection of statin entities which shall be marked as offline.
-    /// </returns>
-    private async Task<StationEntity[]> FindStationsToMarkAsOffline(DateTimeOffset referenceTimestamp)
-    {
-        _logger.LogDebug("Searching for stations to mark as offline: ReferenceTimestamp=[{ReferenceTimestamp}]", referenceTimestamp);
-
-        StationEntity[] allStations = await _stationsRepository.GetMultipleStationsAsync();
-        
-        StationEntity[] stationsToMark = allStations
-            .Where(station => station.IsOnline() is true or null)   // Stations with unclear status are also processed to ensure data integrity by marking them offline.
-            .Where(station => referenceTimestamp - station.LastHeartbeat > _maxHeartbeatInterval)
-            .ToArray();
-
-        _logger.LogDebug("Stations found to mark as offline: Count=[{Count}]", stationsToMark.Count());
-
-        return stationsToMark;
-    }
-
-    /// <summary>
-    /// Marks specified station and all of its features as offline.
-    /// </summary>
-    /// <param name="stationId">
-    /// Identifier of station which shall be marked as offline.
-    /// </param>
-    /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation.
-    /// </returns>
-    private async Task MarkStationAsOfflineAsync(long stationId)
-    {
-        _logger.LogDebug("Marking station and all of its features as offline: Id=[{Id}]", stationId);
-
-        try
-        {
-            await _stationsRepository.MarkStationAsOfflineAsync(stationId);
-        }
-        catch (SqlException exception)
-        {
-            _logger.LogError(exception, "Failed to update repository:");
-            return;
-        }
-
-        _logger.LogDebug("Repository updated successfully:");
-    }
-
     /// <inheritdoc cref="IBackgroundServiceProcessor">
     public async Task ProcessAsync(CancellationToken cancellationToken)
     {
-        DateTimeOffset referenceTimestamp = _timeProvider.GetUtcNow();
-        StationEntity[] stationsToMark = await FindStationsToMarkAsOffline(referenceTimestamp);
+        DateTimeOffset minHeartbeatTimestamp = _timeProvider.GetUtcNow() - _maxHeartbeatInterval;
 
-        // List.ForEach is avoided here as it does not support asynchronous operations.
-        foreach (StationEntity station in stationsToMark)
-        {
-            await MarkStationAsOfflineAsync(station.Id);
-        }
+        _logger.LogInformation(
+            "Searching for stations to mark as offline: MinHeartbeatTimestamp=[{MinHeartbeatTimestamp}]",
+            minHeartbeatTimestamp);
+        
+        long[] markedStationsIdentifiers = await _stationsRepository.MarkOfflineStations(minHeartbeatTimestamp);
+
+        _logger.LogInformation(
+            "Batch of stations marked as offline: Count=[{Count}], MinHeartbeatTimestamp=[{MinHeartbeatTimestamp}]", 
+            markedStationsIdentifiers.Length,
+            minHeartbeatTimestamp);
+
+        markedStationsIdentifiers.ToList()
+            .ForEach(stationId => 
+                _logger.LogDebug(
+                    "Station and all of its features marked as offline: StationId=[{Id}], MinHeartbeatTimestamp=[{MinHeartbeatTimestamp}]",
+                    stationId,
+                    minHeartbeatTimestamp));
     }
     #endregion
 }
