@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE stations_process_and_mark_offline
+﻿CREATE PROCEDURE stations_mark_offline
     @min_heartbeat_timestamp DATETIMEOFFSET
 AS
 BEGIN
@@ -17,18 +17,18 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM @OfflineStations)
     BEGIN
-        SELECT id FROM @OfflineStations;
+        SELECT id FROM @OfflineStations;    -- To return an empty result set with the correct schema.
         RETURN;
     END
 
     BEGIN TRANSACTION;
     BEGIN TRY
 
-        UPDATE dbo.switches
+        UPDATE switches
         SET actual_state = NULL
         WHERE station_id IN (SELECT id FROM @OfflineStations);
 
-        UPDATE dbo.stations
+        UPDATE stations
         SET
             ip_address = NULL,
             api_port = NULL,
