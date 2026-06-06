@@ -82,11 +82,14 @@ Implemented in [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)
 The backend infrastructure requires instance of SQL Server 2022. For a streamlined deployment, it is recommended
 to use [Docker](https://www.docker.com/ "Docker website") and [Official SQL Server Docker Image](https://hub.docker.com/_/microsoft-mssql-server).
 
-* Initialize your instance by deploying the schema located in the [*Database.sqlproj*](./src/Server/Database/Database.sqlproj).
+* Initialize your database instance by deploying the schema located in the [*Database.sqlproj*](./src/Server/Database/Database.sqlproj).
+It is recommended to use the *Publish* option in Visual Studio, 
+ensuring that the *SQLCMD variables* are adjusted to match your target *SQL Server* instance configuration.
 * Update the connection string within [*Program.cs*](./src/Server/Server/Program.cs) to match your SQL Server credentials.
 * The application is configured to bind to *localhost* by default. To enable communication with external hardware nodes,
 update the network interface settings in the [*launchSettings.json*](./src/Server/Server/Properties/launchSettings.json)
 file to match your host's local IP address.
+* Build [*Server.slnx*](./src/Server/Server.slnx) and run new server instance.
 
 Note: As this project is currently in development, file-oriented configuration management has not yet been implemented.
 All configurations are handled directly within the source code.
@@ -98,13 +101,18 @@ Hardware stations are built using the NodeMCU (ESP8266) platform. You will need 
 * Open the Arduino IDE and configure it to support NodeMCU by
 following the [official tutorial](https://projecthub.arduino.cc/PatelDarshil/getting-started-with-nodemcu-esp8266-on-arduino-ide-b193c3)
 * Open the [*generic_firmware.ino*](./src/Firmware/generic_firmware/generic_firmware.ino) in the Arduino IDE,
+adjust configuration parameters defined in [*config.h*](./src/Firmware/generic_firmware/config.cpp) according to your setup,
 compile and upload the code to your NodeMCU board.
+* Upon startup, the node will automatically attempt to register with the server. Once registration completes successfully,
+all node features will become operational.
+* In case of of registration or operational issues, the *SERIAL_PORT_LOGGING* configuration parameter can be set to *true*
+(enabled by default) to route system log messages to the serial port for debugging and investigation.
 * The current firmware implementation includes a single on/off switch utility, which is configured to control the state of the build-in LED.
 
 ### Interactions With The System
 
 As the frontend interface is currently not available, all interactions with the server must be performed via direct API calls.
-You can use tools such as cURL, Postman, Insomnia or the built-in Visual Studio HTTP Client to communicate with the system.
+You can use tools such as *cURL*, *Postman*, *Insomnia* or the built-in Visual Studio HTTP Client to communicate with the system.
 For specific request structures and endpoint examples, please inspect 
 the [*Server.http*](./src/Server/Server/Server.http) file located in the repository.
 
@@ -113,7 +121,7 @@ the [*Server.http*](./src/Server/Server/Server.http) file located in the reposit
 Versioning for this project follows the established guidelines
 of [semantic versioning](https://en.m.wikipedia.org/wiki/Software_versioning#Semantic_versioning "Wikipedia article").
 
-Current version: 1.0.0
+Current version: 1.0.1
 
 ## Project management
 
