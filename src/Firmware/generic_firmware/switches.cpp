@@ -195,9 +195,18 @@ void Switch::setupControlEndpoint(ESP8266WebServer& server) {
     String requestBody = server.arg("plain");
     logToSerial(INFO, "Request received: TYPE=[UpdateSwitchServerRequest], BODY=[%s]", requestBody.c_str());
     
+    int httpCode;
+
+    if (!isRequestAuthorized) {
+      httpCode = HTTP_CODE_UNAUTHORIZED;
+      logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
+      server.send(httpCode);
+
+      return;
+    }
+
     JsonDocument requestJson;
     UpdateSwitchServerRequest request;
-    int httpCode;
     if (tryParseJsonString(requestBody, requestJson) && 
         UpdateSwitchServerRequest::tryParseJsonDocument(requestJson, request)) {
       logToSerial(DEBUG, "Request body parsing successful:");
