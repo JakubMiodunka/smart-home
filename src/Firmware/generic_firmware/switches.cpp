@@ -197,7 +197,7 @@ void Switch::setupControlEndpoint(ESP8266WebServer& server) {
     
     int httpCode;
 
-    if (!isRequestAuthorized) {
+    if (!isRequestAuthorized(server)) {
       httpCode = HTTP_CODE_UNAUTHORIZED;
       logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
       server.send(httpCode);
