@@ -186,7 +186,6 @@ void Switch::updateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
   }
 }
 
-// TODO: Maybe check aloso IP of the caller to block unwanted API cals made not by the remote server.
 void Switch::setupControlEndpoint(ESP8266WebServer& server) {
   String endpoint = getLocalEndpointPrefix() + "/switches/" + String(this->localId);
   logToSerial(INFO, "Attempting to setup an endpoint: ENDPOINT=[%s]", endpoint.c_str());
