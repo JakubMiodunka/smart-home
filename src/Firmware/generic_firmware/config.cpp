@@ -8,6 +8,7 @@ const uint8_t REMOTE_SERVER_API_VERSION = 1;
 const uint16_t LOCAL_SERVER_PORT = 80;
 const uint8_t LOCAL_SERVER_API_VERSION = 1;
 const uint32_t LOCAL_SERVER_API_POLL_INTERVAL = 1000;
+const bool IP_RESTRICTION = true;
 
 const bool SERIAL_PORT_LOGGING = true;
 const uint32_t SERIAL_PORT_BAUD_RATE = 115200;
