@@ -13,6 +13,7 @@ extern const uint8_t REMOTE_SERVER_API_VERSION;
 extern const uint16_t LOCAL_SERVER_PORT;
 extern const uint8_t LOCAL_SERVER_API_VERSION;
 extern const uint32_t LOCAL_SERVER_API_POLL_INTERVAL; // Given in milliseconds.
+extern const bool IP_RESTRICTION; // Process only requests from the remote server IP.
 
 // Features configuration:
 extern const bool SERIAL_PORT_LOGGING;

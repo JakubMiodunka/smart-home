@@ -107,3 +107,22 @@ bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const Http
 
   return true;
 }
+
+bool isRequestAuthorized(ESP8266WebServer& server) {
+  logToSerial(DEBUG, "Determining if HTTP request is authorized to be executed:");
+
+  if (!IP_RESTRICTION) {
+    logToSerial(DEBUG, "Remote IP address verification disabled:");
+    return true;
+  }
+
+  String remoteIpAddress = server.client().remoteIP().toString();
+
+  if (remoteIpAddress != REMOTE_SERVER_IP_ADDRESS) {
+    logToSerial(WARNING, "Remote IP address unauthorized: EXPECTED_IP_ADDRESS=[%s], ACTUAL_IP_ADDRESS=[%s]", REMOTE_SERVER_IP_ADDRESS, remoteIpAddress.c_str());
+    return false;
+  }
+
+  logToSerial(DEBUG, "Request authorized to be executed:");
+  return true;
+}
