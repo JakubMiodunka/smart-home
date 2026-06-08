@@ -75,4 +75,18 @@ bool tryParseJsonString(const String jsonString, JsonDocument& jsonDocument);
 ///</returns>
 bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const HttpMethod httpMethod, const JsonDocument& request, JsonDocument& response, int& httpReturnCode);
 
+/// <summary>
+/// Authorizes the incoming HTTP request for further processing by the local server.
+/// </summary>
+/// <remarks>
+/// Intended to be invoked in every function defining endpoint behaviour before executing any business logic.
+/// </remarks>
+/// <param name="server">
+/// A reference to the web server that is currently processing the request to be authorized.
+/// </param>
+/// <returns>
+/// <see langword="true"/> if the request is authorized to be processed further, <see langword="false"/> otherwise
+/// </returns>
+bool isRequestAuthorized(ESP8266WebServer& server);
+
 #endif
