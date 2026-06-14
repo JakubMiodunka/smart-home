@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
     <ProjectGuid>{19e0b0a7-6df8-4bbf-9d9f-60bb078ed37a}</ProjectGuid>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider</DSP>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
@@ -57,19 +57,38 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="tables" />
+    <Folder Include="security" />
+    <Folder Include="security\users" />
+    <Folder Include="security\permissions" />
     <Folder Include="stored_procedures" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="tables\stations.sql" />
-    <Build Include="stored_procedures\SP_stations_create.sql" />
     <Build Include="tables\switches.sql" />
-    <Build Include="stored_procedures\SP_switches_create.sql" />
-    <Build Include="stored_procedures\SP_stations_get.sql" />
-    <Build Include="stored_procedures\SP_stations_update.sql" />
-    <Build Include="stored_procedures\SP_switches_get.sql" />
-    <Build Include="stored_procedures\SP_switches_update.sql" />
+    <PostDeploy Include="post_deployment_actions.sql" />
+    <None Include="security\permissions\app_user_permissions.sql" />
+    <Build Include="stored_procedures\stations_create.sql" />
+    <Build Include="stored_procedures\stations_get.sql" />
+    <Build Include="stored_procedures\stations_update.sql" />
+    <Build Include="stored_procedures\switches_create.sql" />
+    <Build Include="stored_procedures\switches_get.sql" />
+    <Build Include="stored_procedures\switches_update.sql" />
+    <Build Include="stored_procedures\stations_mark_offline.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Database.refactorlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="AppUserLogin">
+      <DefaultValue>smart_home_app_user</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="AppUserName">
+      <DefaultValue>app_user</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="security\users\app_user.sql" />
   </ItemGroup>
 </Project>

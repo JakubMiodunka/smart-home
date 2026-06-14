@@ -16,7 +16,7 @@ public sealed class StationEntityTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = randomizer.NextIpAddress(),
             ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
@@ -33,7 +33,7 @@ public sealed class StationEntityTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = null,
             ApiPort = null,
@@ -52,19 +52,19 @@ public sealed class StationEntityTests
 
         var stationEntities = new StationEntity[]
         {
-            randomizer.NextStationEntity() with
+            randomizer.NextOnlineStationEntity() with
             {
                 IpAddress = randomizer.NextIpAddress(),
                 ApiPort = null,
                 ApiVersion = null,
             },
-            randomizer.NextStationEntity() with
+            randomizer.NextOnlineStationEntity() with
             {
                 IpAddress = null,
                 ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
                 ApiVersion = null,
             },
-            randomizer.NextStationEntity() with
+            randomizer.NextOnlineStationEntity() with
             {
                 IpAddress = null,
                 ApiPort = null,
@@ -84,7 +84,7 @@ public sealed class StationEntityTests
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
-        StationEntity stationEntity = randomizer.NextStationEntity() with
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             IpAddress = randomizer.NextIpAddress(),
             ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
@@ -104,25 +104,25 @@ public sealed class StationEntityTests
 
         var stationEntities = new StationEntity[]
         {
-            randomizer.NextStationEntity() with
+            randomizer.NextOnlineStationEntity() with
             {
                 IpAddress = null,
                 ApiPort = null,
                 ApiVersion = null,
             },
-            randomizer.NextStationEntity() with
+            randomizer.NextOnlineStationEntity() with
             {
                 IpAddress = randomizer.NextIpAddress(),
                 ApiPort = null,
                 ApiVersion = null,
             },
-            randomizer.NextStationEntity() with
+            randomizer.NextOnlineStationEntity() with
             {
                 IpAddress = null,
                 ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
                 ApiVersion = null,
             },
-            randomizer.NextStationEntity() with
+            randomizer.NextOnlineStationEntity() with
             {
                 IpAddress = null,
                 ApiPort = null,

@@ -186,7 +186,6 @@ void Switch::updateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
   }
 }
 
-// TODO: Maybe check aloso IP of the caller to block unwanted API cals made not by the remote server.
 void Switch::setupControlEndpoint(ESP8266WebServer& server) {
   String endpoint = getLocalEndpointPrefix() + "/switches/" + String(this->localId);
   logToSerial(INFO, "Attempting to setup an endpoint: ENDPOINT=[%s]", endpoint.c_str());
@@ -195,9 +194,18 @@ void Switch::setupControlEndpoint(ESP8266WebServer& server) {
     String requestBody = server.arg("plain");
     logToSerial(INFO, "Request received: TYPE=[UpdateSwitchServerRequest], BODY=[%s]", requestBody.c_str());
     
+    int httpCode;
+
+    if (!isRequestAuthorized(server)) {
+      httpCode = HTTP_CODE_UNAUTHORIZED;
+      logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
+      server.send(httpCode);
+
+      return;
+    }
+
     JsonDocument requestJson;
     UpdateSwitchServerRequest request;
-    int httpCode;
     if (tryParseJsonString(requestBody, requestJson) && 
         UpdateSwitchServerRequest::tryParseJsonDocument(requestJson, request)) {
       logToSerial(DEBUG, "Request body parsing successful:");

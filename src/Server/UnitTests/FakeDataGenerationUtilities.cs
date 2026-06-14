@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Data.Models.Entities;
@@ -8,6 +9,9 @@ using System.Text;
 using System.Text.Json;
 
 namespace SmartHome.UnitTests;
+
+/// <seealso cref="FakeDataGenerationUtilities.NextHttpRequestBody(Randomizer)"/>
+public sealed record GenericHttpRequestBody(bool? Value1, int? Value2, string? Value3);
 
 internal static class FakeDataGenerationUtilities
 {
@@ -35,14 +39,24 @@ internal static class FakeDataGenerationUtilities
     }
 
     #region Randomizer extensions
+    public static T PickFrom<T>(this Randomizer randomizer, IEnumerable<T> values)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+        ArgumentNullException.ThrowIfNull(values, nameof(values));
+        if (values.Count() == 0) throw new ArgumentException("No values to pick from:", nameof(values));
+
+        int index = randomizer.Next(values.Count());
+
+        return values.ElementAt(index);
+    }
+
     public static bool? NextNullableBool(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
         var values = new bool?[] { true, false, null };
-        randomizer.Shuffle(values);
 
-        return values.First();
+        return randomizer.PickFrom(values);
     }
 
     /// <remarks>
@@ -53,18 +67,22 @@ internal static class FakeDataGenerationUtilities
     /// </remarks>
     public static DateTimeOffset NextDateTimeOffset(this Randomizer randomizer, DateTimeOffset? from = null, DateTimeOffset? to = null)
     {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
         long fromDefault = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks;
 
         long fromTicks = from?.Ticks ?? fromDefault;
         long toTicks = to?.Ticks ?? DateTimeOffset.MaxValue.Ticks;
 
         long dateTimeOffsetTicks = randomizer.NextInt64(fromTicks, toTicks);
-
+        
         return new DateTimeOffset(dateTimeOffsetTicks, TimeSpan.Zero);
     }
 
     public static TimeSpan NextTimeSpan(this Randomizer randomizer, TimeSpan? from = null, TimeSpan? to = null)
     {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
         long fromTicks = from?.Ticks ?? TimeSpan.MinValue.Ticks;
         long toTicks = to?.Ticks ?? TimeSpan.MaxValue.Ticks;
 
@@ -93,7 +111,82 @@ internal static class FakeDataGenerationUtilities
         return new IPAddress(ipAddress);
     }
 
-    public static StationEntity NextStationEntity(this Randomizer randomizer)
+    public static int NextPort(this Randomizer randomizer)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        return randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1);
+    }
+    
+    /// <remarks>
+    /// Convers only basic HTTP methods.
+    /// </remarks>
+    public static HttpMethod NextHttpMethod(this Randomizer randomizer)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        var values = new HttpMethod[]
+        {
+            HttpMethod.Get,
+            HttpMethod.Post,
+            HttpMethod.Put,
+            HttpMethod.Delete,
+            HttpMethod.Patch
+        };
+
+        return randomizer.PickFrom(values);
+    }
+
+    public static HttpStatusCode NextSuccessfulHttpStatusCode(this Randomizer randomizer)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        var values = new HttpStatusCode[]
+        {
+            HttpStatusCode.OK,
+            HttpStatusCode.Created,
+            HttpStatusCode.Accepted,
+            HttpStatusCode.NonAuthoritativeInformation,
+            HttpStatusCode.NoContent,
+            HttpStatusCode.ResetContent,
+            HttpStatusCode.PartialContent,
+            HttpStatusCode.MultiStatus,
+            HttpStatusCode.AlreadyReported,
+            HttpStatusCode.IMUsed
+        };
+
+        return randomizer.PickFrom(values);
+    }
+
+    public static Uri NextHttpUrl(this Randomizer randomizer, UriKind uriKind = UriKind.Absolute)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+        
+        if (uriKind == UriKind.Relative)
+        {
+            return new Uri(randomizer.GetString(), UriKind.Relative);
+        }
+
+        if (uriKind == UriKind.Absolute)
+        {
+            var uriBuilder = new UriBuilder(Uri.UriSchemeHttp, randomizer.NextIpAddress().ToString(), randomizer.NextPort());
+            return uriBuilder.Uri;
+        }
+
+        throw new NotSupportedException($"Uri kind not supported: UriKind=[{uriKind}]");
+    }
+
+    public static GenericHttpRequestBody NextHttpRequestBody(this Randomizer randomizer)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        return new GenericHttpRequestBody(
+            randomizer.NextNullableBool(),
+            randomizer.Next(),
+            randomizer.GetString());
+    }
+
+    public static StationEntity NextOnlineStationEntity(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
@@ -109,27 +202,29 @@ internal static class FakeDataGenerationUtilities
 
     public static StationEntity NextOfflineStationEntity(this Randomizer randomizer)
     {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
         var allVariantsOfOfflineStationEntity = new StationEntity[]
             {
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
-                IpAddress = null,
+                    IpAddress = null,
                     ApiPort = null,
                     ApiVersion = null
                 },
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
                     IpAddress = randomizer.NextIpAddress(),
                     ApiPort = null,
                     ApiVersion = null
                 },
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
                     IpAddress = null,
                     ApiPort = randomizer.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort + 1),
                     ApiVersion = null
                 },
-                randomizer.NextStationEntity() with
+                randomizer.NextOnlineStationEntity() with
                 {
                     IpAddress = null,
                     ApiPort = null,
@@ -137,11 +232,9 @@ internal static class FakeDataGenerationUtilities
                 }
             };
 
-        int index = randomizer.Next(allVariantsOfOfflineStationEntity.Count());
-        return allVariantsOfOfflineStationEntity[index];
+        return randomizer.PickFrom(allVariantsOfOfflineStationEntity);
     }
     
-
     public static SwitchEntity NextSwitchEntity(this Randomizer randomizer)
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));

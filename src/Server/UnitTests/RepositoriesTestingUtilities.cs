@@ -30,6 +30,10 @@ internal static class RepositoriesTestingUtilities
                 It.IsAny<bool>(),
                 It.IsAny<DateTimeOffset?>()),
             Times.Never);
+
+        repositoryMock.Verify(mock => mock
+            .MarkOfflineStations(It.IsAny<DateTimeOffset>()),
+            Times.Never);
     }
 
     public static void AssertNoContentModifications(this Mock<ISwitchesRepository> repositoryMock)

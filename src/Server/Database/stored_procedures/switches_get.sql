@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE SP_switches_get
+﻿CREATE PROCEDURE switches_get
     @filter_by_id BIT = 0,
     @id BIGINT = NULL,
     @filter_by_station_id BIT = 0,
@@ -22,3 +22,4 @@ BEGIN
         (@filter_by_local_id = 0 OR local_id IS NOT DISTINCT FROM @local_id)
     ORDER BY id ASC
 END
+GO

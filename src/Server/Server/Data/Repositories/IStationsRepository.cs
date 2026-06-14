@@ -135,4 +135,15 @@ public interface IStationsRepository
         bool updateApiPort = false, int? apiPort = null,
         bool updateApiVersion = false, byte? apiVersion = null,
         bool updateLastHeartbeat = false, DateTimeOffset? lastHeartbeat = null);
+
+    /// <summary>
+    /// Determines which stations can be concidered as offline and marks them as such within the repository.
+    /// </summary>
+    /// <param name="minHeartbeatTimestamp">
+    /// Minimal (inclusive) timestamp of last heartbeat signal received from station for it to be considered as online.
+    /// </param>
+    /// <returns>
+    /// Identifiers of stations which were marked as offline.
+    /// </returns>
+    Task<long[]> MarkOfflineStations(DateTimeOffset minHeartbeatTimestamp);
 }
