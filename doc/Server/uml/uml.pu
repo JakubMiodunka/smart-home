@@ -1,0 +1,251 @@
+@startuml
+
+package ApiClients {
+    +interface IStationApiClient {
+        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+    }
+    
+    +class StationApiClient {
+        +{static} MinTimeout : TimeSpan
+        +{static} MaxTimeout : TimeSpan
+        -_station : StationEntity
+        -_lazyWrappedHttpClient : Lazy<HttpClient>
+        -_logger : ILogger<StationApiClient>
+        -WrappedHttpClient : HttpClient
+        +StationApiClient(StationEntity, IHttpClientFactory, TimeSpan, ILogger<StationApiClient>) : StationApiClient
+        -CreateHttpClient(IHttpClientFactory, TimeSpan) : HttpClient
+        -AsHttpContent(object?) : Task<HttpContent>
+        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+    }
+    
+    +interface IStationApiClientFactory {
+        CreateFor(StationEntity, TimeSpan) : IStationApiClient
+    }
+    
+    +class StationApiClientFactory {
+        -_httpClientFactory : IHttpClientFactory
+        -_loggerFactory : ILoggerFactory
+        +StationApiClientFactory(IHttpClientFactory, ILoggerFactory) : StationApiClientFactory
+        +CreateFor(StationEntity, TimeSpan) : IStationApiClient
+    }
+    
+    IStationApiClient <|.. StationApiClient
+    IStationApiClientFactory <|.. StationApiClientFactory
+}
+
+package Controllers {
+    +class BaseController {
+        #_httpContextAccessor : IHttpContextAccessor
+        #BaseController(IHttpContextAccessor) : BaseController
+        #TryGetRemoteIpAddress(out IPAddress?) : bool
+    }
+    
+    +class "SwitchesController" as ClientSwitchesController {
+        -_switchesRepository : ISwitchesRepository
+        -_stationsRepository : IStationsRepository
+        -_switchManagerFactory : ISwitchManagerFactory
+        -_logger : ILogger<SwitchesController>
+        +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ISwitchManagerFactory, ILogger<SwitchesController>) : SwitchesController
+        +GetSwitches() : Task<IActionResult>
+        +GetSwitch(long) : Task<IActionResult>
+        +UpdateSwitch(long, SwitchUpdateClientRequest, CancellationToken) : Task<IActionResult>
+    }
+    
+    +class StationsController {
+        -_stationsRepository : IStationsRepository
+        -_timeProvider : TimeProvider
+        -_logger : ILogger<StationsController>
+        +StationsController(IHttpContextAccessor, IStationsRepository, TimeProvider, ILogger<StationsController>) : StationsController
+        +RegisterStation(StationRegistrationStationRequest) : Task<IActionResult>
+        +ProcessHeartbeatSignal() : Task<IActionResult>
+    }
+    
+    +class "SwitchesController" as FirmwareSwitchesController {
+        -{static} DefaultExpectedSwitchState : bool
+        -{static} DefaultActualSwitchState : bool?
+        -_switchesRepository : ISwitchesRepository
+        -_stationsRepository : IStationsRepository
+        -_logger : ILogger<SwitchesController>
+        +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ILogger<SwitchesController>) : SwitchesController
+        +RegisterSwitch(SwitchRegistrationStationRequest) : Task<IActionResult>
+        +UpdateSwitch(long, SwitchUpdateStationRequest) : Task<IActionResult>
+    }
+    
+    BaseController <|-- ClientSwitchesController
+    BaseController <|-- StationsController
+    BaseController <|-- FirmwareSwitchesController
+}
+
+package Managers {
+    +interface ISwitchManager {
+        +TryChangeState(bool, CancellationToken) : Task<bool>
+    }
+    
+    +class SwitchManager {
+        -{static} s_httpClientTimeout : TimeSpan
+        -_stationApiClientsFactory : IStationApiClientFactory
+        -_logger : ILogger<SwitchManager>
+        +ManagedSwitch : SwitchEntity
+        +SwitchParentStation : StationEntity
+        +SwitchManager(SwitchEntity, StationEntity, IStationApiClientFactory, ILogger<SwitchManager>) : SwitchManager
+        +TryChangeState(bool, CancellationToken) : Task<bool>
+    }
+    
+    +interface ISwitchManagerFactory {
+        +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
+    }
+    
+    +class SwitchManagerFactory {
+        -_stationApiClientsFactory : IStationApiClientFactory
+        -_loggerFactory : ILoggerFactory
+        +SwitchManagerFactory(IStationApiClientFactory, ILoggerFactory) : SwitchManagerFactory
+        +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
+    }
+    
+    ISwitchManager <|.. SwitchManager
+    ISwitchManagerFactory <|.. SwitchManagerFactory
+}
+
+package Services {
+    +class BackgroundProcessorService {
+        -_processor : IBackgroundServiceProcessor
+        -_timeProvider : TimeProvider
+        -_serviceExecutionInterval : TimeSpan
+        -_logger : ILogger<BackgroundProcessorService>
+        +BackgroundProcessorService(IBackgroundServiceProcessor, TimeProvider, TimeSpan, ILogger<BackgroundProcessorService>) : BackgroundProcessorService
+        #ExecuteAsync(CancellationToken) : Task
+    }
+    
+    +interface IBackgroundServiceProcessor {
+        +ProcessorName : string
+        +ProcessAsync(CancellationToken) : Task
+    }
+    
+    +class HeartbeatMonitoringServiceProcessor {
+        -_stationsRepository : IStationsRepository
+        -_timeProvider : TimeProvider
+        -_maxHeartbeatInterval : TimeSpan
+        -_logger : ILogger<HeartbeatMonitoringServiceProcessor>
+        +ProcessorName : string
+        +HeartbeatMonitoringServiceProcessor(IStationsRepository, TimeProvider, TimeSpan, ILogger<HeartbeatMonitoringServiceProcessor>) : HeartbeatMonitoringServiceProcessor
+        +ProcessAsync(CancellationToken) : Task
+    }
+    
+    IBackgroundServiceProcessor <|.. HeartbeatMonitoringServiceProcessor
+}
+
+package Data {
+    +interface IStationsRepository {
+        +CreateStationAsync(PhysicalAddress, IPAddress?, int?, byte?, DateTimeOffset) : Task<StationEntity>
+        +GetSingleStationAsync(bool, long?, bool, IPAddress?, bool, PhysicalAddress?) : Task<StationEntity?>
+        +GetMultipleStationsAsync() : Task<StationEntity[]>
+        +UpdateStationAsync(long id, bool, IPAddress?, bool, int?, bool, byte?, bool, DateTimeOffset?) : Task<StationEntity?>
+        +MarkOfflineStations(DateTimeOffset) : Task<long[]>
+    }
+
+    +interface ISwitchesRepository {
+        +CreateSwitchAsync(long, byte, bool, bool?) : Task<SwitchEntity>
+        +GetSingleSwitchAsync(bool, long?, bool, long?, bool, byte?) : Task<SwitchEntity?>
+        +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
+        +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
+    }
+
+    +interface IDatabaseClient {
+    }
+
+    +class DatabaseClient {
+        -_connectionString : string
+        +DatabaseClient(string) : DatabaseClient
+        -CreateEntityAsync<T>(string, DynamicParameters) : Task<T>
+        -GetSingleEntityAsync<T>(string, DynamicParameters) : Task<T?>
+        -GetMultipleEntitiesAsync<T>(string, DynamicParameters) : Task<T[]>
+        +CreateStationAsync(PhysicalAddress, IPAddress?, int?, byte?, DateTimeOffset) : Task<StationEntity>
+        +GetSingleStationAsync(bool, long?, bool, IPAddress?, bool, PhysicalAddress?) : Task<StationEntity?>
+        +GetMultipleStationsAsync() : Task<StationEntity[]>
+        +UpdateStationAsync(long id, bool, IPAddress?, bool, int?, bool, byte?, bool, DateTimeOffset?) : Task<StationEntity?>
+        +MarkOfflineStations(DateTimeOffset) : Task<long[]>
+        +CreateSwitchAsync(long, byte, bool, bool?) : Task<SwitchEntity>
+        +GetSingleSwitchAsync(bool, long?, bool, long?, bool, byte?) : Task<SwitchEntity?>
+        +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
+        +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
+    }
+
+    +record StationEntity {
+        +Id : long
+        +MacAddress : PhysicalAddress
+        IpAddress : IPAddress?
+        ApiPort : int?
+        ApiVersion : byte?
+        LastHeartbeat : DateTimeOffset
+    }
+
+    +class StationEntityExtensions {
+        +{static} IsOnline(this StationEntity) : bool?
+        +{static} BaseApiUrl(this StationEntity) : Uri?
+    }
+    
+    +record SwitchEntity {
+        Id : long
+        StationId : long
+        LocalId : byte
+        ExpectedState : bool
+        ActualState : bool?
+    }
+
+    +class SwitchEntityExtensions {
+        +{static} IsOnline(this SwitchEntity) : bool
+        +{static} SwitchUrl(this SwitchEntity, StationEntity) : Uri?
+    }
+
+    +class PhysicalAddressConverter {
+        +Read(ref Utf8JsonReader, Type, JsonSerializerOptions) : PhysicalAddress
+        +Write(Utf8JsonWriter, PhysicalAddress, JsonSerializerOptions) : void
+    }
+    
+    +class IPAddressHandler {
+        +SetValue(IDbDataParameter, IPAddress?) : void
+        +Parse(object?) : IPAddress?
+    }
+    
+    +class PhysicalAddressHandler {
+        +SetValue(IDbDataParameter, PhysicalAddress?) : void
+        +Parse(object?) : PhysicalAddress?
+    }
+
+    +record StationRegistrationStationRequest {
+        +StationMacAddress : PhysicalAddress
+        +StationApiPort : int
+        +StationApiVersion : byte
+    }
+
+    +record SwitchRegistrationStationRequest {
+        +SwitchLocalId : byte
+    }
+
+    +record SwitchUpdateClientRequest {
+        +ExpectedSwitchState : bool
+    }
+
+    +record SwitchUpdateServerRequest {
+        +ExpectedSwitchState : bool
+    }
+
+    +record SwitchUpdateStationRequest{
+        +ActualSwitchState : bool
+    }
+
+    +record SwitchRegistrationServerResponse {
+        +SwitchId : long
+        +ExpectedSwitchState : bool
+    }
+
+    IStationsRepository <|-- IDatabaseClient
+    ISwitchesRepository <|-- IDatabaseClient
+    IDatabaseClient <|.. DatabaseClient
+}
+
++class Program {
+    
+}
+
+@enduml
