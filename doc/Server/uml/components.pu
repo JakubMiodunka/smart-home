@@ -1,0 +1,11 @@
+@startuml
+
+database Database
+
+component "SmartHome.Server.DapperUtilities" as DapperUtilities
+component "SmartHome.Server.Repositories" as Repositories
+
+DapperUtilities <.. Repositories : use
+Repositories <-- Database
+
+@enduml

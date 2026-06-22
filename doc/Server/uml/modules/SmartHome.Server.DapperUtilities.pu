@@ -1,0 +1,31 @@
+@startuml
+
+package "SmartHome.Server.DapperUtilities" as DapperUtilities {
+    package TypeConverters {
+        ~class IPAddressHandler {
+            +SetValue(IDbDataParameter, IPAddress?) : void
+            +Parse(object?) : IPAddress?
+        }
+
+        ~class PhysicalAddressHandler {
+            +SetValue(IDbDataParameter, PhysicalAddress?) : void
+            +Parse(object?) : PhysicalAddress?
+        }
+    }
+
+    +class Configuration {
+        +{static} Configure(DefaultTypeMap) : void
+        +{static} ConfigureSqlMapper(SqlMapper) : void
+    }
+
+    IPAddressHandler <-- Configuration
+    PhysicalAddressHandler <-- Configuration
+
+    note right of Configuration
+        Used to configure Dapper and provide custom functionalities 
+        without exposing them publicly.
+        Shall be called from Program.cs.
+    end note
+}
+
+@enduml
