@@ -1,0 +1,91 @@
+@startuml
+
+package "SmartHome.Server.Repositories" as Repositories {
+    package Abstraction {
+        +interface IStationsRepository {
+            +CreateStationAsync(PhysicalAddress, IPAddress?, int?, byte?, DateTimeOffset) : Task<StationEntity>
+            +GetSingleStationAsync(bool, long?, bool, IPAddress?, bool, PhysicalAddress?) : Task<StationEntity?>
+            +GetMultipleStationsAsync() : Task<StationEntity[]>
+            +UpdateStationAsync(long id, bool, IPAddress?, bool, int?, bool, byte?, bool, DateTimeOffset?) : Task<StationEntity?>
+            +MarkOfflineStations(DateTimeOffset) : Task<long[]>
+        }
+
+        +interface ISwitchesRepository {
+            +CreateSwitchAsync(long, byte, bool, bool?) : Task<SwitchEntity>
+            +GetSingleSwitchAsync(bool, long?, bool, long?, bool, byte?) : Task<SwitchEntity?>
+            +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
+            +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
+        }
+    }
+
+    package Entities {
+        +record StationEntity {
+            +Id : long
+            +MacAddress : PhysicalAddress
+            IpAddress : IPAddress?
+            ApiPort : int?
+            ApiVersion : byte?
+            LastHeartbeat : DateTimeOffset
+        }
+
+        +class StationEntityExtensions {
+            +{static} IsOnline(this StationEntity) : bool?
+            +{static} BaseApiUrl(this StationEntity) : Uri?
+        }
+
+        +record SwitchEntity {
+            Id : long
+            StationId : long
+            LocalId : byte
+            ExpectedState : bool
+            ActualState : bool?
+        }
+
+        +class SwitchEntityExtensions {
+            +{static} IsOnline(this SwitchEntity) : bool
+            +{static} SwitchUrl(this SwitchEntity, StationEntity) : Uri?
+        }
+
+        StationEntity <-- StationEntityExtensions
+        SwitchEntity <-- SwitchEntityExtensions
+        StationEntity <-- SwitchEntityExtensions
+        StationEntityExtensions <-- SwitchEntityExtensions
+    }
+
+    ~class DatabaseClient {
+        -_connectionString : string
+        +DatabaseClient(string) : DatabaseClient
+        -CreateEntityAsync<T>(string, DynamicParameters) : Task<T>
+        -GetSingleEntityAsync<T>(string, DynamicParameters) : Task<T?>
+        -GetMultipleEntitiesAsync<T>(string, DynamicParameters) : Task<T[]>
+        +CreateStationAsync(PhysicalAddress, IPAddress?, int?, byte?, DateTimeOffset) : Task<StationEntity>
+        +GetSingleStationAsync(bool, long?, bool, IPAddress?, bool, PhysicalAddress?) : Task<StationEntity?>
+        +GetMultipleStationsAsync() : Task<StationEntity[]>
+        +UpdateStationAsync(long id, bool, IPAddress?, bool, int?, bool, byte?, bool, DateTimeOffset?) : Task<StationEntity?>
+        +MarkOfflineStations(DateTimeOffset) : Task<long[]>
+        +CreateSwitchAsync(long, byte, bool, bool?) : Task<SwitchEntity>
+        +GetSingleSwitchAsync(bool, long?, bool, long?, bool, byte?) : Task<SwitchEntity?>
+        +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
+        +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
+    }
+
+    +class Configuration {
+        +{static} ConfigureServiceProvider(IServiceProvider) : void
+    }
+
+    IStationsRepository <|.. DatabaseClient
+    ISwitchesRepository <|.. DatabaseClient
+    StationEntity <-- IStationsRepository
+    SwitchEntity <-- ISwitchesRepository
+    IStationsRepository <-- Configuration
+    ISwitchesRepository <-- Configuration
+    DatabaseClient <-- Configuration
+
+    note right of Configuration::ConfigureServiceProvider(IServiceProvider)
+        Used to configure dependency injection to expose package-defined 
+        repositories through their interface definitions. This approach 
+        prevents exposing the concrete interface implementations publicly.
+    end note
+}
+
+@enduml

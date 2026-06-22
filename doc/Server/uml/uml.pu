@@ -135,83 +135,11 @@ package Services {
 }
 
 package Data {
-    +interface IStationsRepository {
-        +CreateStationAsync(PhysicalAddress, IPAddress?, int?, byte?, DateTimeOffset) : Task<StationEntity>
-        +GetSingleStationAsync(bool, long?, bool, IPAddress?, bool, PhysicalAddress?) : Task<StationEntity?>
-        +GetMultipleStationsAsync() : Task<StationEntity[]>
-        +UpdateStationAsync(long id, bool, IPAddress?, bool, int?, bool, byte?, bool, DateTimeOffset?) : Task<StationEntity?>
-        +MarkOfflineStations(DateTimeOffset) : Task<long[]>
-    }
-
-    +interface ISwitchesRepository {
-        +CreateSwitchAsync(long, byte, bool, bool?) : Task<SwitchEntity>
-        +GetSingleSwitchAsync(bool, long?, bool, long?, bool, byte?) : Task<SwitchEntity?>
-        +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
-        +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
-    }
-
-    +interface IDatabaseClient {
-    }
-
-    +class DatabaseClient {
-        -_connectionString : string
-        +DatabaseClient(string) : DatabaseClient
-        -CreateEntityAsync<T>(string, DynamicParameters) : Task<T>
-        -GetSingleEntityAsync<T>(string, DynamicParameters) : Task<T?>
-        -GetMultipleEntitiesAsync<T>(string, DynamicParameters) : Task<T[]>
-        +CreateStationAsync(PhysicalAddress, IPAddress?, int?, byte?, DateTimeOffset) : Task<StationEntity>
-        +GetSingleStationAsync(bool, long?, bool, IPAddress?, bool, PhysicalAddress?) : Task<StationEntity?>
-        +GetMultipleStationsAsync() : Task<StationEntity[]>
-        +UpdateStationAsync(long id, bool, IPAddress?, bool, int?, bool, byte?, bool, DateTimeOffset?) : Task<StationEntity?>
-        +MarkOfflineStations(DateTimeOffset) : Task<long[]>
-        +CreateSwitchAsync(long, byte, bool, bool?) : Task<SwitchEntity>
-        +GetSingleSwitchAsync(bool, long?, bool, long?, bool, byte?) : Task<SwitchEntity?>
-        +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
-        +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
-    }
-
-    +record StationEntity {
-        +Id : long
-        +MacAddress : PhysicalAddress
-        IpAddress : IPAddress?
-        ApiPort : int?
-        ApiVersion : byte?
-        LastHeartbeat : DateTimeOffset
-    }
-
-    +class StationEntityExtensions {
-        +{static} IsOnline(this StationEntity) : bool?
-        +{static} BaseApiUrl(this StationEntity) : Uri?
-    }
-    
-    +record SwitchEntity {
-        Id : long
-        StationId : long
-        LocalId : byte
-        ExpectedState : bool
-        ActualState : bool?
-    }
-
-    +class SwitchEntityExtensions {
-        +{static} IsOnline(this SwitchEntity) : bool
-        +{static} SwitchUrl(this SwitchEntity, StationEntity) : Uri?
-    }
-
     +class PhysicalAddressConverter {
         +Read(ref Utf8JsonReader, Type, JsonSerializerOptions) : PhysicalAddress
         +Write(Utf8JsonWriter, PhysicalAddress, JsonSerializerOptions) : void
     }
     
-    +class IPAddressHandler {
-        +SetValue(IDbDataParameter, IPAddress?) : void
-        +Parse(object?) : IPAddress?
-    }
-    
-    +class PhysicalAddressHandler {
-        +SetValue(IDbDataParameter, PhysicalAddress?) : void
-        +Parse(object?) : PhysicalAddress?
-    }
-
     +record StationRegistrationStationRequest {
         +StationMacAddress : PhysicalAddress
         +StationApiPort : int
@@ -238,10 +166,6 @@ package Data {
         +SwitchId : long
         +ExpectedSwitchState : bool
     }
-
-    IStationsRepository <|-- IDatabaseClient
-    ISwitchesRepository <|-- IDatabaseClient
-    IDatabaseClient <|.. DatabaseClient
 }
 
 +class Program {
