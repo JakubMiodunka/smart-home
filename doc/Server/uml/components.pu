@@ -5,9 +5,12 @@ database Database
 component "SmartHome.Server.DapperUtilities" as DapperUtilities
 component "SmartHome.Server.Repositories" as Repositories
 component "SmartHome.Server.Services" as Services
+component "SmartHome.Server.FeatureManagers" as FeatureManagers
+component "SmartHome.Server.Api.Client" as ApiClients
 
 DapperUtilities <.. Repositories : use
 Repositories <-- Database
 Repositories <.. Services : use
+ApiClients <.. FeatureManagers : use
 
 @enduml
