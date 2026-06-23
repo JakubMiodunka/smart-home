@@ -1,38 +1,5 @@
 @startuml
 
-package ApiClients {
-    +interface IStationApiClient {
-        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
-    }
-    
-    +class StationApiClient {
-        +{static} MinTimeout : TimeSpan
-        +{static} MaxTimeout : TimeSpan
-        -_station : StationEntity
-        -_lazyWrappedHttpClient : Lazy<HttpClient>
-        -_logger : ILogger<StationApiClient>
-        -WrappedHttpClient : HttpClient
-        +StationApiClient(StationEntity, IHttpClientFactory, TimeSpan, ILogger<StationApiClient>) : StationApiClient
-        -CreateHttpClient(IHttpClientFactory, TimeSpan) : HttpClient
-        -AsHttpContent(object?) : Task<HttpContent>
-        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
-    }
-    
-    +interface IStationApiClientFactory {
-        CreateFor(StationEntity, TimeSpan) : IStationApiClient
-    }
-    
-    +class StationApiClientFactory {
-        -_httpClientFactory : IHttpClientFactory
-        -_loggerFactory : ILoggerFactory
-        +StationApiClientFactory(IHttpClientFactory, ILoggerFactory) : StationApiClientFactory
-        +CreateFor(StationEntity, TimeSpan) : IStationApiClient
-    }
-    
-    IStationApiClient <|.. StationApiClient
-    IStationApiClientFactory <|.. StationApiClientFactory
-}
-
 package Controllers {
     +class BaseController {
         #_httpContextAccessor : IHttpContextAccessor
@@ -74,64 +41,6 @@ package Controllers {
     BaseController <|-- ClientSwitchesController
     BaseController <|-- StationsController
     BaseController <|-- FirmwareSwitchesController
-}
-
-package Managers {
-    +interface ISwitchManager {
-        +TryChangeState(bool, CancellationToken) : Task<bool>
-    }
-    
-    +class SwitchManager {
-        -{static} s_httpClientTimeout : TimeSpan
-        -_stationApiClientsFactory : IStationApiClientFactory
-        -_logger : ILogger<SwitchManager>
-        +ManagedSwitch : SwitchEntity
-        +SwitchParentStation : StationEntity
-        +SwitchManager(SwitchEntity, StationEntity, IStationApiClientFactory, ILogger<SwitchManager>) : SwitchManager
-        +TryChangeState(bool, CancellationToken) : Task<bool>
-    }
-    
-    +interface ISwitchManagerFactory {
-        +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
-    }
-    
-    +class SwitchManagerFactory {
-        -_stationApiClientsFactory : IStationApiClientFactory
-        -_loggerFactory : ILoggerFactory
-        +SwitchManagerFactory(IStationApiClientFactory, ILoggerFactory) : SwitchManagerFactory
-        +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
-    }
-    
-    ISwitchManager <|.. SwitchManager
-    ISwitchManagerFactory <|.. SwitchManagerFactory
-}
-
-package Services {
-    +class BackgroundProcessorService {
-        -_processor : IBackgroundServiceProcessor
-        -_timeProvider : TimeProvider
-        -_serviceExecutionInterval : TimeSpan
-        -_logger : ILogger<BackgroundProcessorService>
-        +BackgroundProcessorService(IBackgroundServiceProcessor, TimeProvider, TimeSpan, ILogger<BackgroundProcessorService>) : BackgroundProcessorService
-        #ExecuteAsync(CancellationToken) : Task
-    }
-    
-    +interface IBackgroundServiceProcessor {
-        +ProcessorName : string
-        +ProcessAsync(CancellationToken) : Task
-    }
-    
-    +class HeartbeatMonitoringServiceProcessor {
-        -_stationsRepository : IStationsRepository
-        -_timeProvider : TimeProvider
-        -_maxHeartbeatInterval : TimeSpan
-        -_logger : ILogger<HeartbeatMonitoringServiceProcessor>
-        +ProcessorName : string
-        +HeartbeatMonitoringServiceProcessor(IStationsRepository, TimeProvider, TimeSpan, ILogger<HeartbeatMonitoringServiceProcessor>) : HeartbeatMonitoringServiceProcessor
-        +ProcessAsync(CancellationToken) : Task
-    }
-    
-    IBackgroundServiceProcessor <|.. HeartbeatMonitoringServiceProcessor
 }
 
 package Data {
