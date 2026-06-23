@@ -1,0 +1,60 @@
+@startuml
+
+package "SmartHome.Server.FeatureManagers" as FeatureManagers {
+
+    package Factories {
+        package Abstractions as FactoriesAbstractions {
+            +interface ISwitchManagerFactory {
+                +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
+            }
+        }
+
+        ~class SwitchManagerFactory {
+            -_stationApiClientsFactory : IStationApiClientFactory
+            -_loggerFactory : ILoggerFactory
+            +SwitchManagerFactory(IStationApiClientFactory, ILoggerFactory) : SwitchManagerFactory
+            +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
+        }
+
+        ISwitchManagerFactory <|.. SwitchManagerFactory
+    }
+
+    package Abstractions as ManagersAbstractions {
+        +interface ISwitchManager {
+            +TryChangeState(bool, CancellationToken) : Task<bool>
+        }
+    }
+
+    ~class SwitchManager {
+        -{static} s_httpClientTimeout : TimeSpan
+        -_stationApiClientsFactory : IStationApiClientFactory
+        -_logger : ILogger<SwitchManager>
+        +ManagedSwitch : SwitchEntity
+        +SwitchParentStation : StationEntity
+        +SwitchManager(SwitchEntity, StationEntity, IStationApiClientFactory, ILogger<SwitchManager>) : SwitchManager
+        +TryChangeState(bool, CancellationToken) : Task<bool>
+    }
+
+    +class Configuration {
+        -{static} ConfigureSwitchManagerFactory(IHostApplicationBuilder) : void
+        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
+    }
+
+    ISwitchManager <|-- SwitchManager
+    SwitchManager <-- SwitchManagerFactory
+    ISwitchManagerFactory <-- Configuration
+    SwitchManagerFactory <-- Configuration
+
+    note right of Configuration
+        Used to configure dependency injection to expose package-defined 
+        managers and manager factories through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
+        
+        Each private method handles the configuration of one specific service.
+        The publicly exposed ConfigureServiceProvider(IHostApplicationBuilder) 
+        method calls all private methods in the correct execution order.
+        
+        Shall be called from Program.cs.
+    end note
+}
+@enduml
