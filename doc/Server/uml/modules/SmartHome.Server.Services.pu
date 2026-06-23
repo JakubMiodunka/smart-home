@@ -1,0 +1,53 @@
+@startuml
+
+package "SmartHome.Server.Services" as Services {
+    package Processors {
+        ~interface IBackgroundServiceProcessor {
+            +ProcessorName : string
+            +ProcessAsync(CancellationToken) : Task
+        }
+        
+        ~class HeartbeatMonitoringServiceProcessor {
+            -_stationsRepository : IStationsRepository
+            -_timeProvider : TimeProvider
+            -_maxHeartbeatInterval : TimeSpan
+            -_logger : ILogger<HeartbeatMonitoringServiceProcessor>
+            +ProcessorName : string
+            +HeartbeatMonitoringServiceProcessor(IStationsRepository, TimeProvider, TimeSpan, ILogger<HeartbeatMonitoringServiceProcessor>) : HeartbeatMonitoringServiceProcessor
+            +ProcessAsync(CancellationToken) : Task
+        }
+
+        IBackgroundServiceProcessor <|.. HeartbeatMonitoringServiceProcessor
+    }
+
+    ~class BackgroundProcessorService {
+        -_processor : IBackgroundServiceProcessor
+        -_timeProvider : TimeProvider
+        -_serviceExecutionInterval : TimeSpan
+        -_logger : ILogger<BackgroundProcessorService>
+        +BackgroundProcessorService(IBackgroundServiceProcessor, TimeProvider, TimeSpan, ILogger<BackgroundProcessorService>) : BackgroundProcessorService
+        #ExecuteAsync(CancellationToken) : Task
+    }
+    
+    +class Configuration {
+        -{static} ConfigureHeartbeatMonitoringServiceProcessor(IHostApplicationBuilder) : void
+        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
+    }
+    
+    IBackgroundServiceProcessor o-- BackgroundProcessorService
+    HeartbeatMonitoringServiceProcessor <-- Configuration
+    BackgroundProcessorService <-- Configuration
+
+    note right of Configuration
+        Used to configure services implemented within the package without 
+        exposing their implementations publicly.
+        
+        Each private method handles the configuration of one specific service.
+        The publicly exposed ConfigureServiceProvider(IHostApplicationBuilder) 
+        method calls all private methods in the correct execution order.
+        
+        Shall be called from Program.cs.
+    end note
+}
+
+@enduml

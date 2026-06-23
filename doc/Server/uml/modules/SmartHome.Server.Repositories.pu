@@ -70,7 +70,9 @@ package "SmartHome.Server.Repositories" as Repositories {
     }
 
     +class Configuration {
-        +{static} ConfigureServiceProvider(IServiceProvider) : void
+        -{static} ConfigureStationsRepository(IHostApplicationBuilder) : void
+        -{static} ConfigureSwitchesRepository(IHostApplicationBuilder) : void
+        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
     }
 
     IStationsRepository <|.. DatabaseClient
@@ -81,10 +83,16 @@ package "SmartHome.Server.Repositories" as Repositories {
     ISwitchesRepository <-- Configuration
     DatabaseClient <-- Configuration
 
-    note right of Configuration::ConfigureServiceProvider(IServiceProvider)
+    note right of Configuration::ConfigureServiceProvider(IHostApplicationBuilder)
         Used to configure dependency injection to expose package-defined 
         repositories through their interface definitions. This approach 
         prevents exposing the concrete interface implementations publicly.
+
+        Each private method handles the configuration of one specific service.
+        The publicly exposed ConfigureServiceProvider(IHostApplicationBuilder) 
+        method calls all private methods in the correct execution order.
+
+        Shall be called from Program.cs.
     end note
 }
 
