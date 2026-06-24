@@ -1,0 +1,104 @@
+@startuml
+
+package "SmartHome.Server.Api.Controllers" as ApiControllers {
+    ~class BaseController {
+        #_httpContextAccessor : IHttpContextAccessor
+        #BaseController(IHttpContextAccessor) : BaseController
+        #TryGetRemoteIpAddress(out IPAddress?) : bool
+    }
+
+    package Firmware {
+        package Requests as FirmwareRequests {
+            ~record StationRegistrationStationRequest {
+                +StationMacAddress : PhysicalAddress
+                +StationApiPort : int
+                +StationApiVersion : byte
+            }
+
+            ~record SwitchRegistrationStationRequest {
+                +SwitchLocalId : byte
+            }
+
+            ~record SwitchUpdateStationRequest{
+                +ActualSwitchState : bool
+            }
+        }
+
+        ~class StationsController {
+            -_stationsRepository : IStationsRepository
+            -_timeProvider : TimeProvider
+            -_logger : ILogger<StationsController>
+            +StationsController(IHttpContextAccessor, IStationsRepository, TimeProvider, ILogger<StationsController>) : StationsController
+            +RegisterStation(StationRegistrationStationRequest) : Task<IActionResult>
+            +ProcessHeartbeatSignal() : Task<IActionResult>
+        }
+
+        ~class "SwitchesController" as FirmwareSwitchesController {
+            -{static} DefaultExpectedSwitchState : bool
+            -{static} DefaultActualSwitchState : bool?
+            -_switchesRepository : ISwitchesRepository
+            -_stationsRepository : IStationsRepository
+            -_logger : ILogger<SwitchesController>
+            +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ILogger<SwitchesController>) : SwitchesController
+            +RegisterSwitch(SwitchRegistrationStationRequest) : Task<IActionResult>
+            +UpdateSwitch(long, SwitchUpdateStationRequest) : Task<IActionResult>
+        }
+
+        BaseController <|-- StationsController
+        StationRegistrationStationRequest <-- StationsController
+
+        BaseController <|-- FirmwareSwitchesController
+        SwitchRegistrationStationRequest <-- FirmwareSwitchesController
+        SwitchUpdateStationRequest <-- FirmwareSwitchesController
+    }
+
+    package Client {
+        package Requests as ClientRequests {
+            ~record SwitchUpdateClientRequest {
+                +ExpectedSwitchState : bool
+            }
+
+            ~record SwitchUpdateServerRequest {
+                +ExpectedSwitchState : bool
+            }
+        }
+        
+        ~class "SwitchesController" as ClientSwitchesController {
+            -_switchesRepository : ISwitchesRepository
+            -_stationsRepository : IStationsRepository
+            -_switchManagerFactory : ISwitchManagerFactory
+            -_logger : ILogger<SwitchesController>
+            +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ISwitchManagerFactory, ILogger<SwitchesController>) : SwitchesController
+            +GetSwitches() : Task<IActionResult>
+            +GetSwitch(long) : Task<IActionResult>
+            +UpdateSwitch(long, SwitchUpdateClientRequest, CancellationToken) : Task<IActionResult>
+        }
+
+        BaseController <|-- ClientSwitchesController
+        SwitchUpdateClientRequest <-- ClientSwitchesController
+        SwitchUpdateServerRequest <-- ClientSwitchesController
+    }
+
+    +class Configuration {
+        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
+    }
+
+    +class Program {
+        +{static} Main() : void
+    }
+
+    Configuration <-- Program
+
+    note top of Configuration
+        Shall use Configuration class form each module to configure dependency
+        injection, all services and utilities.
+        
+        Shall be called from Program.cs.
+    end note
+    
+    note left of Program::Main
+      Application entry point.
+    end note
+}
+
+@enduml

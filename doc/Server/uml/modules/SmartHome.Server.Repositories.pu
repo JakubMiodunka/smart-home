@@ -83,7 +83,7 @@ package "SmartHome.Server.Repositories" as Repositories {
     ISwitchesRepository <-- Configuration
     DatabaseClient <-- Configuration
 
-    note right of Configuration::ConfigureServiceProvider(IHostApplicationBuilder)
+    note left of Configuration
         Used to configure dependency injection to expose package-defined 
         repositories through their interface definitions. This approach 
         prevents exposing the concrete interface implementations publicly.
