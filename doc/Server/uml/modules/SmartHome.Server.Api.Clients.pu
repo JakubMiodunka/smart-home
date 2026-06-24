@@ -1,0 +1,63 @@
+@startuml
+
+package "SmartHome.Server.Api.Clients" as ApiClient {
+    package Factories {
+        package Abstractions as FactoriesAbstractions {
+            +interface IStationApiClientFactory {
+                +CreateFor(StationEntity, TimeSpan) : IStationApiClient
+            }
+        }
+
+        ~class StationApiClientFactory {
+            -_httpClientFactory : IHttpClientFactory
+            -_loggerFactory : ILoggerFactory
+            +StationApiClientFactory(IHttpClientFactory, ILoggerFactory) : StationApiClientFactory
+            +CreateFor(StationEntity, TimeSpan) : IStationApiClient
+        }
+
+        IStationApiClientFactory <|.. StationApiClientFactory
+    }
+
+    package Abstractions as ClientsAbstractions {
+        +interface IStationApiClient {
+            +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+        }
+    }
+
+    ~class StationApiClient {
+            +{static} MinTimeout : TimeSpan
+            +{static} MaxTimeout : TimeSpan
+            -_station : StationEntity
+            -_lazyWrappedHttpClient : Lazy<HttpClient>
+            -_logger : ILogger<StationApiClient>
+            -WrappedHttpClient : HttpClient
+            +StationApiClient(StationEntity, IHttpClientFactory, TimeSpan, ILogger<StationApiClient>) : StationApiClient
+            -CreateHttpClient(IHttpClientFactory, TimeSpan) : HttpClient
+            -AsHttpContent(object?) : Task<HttpContent>
+            +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+        }
+
+    +class Configuration {
+        -{static} ConfigureStationApiClientFactory(IHostApplicationBuilder) : void
+        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
+    }
+
+    IStationApiClient <|.. StationApiClient
+    StationApiClient <-- StationApiClientFactory
+    IStationApiClientFactory <-- Configuration
+    StationApiClientFactory <-- Configuration
+
+    note right of Configuration
+        Used to configure dependency injection to expose package-defined 
+        managers and manager factories through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
+        
+        Each private method handles the configuration of one specific service.
+        The publicly exposed ConfigureServiceProvider(IHostApplicationBuilder) 
+        method calls all private methods in the correct execution order.
+        
+        Shall be called from Program.cs.
+    end note
+}
+
+@enduml
