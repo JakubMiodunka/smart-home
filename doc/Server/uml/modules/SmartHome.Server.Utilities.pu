@@ -1,0 +1,41 @@
+@startuml
+
+package "SmartHome.Server.Utilities" as Utilities {
+    package TypeConverters {
+        ~class IPAddressHandler {
+            +SetValue(IDbDataParameter, IPAddress?) : void
+            +Parse(object?) : IPAddress?
+        }
+
+        ~class PhysicalAddressHandler {
+            +SetValue(IDbDataParameter, PhysicalAddress?) : void
+            +Parse(object?) : PhysicalAddress?
+        }
+    }
+
+    package JsonConverters {
+        ~class PhysicalAddressConverter {
+            +Read(ref Utf8JsonReader, Type, JsonSerializerOptions) : PhysicalAddress
+            +Write(Utf8JsonWriter, PhysicalAddress, JsonSerializerOptions) : void
+        }
+    }
+
+    +class Configuration {
+        -{static} ConfigureDefaultTypeMap(DefaultTypeMap) : void
+        -{static} ConfigureTypeConverters(SqlMapper) : void
+        -{static} ConfigureJsonConverters(IHostApplicationBuilder) : void
+        +{static} Configure(IHostApplicationBuilder, DefaultTypeMap, SqlMapper) : void
+    }
+
+    IPAddressHandler <-- Configuration
+    PhysicalAddressHandler <-- Configuration
+    PhysicalAddressConverter <-- Configuration
+
+    note left of Configuration
+        Used to configure Dapper and provide custom functionalities 
+        without exposing them publicly.
+        Shall be called from Program.cs.
+    end note
+}
+
+@enduml
