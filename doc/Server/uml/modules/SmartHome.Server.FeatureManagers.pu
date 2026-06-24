@@ -45,7 +45,7 @@ package "SmartHome.Server.FeatureManagers" as FeatureManagers {
     ISwitchManagerFactory <-- Configuration
     SwitchManagerFactory <-- Configuration
 
-    note right of Configuration
+    note left of Configuration
         Used to configure dependency injection to expose package-defined 
         managers and manager factories through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.
