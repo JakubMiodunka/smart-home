@@ -11,4 +11,4 @@ namespace SmartHome.Server.Api.Controllers.Firmware.Controllers.Requests;
 /// <param name="SwitchLocalId">
 /// The identifier of the switch, unique only at the station level.
 /// </param>
-public sealed record SwitchRegistrationStationRequest([Range(1, byte.MaxValue)] byte SwitchLocalId);
+public sealed record SwitchRegistrationRequest([Range(1, byte.MaxValue)] byte SwitchLocalId);
