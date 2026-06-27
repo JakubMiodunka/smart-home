@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SmartHome.Server.Services.Processors;
+using SmartHome.Server.Services.Abstractions;
 
 namespace SmartHome.Server.Services;
 
