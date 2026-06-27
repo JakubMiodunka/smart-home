@@ -4,5 +4,6 @@
     <Deploy />
   </Project>
   <Project Path="Server/Server.csproj" />
+  <Project Path="SmartHome.Server.Repositories/SmartHome.Server.Repositories.csproj" Id="fc3cf2e4-52cc-49d6-8bfc-314b0eaee37f" />
   <Project Path="UnitTests/UnitTests.csproj" Id="5c99477b-8dc9-46c4-bcfc-7f9edc979e93" />
 </Solution>

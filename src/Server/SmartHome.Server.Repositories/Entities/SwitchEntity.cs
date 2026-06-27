@@ -1,9 +1,4 @@
-﻿using SmartHome.Server.Services.Processors;
-using System.Collections.Frozen;
-using System.Collections.ObjectModel;
-using System.Reflection.Metadata.Ecma335;
-
-namespace SmartHome.Server.Data.Models.Entities;
+﻿namespace SmartHome.Server.Repositories.Entities;
 
 /// <summary>
 /// Entity representing the details of an electrical switch functioning within the system.

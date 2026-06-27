@@ -1,6 +1,6 @@
-﻿using SmartHome.Server.Data.Models.Entities;
+﻿using SmartHome.Server.Repositories.Entities;
 
-namespace SmartHome.Server.Data.Repositories;
+namespace SmartHome.Server.Repositories.Abstractions;
 
 /// <summary>
 /// Defines interactions with repositories aggregating details about electrical switches within the system.
@@ -95,10 +95,10 @@ public interface ISwitchesRepository
     /// Ignored if value of <paramref name="updateExpectedState"/> is set to <see langword="false"/>.
     /// </param>
     /// <param name="updateActualState">
-    /// <see langword="true"/> if expected state of specified switch shall be updated, <see langword="false"/> otherwise.
+    /// <see langword="true"/> if actual state of specified switch shall be updated, <see langword="false"/> otherwise.
     /// </param>
     /// <param name="actualState">
-    /// New value of expected state for specified switch.
+    /// New value of actual state for specified switch.
     /// Ignored if value of <paramref name="updateActualState"/> is set to <see langword="false"/>.
     /// </param>
     /// <returns>

@@ -10,6 +10,9 @@ src/Server/.vs/
 src/Server/Server/bin/
 src/Server/Server/obj/
 
+src/Server/SmartHome.Server.Repositories/bin/
+src/Server/SmartHome.Server.Repositories/obj/
+
 src/Server/Database/bin/
 src/Server/Database/obj/
 src/Server/Database/Database.jfm
