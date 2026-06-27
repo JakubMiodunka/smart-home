@@ -1,4 +1,5 @@
-﻿using SmartHome.Server.Data.Repositories;
+﻿using Microsoft.Extensions.Logging;
+using SmartHome.Server.Repositories.Abstractions;
 
 namespace SmartHome.Server.Services.Processors;
 

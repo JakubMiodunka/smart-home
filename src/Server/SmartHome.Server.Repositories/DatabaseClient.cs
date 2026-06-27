@@ -16,7 +16,7 @@ namespace SmartHome.Server.Repositories;
 /// If there is a need to introduce additional logic exceeding pure data access, 
 /// it must be implemented in a separate repository class dedicated to a specific entity type.
 /// </remarks>
-internal sealed class DatabaseClient : IStationsRepository, ISwitchesRepository
+public sealed class DatabaseClient : IStationsRepository, ISwitchesRepository
 {
     #region Properties
     private readonly string _connectionString;
