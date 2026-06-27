@@ -1,47 +1,42 @@
 @startuml
 
 package "SmartHome.Server.Api.Clients" as ApiClient {
-    package Factories {
-        package Abstractions as FactoriesAbstractions {
-            +interface IStationApiClientFactory {
-                +CreateFor(StationEntity, TimeSpan) : IStationApiClient
-            }
-        }
-
-        ~class StationApiClientFactory {
-            -_httpClientFactory : IHttpClientFactory
-            -_loggerFactory : ILoggerFactory
-            +StationApiClientFactory(IHttpClientFactory, ILoggerFactory) : StationApiClientFactory
-            +CreateFor(StationEntity, TimeSpan) : IStationApiClient
-        }
-
-        IStationApiClientFactory <|.. StationApiClientFactory
-    }
-
-    package Abstractions as ClientsAbstractions {
+    package Abstractions {
         +interface IStationApiClient {
             +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+        }
+
+        +interface IStationApiClientFactory {
+            +CreateFor(StationEntity, TimeSpan) : IStationApiClient
         }
     }
 
     ~class StationApiClient {
-            +{static} MinTimeout : TimeSpan
-            +{static} MaxTimeout : TimeSpan
-            -_station : StationEntity
-            -_lazyWrappedHttpClient : Lazy<HttpClient>
-            -_logger : ILogger<StationApiClient>
-            -WrappedHttpClient : HttpClient
-            +StationApiClient(StationEntity, IHttpClientFactory, TimeSpan, ILogger<StationApiClient>) : StationApiClient
-            -CreateHttpClient(IHttpClientFactory, TimeSpan) : HttpClient
-            -AsHttpContent(object?) : Task<HttpContent>
-            +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
-        }
+        +{static} MinTimeout : TimeSpan
+        +{static} MaxTimeout : TimeSpan
+        -_station : StationEntity
+        -_lazyWrappedHttpClient : Lazy<HttpClient>
+        -_logger : ILogger<StationApiClient>
+        -WrappedHttpClient : HttpClient
+        +StationApiClient(StationEntity, IHttpClientFactory, TimeSpan, ILogger<StationApiClient>) : StationApiClient
+        -CreateHttpClient(IHttpClientFactory, TimeSpan) : HttpClient
+        -AsHttpContent(object?) : Task<HttpContent>
+        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+    }
+
+    ~class StationApiClientFactory {
+        -_httpClientFactory : IHttpClientFactory
+        -_loggerFactory : ILoggerFactory
+        +StationApiClientFactory(IHttpClientFactory, ILoggerFactory) : StationApiClientFactory
+        +CreateFor(StationEntity, TimeSpan) : IStationApiClient
+    }
 
     +class Configuration {
         -{static} ConfigureStationApiClientFactory(IHostApplicationBuilder) : void
         +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
     }
 
+    IStationApiClientFactory <|.. StationApiClientFactory
     IStationApiClient <|.. StationApiClient
     StationApiClient <-- StationApiClientFactory
     IStationApiClientFactory <-- Configuration
