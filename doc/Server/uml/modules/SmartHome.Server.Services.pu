@@ -1,12 +1,14 @@
 @startuml
 
 package "SmartHome.Server.Services" as Services {
-    package Processors {
+    package Abstractions {
         ~interface IBackgroundServiceProcessor {
             +ProcessorName : string
             +ProcessAsync(CancellationToken) : Task
         }
-        
+    }
+
+    package Processors {
         ~class HeartbeatMonitoringServiceProcessor {
             -_stationsRepository : IStationsRepository
             -_timeProvider : TimeProvider
@@ -16,8 +18,6 @@ package "SmartHome.Server.Services" as Services {
             +HeartbeatMonitoringServiceProcessor(IStationsRepository, TimeProvider, TimeSpan, ILogger<HeartbeatMonitoringServiceProcessor>) : HeartbeatMonitoringServiceProcessor
             +ProcessAsync(CancellationToken) : Task
         }
-
-        IBackgroundServiceProcessor <|.. HeartbeatMonitoringServiceProcessor
     }
 
     ~class BackgroundProcessorService {
@@ -34,6 +34,7 @@ package "SmartHome.Server.Services" as Services {
         +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
     }
     
+    IBackgroundServiceProcessor <|.. HeartbeatMonitoringServiceProcessor
     IBackgroundServiceProcessor o-- BackgroundProcessorService
     HeartbeatMonitoringServiceProcessor <-- Configuration
     BackgroundProcessorService <-- Configuration
