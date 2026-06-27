@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using SmartHome.Server.Api.Clients.Abstractions;
-using SmartHome.Server.Feature.Managers.Abstractions;
-using SmartHome.Server.Feature.Managers.Requests;
+using SmartHome.Server.Features.Managers.Abstractions;
+using SmartHome.Server.Features.Managers.Requests;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
 
-namespace SmartHome.Server.Feature.Managers;
+namespace SmartHome.Server.Features.Managers;
 
 /// <inheritdoc cref="ISwitchManager"/>
 public sealed class SwitchManager : ISwitchManager
