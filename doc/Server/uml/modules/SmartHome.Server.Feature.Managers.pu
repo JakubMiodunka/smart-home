@@ -12,7 +12,7 @@ package "SmartHome.Server.Feature.Managers" as FeatureManagers {
     }
 
     package Requests {
-        ~record SwitchUpdateServerRequest {
+        ~record SwitchUpdateRequest {
             +ExpectedSwitchState : bool
         }
     }
@@ -41,7 +41,7 @@ package "SmartHome.Server.Feature.Managers" as FeatureManagers {
 
     ISwitchManagerFactory <|.. SwitchManagerFactory
     ISwitchManager <|-- SwitchManager
-    SwitchUpdateServerRequest <-- SwitchManager
+    SwitchUpdateRequest <-- SwitchManager
     SwitchManager <-- SwitchManagerFactory
     ISwitchManagerFactory <-- Configuration
     SwitchManagerFactory <-- Configuration
