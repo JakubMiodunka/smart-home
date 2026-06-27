@@ -1,4 +1,4 @@
-﻿namespace SmartHome.Server.Feature.Managers.Abstractions;
+﻿namespace SmartHome.Server.Features.Managers.Abstractions;
 
 /// <summary>
 /// Manages the state of a specific switch on a remote station.

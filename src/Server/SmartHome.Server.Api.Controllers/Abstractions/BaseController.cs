@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace Server.Controllers;
+namespace SmartHome.Server.Api.Controllers.Abstractions;
 
 /// <summary>
 /// Base class for all controllers defined within the application.

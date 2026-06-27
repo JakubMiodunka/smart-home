@@ -1,4 +1,4 @@
-﻿namespace SmartHome.Server.Feature.Managers.Requests;
+﻿namespace SmartHome.Server.Features.Managers.Requests;
 
 /// <summary>
 /// Data transfer object (DTO) representing a request created by the server

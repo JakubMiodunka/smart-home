@@ -22,8 +22,11 @@ src/Server/SmartHome.Server.Utilities/obj/
 src/Server/SmartHome.Server.Api.Clients/bin/
 src/Server/SmartHome.Server.Api.Clients/obj/
 
-src/Server/SmartHome.Server.Feature.Managers/bin/
-src/Server/SmartHome.Server.Feature.Managers/obj/
+src/Server/SmartHome.Server.Features.Managers/bin/
+src/Server/SmartHome.Server.Features.Managers/obj/
+
+src/Server/SmartHome.Server.Api.Controllers/bin/
+src/Server/SmartHome.Server.Api.Controllers/obj/
 
 src/Server/Database/bin/
 src/Server/Database/obj/
