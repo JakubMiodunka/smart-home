@@ -1,26 +1,35 @@
 @startuml
 
 package "SmartHome.Server.Api.Controllers" as ApiControllers {
-    ~class BaseController {
-        #_httpContextAccessor : IHttpContextAccessor
-        #BaseController(IHttpContextAccessor) : BaseController
-        #TryGetRemoteIpAddress(out IPAddress?) : bool
+    package Abstractions {
+        ~class BaseController {
+            #_httpContextAccessor : IHttpContextAccessor
+            #BaseController(IHttpContextAccessor) : BaseController
+            #TryGetRemoteIpAddress(out IPAddress?) : bool
+        }
     }
-
+    
     package Firmware {
         package Requests as FirmwareRequests {
-            ~record StationRegistrationStationRequest {
+            ~record StationRegistrationRequest {
                 +StationMacAddress : PhysicalAddress
                 +StationApiPort : int
                 +StationApiVersion : byte
             }
 
-            ~record SwitchRegistrationStationRequest {
+            ~record SwitchRegistrationRequest {
                 +SwitchLocalId : byte
             }
 
-            ~record SwitchUpdateStationRequest{
+            ~record "SwitchUpdateRequest" as SwitchUpdateFirmwareRequest {
                 +ActualSwitchState : bool
+            }
+        }
+
+        package Responses as FirmwareResponses {
+            ~record SwitchRegistrationResponse {
+                +SwitchId : long
+                +ExpectedSwitchState : bool
             }
         }
 
@@ -29,7 +38,7 @@ package "SmartHome.Server.Api.Controllers" as ApiControllers {
             -_timeProvider : TimeProvider
             -_logger : ILogger<StationsController>
             +StationsController(IHttpContextAccessor, IStationsRepository, TimeProvider, ILogger<StationsController>) : StationsController
-            +RegisterStation(StationRegistrationStationRequest) : Task<IActionResult>
+            +RegisterStation(StationRegistrationRequest) : Task<IActionResult>
             +ProcessHeartbeatSignal() : Task<IActionResult>
         }
 
@@ -40,21 +49,20 @@ package "SmartHome.Server.Api.Controllers" as ApiControllers {
             -_stationsRepository : IStationsRepository
             -_logger : ILogger<SwitchesController>
             +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ILogger<SwitchesController>) : SwitchesController
-            +RegisterSwitch(SwitchRegistrationStationRequest) : Task<IActionResult>
-            +UpdateSwitch(long, SwitchUpdateStationRequest) : Task<IActionResult>
+            +RegisterSwitch(SwitchRegistrationRequest) : Task<IActionResult>
+            +UpdateSwitch(long, SwitchUpdateRequest) : Task<IActionResult>
         }
 
-        BaseController <|-- StationsController
-        StationRegistrationStationRequest <-- StationsController
-
-        BaseController <|-- FirmwareSwitchesController
-        SwitchRegistrationStationRequest <-- FirmwareSwitchesController
-        SwitchUpdateStationRequest <-- FirmwareSwitchesController
+        
+        StationRegistrationRequest <-- StationsController
+        SwitchRegistrationRequest <-- FirmwareSwitchesController
+        SwitchUpdateFirmwareRequest <-- FirmwareSwitchesController
+        SwitchRegistrationResponse <-- FirmwareSwitchesController
     }
 
     package Client {
         package Requests as ClientRequests {
-            ~record SwitchUpdateClientRequest {
+            ~record "SwitchUpdateRequest" as SwitchUpdateClientRequest {
                 +ExpectedSwitchState : bool
             }
         }
@@ -67,12 +75,10 @@ package "SmartHome.Server.Api.Controllers" as ApiControllers {
             +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ISwitchManagerFactory, ILogger<SwitchesController>) : SwitchesController
             +GetSwitches() : Task<IActionResult>
             +GetSwitch(long) : Task<IActionResult>
-            +UpdateSwitch(long, SwitchUpdateClientRequest, CancellationToken) : Task<IActionResult>
+            +UpdateSwitch(long, SwitchUpdateRequest, CancellationToken) : Task<IActionResult>
         }
 
-        BaseController <|-- ClientSwitchesController
         SwitchUpdateClientRequest <-- ClientSwitchesController
-        SwitchUpdateServerRequest <-- ClientSwitchesController
     }
 
     +class Configuration {
@@ -83,6 +89,9 @@ package "SmartHome.Server.Api.Controllers" as ApiControllers {
         +{static} Main() : void
     }
 
+    BaseController <|-- StationsController
+    BaseController <|-- FirmwareSwitchesController
+    BaseController <|-- ClientSwitchesController
     Configuration <-- Program
 
     note top of Configuration

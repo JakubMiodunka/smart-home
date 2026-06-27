@@ -165,7 +165,7 @@ public class SwitchesController : BaseController
             switchEntity.Id,
             parentStationEntity.IpAddress);
 
-        var response = new SwitchRegistrationServerResponse(switchEntity.Id, switchEntity.ExpectedState);
+        var response = new SwitchRegistrationResponse(switchEntity.Id, switchEntity.ExpectedState);
         return Ok(response);
     }
 
