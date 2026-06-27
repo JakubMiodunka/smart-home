@@ -4,6 +4,7 @@
     <Deploy />
   </Project>
   <Project Path="Server/Server.csproj" />
+  <Project Path="SmartHome.Server.Api.Clients/SmartHome.Server.Api.Clients.csproj" Id="a4f73003-a078-446b-8c6a-db5347f66268" />
   <Project Path="SmartHome.Server.Repositories/SmartHome.Server.Repositories.csproj" Id="fc3cf2e4-52cc-49d6-8bfc-314b0eaee37f" />
   <Project Path="SmartHome.Server.Services/SmartHome.Server.Services.csproj" Id="f8369e67-4a4f-49ea-9be4-6b1d93a8c21b" />
   <Project Path="SmartHome.Server.Utilities/SmartHome.Server.Utilities.csproj" Id="4123ed8a-ddf8-4f53-9371-8cdb2302e718" />
