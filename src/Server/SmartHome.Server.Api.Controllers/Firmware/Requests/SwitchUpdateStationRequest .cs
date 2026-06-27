@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SmartHome.Server.Data.Models.Requests;
+﻿namespace SmartHome.Server.Api.Controllers.Firmware.Controllers.Requests;
 
 /// <summary>
 /// Data transfer object (DTO) representing a request to update

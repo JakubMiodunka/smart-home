@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SmartHome.Server.Data.Models.Requests;
+namespace SmartHome.Server.Api.Controllers.Clients.Requests;
 
 /// <summary>
 /// Data transfer object (DTO) representing a request created by server client

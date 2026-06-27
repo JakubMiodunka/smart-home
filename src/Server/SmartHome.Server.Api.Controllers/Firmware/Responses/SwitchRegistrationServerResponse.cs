@@ -1,4 +1,4 @@
-﻿namespace SmartHome.Server.Data.Models.Responses;
+﻿namespace SmartHome.Server.Api.Controllers.Firmware.Responses;
 
 /// <summary>
 /// Data transfer object (DTO) representing a response after successful switch registration.
