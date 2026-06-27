@@ -1,6 +1,6 @@
 ﻿using SmartHome.Server.Repositories.Entities;
 
-namespace SmartHome.Server.Feature.Managers.Abstractions;
+namespace SmartHome.Server.Features.Managers.Abstractions;
 
 /// <summary>
 /// Factory for creating managers that control electrical switches.
