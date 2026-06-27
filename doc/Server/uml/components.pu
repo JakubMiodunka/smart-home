@@ -5,7 +5,7 @@ database Database
 component "SmartHome.Server.Utilities" as Utilities
 component "SmartHome.Server.Repositories" as Repositories
 component "SmartHome.Server.Services" as Services
-component "SmartHome.Server.FeatureManagers" as FeatureManagers
+component "SmartHome.Server.Feature.Managers" as FeatureManagers
 component "SmartHome.Server.Api.Clients" as ApiClients
 component "SmartHome.Server.Api.Controllers" as ApiControllers
 

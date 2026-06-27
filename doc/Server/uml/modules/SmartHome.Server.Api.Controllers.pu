@@ -57,10 +57,6 @@ package "SmartHome.Server.Api.Controllers" as ApiControllers {
             ~record SwitchUpdateClientRequest {
                 +ExpectedSwitchState : bool
             }
-
-            ~record SwitchUpdateServerRequest {
-                +ExpectedSwitchState : bool
-            }
         }
         
         ~class "SwitchesController" as ClientSwitchesController {

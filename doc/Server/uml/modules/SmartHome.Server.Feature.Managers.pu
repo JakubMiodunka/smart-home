@@ -1,27 +1,19 @@
 @startuml
 
-package "SmartHome.Server.FeatureManagers" as FeatureManagers {
-
-    package Factories {
-        package Abstractions as FactoriesAbstractions {
-            +interface ISwitchManagerFactory {
-                +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
-            }
-        }
-
-        ~class SwitchManagerFactory {
-            -_stationApiClientsFactory : IStationApiClientFactory
-            -_loggerFactory : ILoggerFactory
-            +SwitchManagerFactory(IStationApiClientFactory, ILoggerFactory) : SwitchManagerFactory
+package "SmartHome.Server.Feature.Managers" as FeatureManagers {
+    package Abstractions {
+        +interface ISwitchManagerFactory {
             +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
         }
 
-        ISwitchManagerFactory <|.. SwitchManagerFactory
-    }
-
-    package Abstractions as ManagersAbstractions {
         +interface ISwitchManager {
             +TryChangeState(bool, CancellationToken) : Task<bool>
+        }
+    }
+
+    package Requests {
+        ~record SwitchUpdateServerRequest {
+            +ExpectedSwitchState : bool
         }
     }
 
@@ -35,12 +27,21 @@ package "SmartHome.Server.FeatureManagers" as FeatureManagers {
         +TryChangeState(bool, CancellationToken) : Task<bool>
     }
 
+    ~class SwitchManagerFactory {
+        -_stationApiClientsFactory : IStationApiClientFactory
+        -_loggerFactory : ILoggerFactory
+        +SwitchManagerFactory(IStationApiClientFactory, ILoggerFactory) : SwitchManagerFactory
+        +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
+    }
+
     +class Configuration {
         -{static} ConfigureSwitchManagerFactory(IHostApplicationBuilder) : void
         +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
     }
 
+    ISwitchManagerFactory <|.. SwitchManagerFactory
     ISwitchManager <|-- SwitchManager
+    SwitchUpdateServerRequest <-- SwitchManager
     SwitchManager <-- SwitchManagerFactory
     ISwitchManagerFactory <-- Configuration
     SwitchManagerFactory <-- Configuration
