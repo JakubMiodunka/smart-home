@@ -1,4 +1,4 @@
-﻿namespace SmartHome.Server.Services.Processors;
+﻿namespace SmartHome.Server.Services.Abstractions;
 
 /// <summary>
 /// Definition of processor that execute business logic within a background service.
