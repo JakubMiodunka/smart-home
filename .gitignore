@@ -16,6 +16,9 @@ src/Server/SmartHome.Server.Repositories/obj/
 src/Server/SmartHome.Server.Services/bin/
 src/Server/SmartHome.Server.Services/obj/
 
+src/Server/SmartHome.Server.Utilities/bin/
+src/Server/SmartHome.Server.Utilities/obj/
+
 src/Server/Database/bin/
 src/Server/Database/obj/
 src/Server/Database/Database.jfm
