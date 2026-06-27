@@ -157,7 +157,7 @@ public class SwitchesController : BaseController
     [HttpPatch("{switchId}")]
     public async Task<IActionResult> UpdateSwitch(
         long switchId,
-        [FromBody] SwitchUpdateClientRequest request,
+        [FromBody] SwitchUpdateRequest request,
         CancellationToken cancellationToken)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))

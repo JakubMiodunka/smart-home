@@ -14,4 +14,4 @@ namespace SmartHome.Server.Api.Controllers.Clients.Requests;
 /// <see langword="true"/> if the circuit shall be closed 
 /// and current shall flow; <see langword="false"/> otherwise.
 /// </param>
-public sealed record SwitchUpdateClientRequest([Required] bool ExpectedSwitchState);
+public sealed record SwitchUpdateRequest([Required] bool ExpectedSwitchState);

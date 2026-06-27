@@ -71,7 +71,7 @@ public class SwitchesController : BaseController
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPut]
-    public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationStationRequest request)
+    public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationRequest request)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
@@ -182,7 +182,7 @@ public class SwitchesController : BaseController
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPatch("{switchId}")]
-    public async Task<IActionResult> UpdateSwitch(long switchId, [FromBody] SwitchUpdateStationRequest request)
+    public async Task<IActionResult> UpdateSwitch(long switchId, [FromBody] SwitchUpdateRequest request)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {

@@ -66,7 +66,7 @@ public class StationsController : BaseController
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPut]
-    public async Task<IActionResult> RegisterStation([FromBody] StationRegistrationStationRequest request)
+    public async Task<IActionResult> RegisterStation([FromBody] StationRegistrationRequest request)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {

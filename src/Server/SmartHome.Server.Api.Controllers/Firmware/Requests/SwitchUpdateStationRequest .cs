@@ -12,4 +12,4 @@
 /// <see langword="true"/> if the circuit is closed and current is flowing;
 /// <see langword="false"/> otherwise.
 /// </param>
-public sealed record SwitchUpdateStationRequest(bool ActualSwitchState);
+public sealed record SwitchUpdateRequest(bool ActualSwitchState);
