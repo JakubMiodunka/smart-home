@@ -23,8 +23,3 @@ Clients API endpoints follow a similar routing convention tailored for user-faci
 The Firmware and Clients APIs utilize independent versioning schemas. API versions are represented
 by positive integers (e.g., *v1*, *v2*), allowing them to be seamlessly embedded directly into
 the endpoint URL paths to prevent breaking changes across updates.
-
-### Examples:
-* *SwitchUpdateClientRequest* - A DTO modeling a request initiated by a Client to update the state of a specified switch.
-* *SwitchRegistrationStationRequest* - A DTO modeling a request initiated by node firmware (Station) to register a switch on the server.
-* *SwitchRegistrationServerResponse* -  A DTO modeling the server's response to a switch registration request received from node firmware.
