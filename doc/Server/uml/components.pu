@@ -1,21 +1,43 @@
 @startuml
 
 database Database
-
 component "SmartHome.Server.Repositories" as Repositories
-component "SmartHome.Server.Services" as Services
-component "SmartHome.Server.Feature.Managers" as FeatureManagers
 component "SmartHome.Server.Api.Clients" as ApiClients
+component "SmartHome.Server.Feature.Managers" as FeatureManagers
+component "SmartHome.Server.Services" as Services
 component "SmartHome.Server.Api.Controllers" as ApiControllers
+
 
 Database <-- Repositories
 
-
-Repositories <.. ApiClients : use
-Repositories <.. Services : use
-ApiClients <.. FeatureManagers : use
-FeatureManagers <.. ApiControllers : use
 Repositories <.. ApiControllers : use
-Utilities <.. ApiControllers : use
+Repositories <.. ApiClients : use
+Repositories <.. FeatureManagers : use
+Repositories <.. Services : use
+
+FeatureManagers <.. ApiControllers : use
+
+ApiClients <.. FeatureManagers : use
+
+note left of Repositories
+    External dependencies:
+    - [[https://www.nuget.org/packages/Dapper{NuGet Page} Dapper]]
+    - [[https://www.nuget.org/packages/Microsoft.Data.SqlClient{NuGet Page} Microsoft.Data.SqlClient]]
+end note
+
+note top of ApiClients
+    External dependencies:
+    - [[https://www.nuget.org/packages/Microsoft.Extensions.Http{NuGet Page} Microsoft.Extensions.Http]]
+end note
+
+note left of Services
+    External dependencies:
+    - [[https://www.nuget.org/packages/Microsoft.Extensions.Hosting{NuGet Page} Microsoft.Extensions.Hosting]]
+end note
+
+note left of ApiControllers
+    External dependencies:
+    - [[https://www.nuget.org/packages/Microsoft.AspNetCore.OpenApi{NuGet Page} Microsoft.AspNetCore.OpenApi]]
+end note
 
 @enduml
