@@ -24,16 +24,6 @@ The Firmware and Clients APIs utilize independent versioning schemas. API versio
 by positive integers (e.g., *v1*, *v2*), allowing them to be seamlessly embedded directly into
 the endpoint URL paths to prevent breaking changes across updates.
 
-## Data-Transfer-Objects Naming Convention
-The following convention has been established within the server codebase for naming Data Transfer Objects (DTOs):
-
-`<DTO_NAME><DTO_INSTANCE_PRODUCER><Request/Response>`
-
-Where the `<DTO_INSTANCE_PRODUCER>` indicates the origin of the payload and can be one of the following: 
-* *Server*
-* *Client*
-* *Station*
-
 ### Examples:
 * *SwitchUpdateClientRequest* - A DTO modeling a request initiated by a Client to update the state of a specified switch.
 * *SwitchRegistrationStationRequest* - A DTO modeling a request initiated by node firmware (Station) to register a switch on the server.
