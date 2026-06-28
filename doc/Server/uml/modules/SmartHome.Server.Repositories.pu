@@ -18,6 +18,18 @@ package "SmartHome.Server.Repositories" as Repositories {
         }
     }
 
+    package TypeHandlers {
+        ~class IPAddressHandler {
+            +SetValue(IDbDataParameter, IPAddress?) : void
+            +Parse(object?) : IPAddress?
+        }
+
+        ~class PhysicalAddressHandler {
+            +SetValue(IDbDataParameter, PhysicalAddress?) : void
+            +Parse(object?) : PhysicalAddress?
+        }
+    }
+
     package Entities {
         +record StationEntity {
             +Id : long
@@ -70,9 +82,11 @@ package "SmartHome.Server.Repositories" as Repositories {
     }
 
     +class Configuration {
+        -{static} ConfigureDefaultTypeMap(DefaultTypeMap) : void
+        -{static} ConfigureTypeConverters(SqlMapper) : void
         -{static} ConfigureStationsRepository(IHostApplicationBuilder) : void
         -{static} ConfigureSwitchesRepository(IHostApplicationBuilder) : void
-        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
+        +{static} ConfigureServiceProvider(IHostApplicationBuilder, DefaultTypeMap, SqlMapper) : void
     }
 
     IStationsRepository <|.. DatabaseClient
@@ -82,6 +96,8 @@ package "SmartHome.Server.Repositories" as Repositories {
     IStationsRepository <-- Configuration
     ISwitchesRepository <-- Configuration
     DatabaseClient <-- Configuration
+    IPAddressHandler <-- Configuration
+    PhysicalAddressHandler <-- Configuration
 
     note left of Configuration
         Used to configure dependency injection to expose package-defined 
@@ -93,6 +109,11 @@ package "SmartHome.Server.Repositories" as Repositories {
         method calls all private methods in the correct execution order.
 
         Shall be called from Program.cs.
+    end note
+    
+    note bottom of TypeHandlers
+        Provides custom serialization and deserialization 
+        for Dapper.
     end note
 }
 
