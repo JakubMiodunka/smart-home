@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SmartHome.Server.Utilities.JsonConverters;
+namespace SmartHome.Server.Api.Controllers.JsonConverters;
 
 /// <summary>
 /// Provides custom JSON serialization and deserialization for the <see cref="PhysicalAddress"/> type.

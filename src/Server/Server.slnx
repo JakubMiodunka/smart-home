@@ -9,6 +9,5 @@
   <Project Path="SmartHome.Server.Features.Managers/SmartHome.Server.Features.Managers.csproj" Id="9118528e-b4f6-4819-92d7-2001eaae227e" />
   <Project Path="SmartHome.Server.Repositories/SmartHome.Server.Repositories.csproj" Id="fc3cf2e4-52cc-49d6-8bfc-314b0eaee37f" />
   <Project Path="SmartHome.Server.Services/SmartHome.Server.Services.csproj" Id="f8369e67-4a4f-49ea-9be4-6b1d93a8c21b" />
-  <Project Path="SmartHome.Server.Utilities/SmartHome.Server.Utilities.csproj" Id="4123ed8a-ddf8-4f53-9371-8cdb2302e718" />
   <Project Path="UnitTests/UnitTests.csproj" Id="5c99477b-8dc9-46c4-bcfc-7f9edc979e93" />
 </Solution>

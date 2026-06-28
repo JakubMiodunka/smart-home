@@ -16,9 +16,6 @@ src/Server/SmartHome.Server.Repositories/obj/
 src/Server/SmartHome.Server.Services/bin/
 src/Server/SmartHome.Server.Services/obj/
 
-src/Server/SmartHome.Server.Utilities/bin/
-src/Server/SmartHome.Server.Utilities/obj/
-
 src/Server/SmartHome.Server.Api.Clients/bin/
 src/Server/SmartHome.Server.Api.Clients/obj/
 
