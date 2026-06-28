@@ -1,6 +1,6 @@
 @startuml
 
-package "SmartHome.Server.Feature.Managers" as FeatureManagers {
+package "SmartHome.Server.Features.Managers" as FeaturesManagers {
     package Abstractions {
         +interface ISwitchManagerFactory {
             +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
