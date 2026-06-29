@@ -1,15 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.ApiClients.StationApi;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Data.Repositories;
-using SmartHome.Server.Managers;
-using SmartHome.Server.Managers.Factories;
+using SmartHome.Server.Api.Clients;
+using SmartHome.Server.Api.Clients.Abstractions;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
 
-namespace SmartHome.UnitTests.Server.ApiClients;
+namespace SmartHome.UnitTests.Server.Tests.Api.Clients;
 
 [Category("UnitTest")]
 [TestOf(typeof(StationApiClientFactory))]
@@ -23,7 +21,7 @@ public sealed class StationApiClientFactoryTests
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        TestDelegate actionUnderTest = () => new StationApiClientFactory(
+        Action actionUnderTest = () => new StationApiClientFactory(
             httpClientFactoryStub.Object,
             loggerFactoryStub.Object);
 
@@ -35,7 +33,7 @@ public sealed class StationApiClientFactoryTests
     {
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        TestDelegate actionUnderTest = () => new StationApiClientFactory(
+        Action actionUnderTest = () => new StationApiClientFactory(
             null!,
             loggerFactoryStub.Object);
 
@@ -47,7 +45,7 @@ public sealed class StationApiClientFactoryTests
     {
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
 
-        TestDelegate actionUnderTest = () => new StationApiClientFactory(
+        Action actionUnderTest = () => new StationApiClientFactory(
             httpClientFactoryStub.Object,
             null!);
 

@@ -2,11 +2,12 @@
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.ApiClients.StationApi;
-using SmartHome.Server.Data.Models.Entities;
+using SmartHome.Server.Api.Clients;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
 using System.Net;
 
-namespace SmartHome.UnitTests.Server.ApiClients;
+namespace SmartHome.UnitTests.Server.Tests.Api.Clients;
 
 [Category("UnitTest")]
 [TestOf(typeof(StationApiClient))]
@@ -25,7 +26,7 @@ public sealed class StationApiClientTests
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         var loggerStub = new FakeLogger<StationApiClient>();
 
-        TestDelegate actionUnderTest = () => new StationApiClient(
+        Action actionUnderTest = () => new StationApiClient(
             stationEntity,
             httpClientFactoryStub.Object,
             timeout,
@@ -44,7 +45,7 @@ public sealed class StationApiClientTests
 
         var loggerStub = new FakeLogger<StationApiClient>();
 
-        TestDelegate actionUnderTest = () => new StationApiClient(
+        Action actionUnderTest = () => new StationApiClient(
             stationEntity,
             null!,
             timeout,
@@ -63,7 +64,7 @@ public sealed class StationApiClientTests
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         var loggerStub = new FakeLogger<StationApiClient>();
 
-        TestDelegate actionUnderTest = () => new StationApiClient(
+        Action actionUnderTest = () => new StationApiClient(
             null!,
             httpClientFactoryStub.Object,
             timeout,
@@ -82,7 +83,7 @@ public sealed class StationApiClientTests
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
 
-        TestDelegate actionUnderTest = () => new StationApiClient(
+        Action actionUnderTest = () => new StationApiClient(
             stationEntity,
             httpClientFactoryStub.Object,
             timeout,
@@ -103,7 +104,7 @@ public sealed class StationApiClientTests
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         var loggerStub = new FakeLogger<StationApiClient>();
 
-        TestDelegate actionUnderTest = () => new StationApiClient(
+        Action actionUnderTest = () => new StationApiClient(
             stationEntity,
             httpClientFactoryStub.Object,
             timeout,
@@ -125,7 +126,7 @@ public sealed class StationApiClientTests
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         var loggerStub = new FakeLogger<StationApiClient>();
 
-        TestDelegate actionUnderTest = () => new StationApiClient(
+        Action actionUnderTest = () => new StationApiClient(
             stationEntity,
             httpClientFactoryStub.Object,
             timeout,
@@ -213,7 +214,7 @@ public sealed class StationApiClientTests
 
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
+        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             null!,
             httpMethod,
             null,
@@ -250,7 +251,7 @@ public sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl(UriKind.Relative);
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
+        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             null,
@@ -286,7 +287,7 @@ public sealed class StationApiClientTests
 
         Uri endpointUrl = randomizer.NextHttpUrl();
 
-        AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
+        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             endpointUrl,
             null!,
             null,
@@ -421,7 +422,7 @@ public sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        AsyncTestDelegate actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
+        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             null,

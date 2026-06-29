@@ -5,16 +5,16 @@ using System.Text.Json;
 
 namespace SmartHome.Server.Tests.Utilities;
 
-internal sealed record RequestSnapshot(
+public sealed record RequestSnapshot(
     Uri? Url,
     HttpMethod Method,
     HttpRequestHeaders Headers,
     HttpContentHeaders? ContentHeaders,
     string? RawContent);
 
-internal static class RequestSnapshotTestingUtilities
+public static class RequestSnapshotTestingUtilities
 {
-    internal static async Task AssertJsonRequest<T>(
+    public static async Task AssertJsonRequest<T>(
         this RequestSnapshot request,
         Uri expectedUri,
         HttpMethod expectedHttpMethod,
@@ -41,7 +41,7 @@ internal static class RequestSnapshotTestingUtilities
     }
 }
 
-internal sealed class FakeHttpMessageHandler : DelegatingHandler
+public sealed class FakeHttpMessageHandler : DelegatingHandler
 {
     #region Properties
     private readonly Func<HttpRequestMessage, HttpResponseMessage>? _requestHandler;
@@ -55,7 +55,7 @@ internal sealed class FakeHttpMessageHandler : DelegatingHandler
     #endregion
 
     #region Instantiation
-    internal FakeHttpMessageHandler(
+    public FakeHttpMessageHandler(
         Func<HttpRequestMessage, HttpResponseMessage>? requestHandler = null)
     {
         _requestHandler = requestHandler;
