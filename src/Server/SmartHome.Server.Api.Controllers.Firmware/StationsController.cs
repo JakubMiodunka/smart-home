@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SmartHome.Server.Api.Controllers.Abstractions;
-using SmartHome.Server.Api.Controllers.Firmware.Controllers.Requests;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using SmartHome.Server.Api.Controllers.Common;
+using SmartHome.Server.Api.Controllers.Firmware.Requests;
 using SmartHome.Server.Repositories.Abstractions;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
 
-namespace SmartHome.Server.Api.Controllers.Firmware.Controllers;
+namespace SmartHome.Server.Api.Controllers.Firmware;
 
 /// <summary>
 /// Controller providing endpoints for firmware to manage stations.

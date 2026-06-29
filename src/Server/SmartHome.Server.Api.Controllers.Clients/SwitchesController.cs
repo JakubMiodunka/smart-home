@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SmartHome.Server.Api.Controllers.Abstractions;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using SmartHome.Server.Api.Controllers.Clients.Requests;
+using SmartHome.Server.Api.Controllers.Common;
 using SmartHome.Server.Features.Managers.Abstractions;
 using SmartHome.Server.Repositories.Abstractions;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
 
-namespace SmartHome.Server.Api.Controllers.Firmware.Controllers.Clients;
+namespace SmartHome.Server.Api.Controllers.Clients;
 
 /// <summary>
 /// Controller dedicated to managing electrical switches.

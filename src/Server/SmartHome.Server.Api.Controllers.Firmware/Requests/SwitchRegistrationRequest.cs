@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SmartHome.Server.Api.Controllers.Firmware.Controllers.Requests;
+namespace SmartHome.Server.Api.Controllers.Firmware.Requests;
 
 /// <summary>
 /// Data transfer object (DTO) representing a request to register a switch within the system.

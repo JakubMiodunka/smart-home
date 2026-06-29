@@ -3,11 +3,14 @@
     <Build />
     <Deploy />
   </Project>
-  <Project Path="Server/Server.csproj" />
   <Project Path="SmartHome.Server.Api.Clients/SmartHome.Server.Api.Clients.csproj" Id="a4f73003-a078-446b-8c6a-db5347f66268" />
-  <Project Path="SmartHome.Server.Api.Controllers/SmartHome.Server.Api.Controllers.csproj" Id="c8c5dbf1-b729-464b-ba40-cc82458401d1" />
+  <Project Path="SmartHome.Server.Api.Controllers.Clients/SmartHome.Server.Api.Controllers.Clients.csproj" Id="e696626e-6f51-4267-b982-763d501ade15" />
+  <Project Path="SmartHome.Server.Api.Controllers.Common/SmartHome.Server.Api.Controllers.Common.csproj" Id="acb3ef65-0801-4980-a9c8-5c1c2cfbc926" />
+  <Project Path="SmartHome.Server.Api.Controllers.Firmware/SmartHome.Server.Api.Controllers.Firmware.csproj" Id="ccd14656-c6b4-4257-924e-ee537eec0ce6" />
   <Project Path="SmartHome.Server.Features.Managers/SmartHome.Server.Features.Managers.csproj" Id="9118528e-b4f6-4819-92d7-2001eaae227e" />
+  <Project Path="SmartHome.Server.Main/SmartHome.Server.Main.csproj" Id="4098fa12-fb07-4efa-9af0-eedad2d178db" />
   <Project Path="SmartHome.Server.Repositories/SmartHome.Server.Repositories.csproj" Id="fc3cf2e4-52cc-49d6-8bfc-314b0eaee37f" />
   <Project Path="SmartHome.Server.Services/SmartHome.Server.Services.csproj" Id="f8369e67-4a4f-49ea-9be4-6b1d93a8c21b" />
+  <Project Path="SmartHome.Server.Tests.Utilities/SmartHome.Server.Tests.Utilities.csproj" Id="032c56a8-8290-453d-8a58-a8a9ba690d32" />
   <Project Path="UnitTests/UnitTests.csproj" Id="5c99477b-8dc9-46c4-bcfc-7f9edc979e93" />
 </Solution>
