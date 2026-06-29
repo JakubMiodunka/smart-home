@@ -1,0 +1,24 @@
+@startuml
+
+package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
+    package Requests {
+        ~record "SwitchUpdateRequest" as SwitchUpdateClientRequest {
+            +ExpectedSwitchState : bool
+        }
+    }
+    
+    ~class "SwitchesController" as ClientSwitchesController {
+        -_switchesRepository : ISwitchesRepository
+        -_stationsRepository : IStationsRepository
+        -_switchManagerFactory : ISwitchManagerFactory
+        -_logger : ILogger<SwitchesController>
+        +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ISwitchManagerFactory, ILogger<SwitchesController>) : SwitchesController
+        +GetSwitches() : Task<IActionResult>
+        +GetSwitch(long) : Task<IActionResult>
+        +UpdateSwitch(long, SwitchUpdateRequest, CancellationToken) : Task<IActionResult>
+    }
+
+    SwitchUpdateClientRequest <-- ClientSwitchesController
+}
+
+@enduml
