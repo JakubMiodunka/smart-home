@@ -12,7 +12,7 @@ namespace SmartHome.Server.Tests.Utilities;
 /// <seealso cref="FakeDataGenerationUtilities.NextHttpRequestBody(Randomizer)"/>
 public sealed record GenericHttpRequestBody(bool? Value1, int? Value2, string? Value3);
 
-internal static class FakeDataGenerationUtilities
+public static class FakeDataGenerationUtilities
 {
     public static Mock<IHttpContextAccessor> CreateHttpContextAccessorFake(IPAddress? remoteIpAddress = null)
     {
