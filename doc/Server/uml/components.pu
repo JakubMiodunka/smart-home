@@ -47,6 +47,18 @@ note as TestUtilitiesDependencies
 end note
 TestUtilitiesDependencies -- TestUtilities
 
+component "SmartHome.Server.Tests.Api.Clients" as ApiClientsTests #PaleGreen
+note as ApiClientsTestsDependencies
+    External dependencies:
+    - coverlet.collector
+    - Microsoft.Extensions.Diagnostics.Testing
+    - Microsoft.NET.Test.Sdk
+    - NUnit
+    - NUnit.Analyzers
+    - NUnit3TestAdapter
+end note
+ApiClientsTestsDependencies -- ApiClientsTests
+
 component "SmartHome.Server.Main" as Main
 note as MainDependencies
     External dependencies:
@@ -69,5 +81,9 @@ CommonApiControllers <.. ClientsApiControllers
 FeatureManagers <.. ClientsApiControllers : use
 
 ApiClients <.. FeatureManagers : use
+ApiClients <.. ApiClientsTests : use
 
+TestUtilities <.. ApiClientsTests : use
+
+Main <.. TestUtilities : use
 @enduml
