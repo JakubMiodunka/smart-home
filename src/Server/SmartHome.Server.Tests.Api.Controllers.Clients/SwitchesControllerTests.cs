@@ -1,18 +1,18 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.Controllers.Clients;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Data.Models.Requests;
-using SmartHome.Server.Data.Repositories;
-using SmartHome.Server.Managers;
-using SmartHome.Server.Managers.Factories;
+using SmartHome.Server.Api.Controllers.Clients;
+using SmartHome.Server.Features.Managers.Abstractions;
+using SmartHome.Server.Repositories.Abstractions;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
 using System.Net;
+using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Logging;
+using SmartHome.Server.Api.Controllers.Clients.Requests;
 
-namespace SmartHome.UnitTests.Server.Controllers.Clients;
+namespace SmartHome.Server.Tests.Api.Controllers.Clients;
 
 [Category("UnitTest")]
 [TestOf(typeof(SwitchesController))]
@@ -29,7 +29,7 @@ public sealed class SwitchesControllerTests
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () => new SwitchesController(
+        Action actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
             stationsRepositoryMock.Object,
@@ -49,7 +49,7 @@ public sealed class SwitchesControllerTests
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () => new SwitchesController(
+        Action actionUnderTest = () => new SwitchesController(
             null!,
             switchesRepositoryMock.Object,
             stationsRepositoryMock.Object,
@@ -69,7 +69,7 @@ public sealed class SwitchesControllerTests
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () => new SwitchesController(
+        Action actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             null!,
             stationsRepositoryMock.Object,
@@ -88,7 +88,7 @@ public sealed class SwitchesControllerTests
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () => new SwitchesController(
+        Action actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
             null!,
@@ -107,7 +107,7 @@ public sealed class SwitchesControllerTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () => new SwitchesController(
+        Action actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
             stationsRepositoryMock.Object,
@@ -127,7 +127,7 @@ public sealed class SwitchesControllerTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
 
-        TestDelegate actionUnderTest = () => new SwitchesController(
+        Action actionUnderTest = () => new SwitchesController(
             httpContextAccessorStub.Object,
             switchesRepositoryMock.Object,
             stationsRepositoryMock.Object,
@@ -435,7 +435,7 @@ public sealed class SwitchesControllerTests
             switchManagerFactoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateClientRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
         response.AssertNoContentResult();
 
@@ -474,7 +474,7 @@ public sealed class SwitchesControllerTests
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
 
-        var request = new SwitchUpdateClientRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
         response.AssertBadRequestResult();
 
@@ -510,7 +510,7 @@ public sealed class SwitchesControllerTests
 
         SwitchEntity nonExistingSwitch = randomizer.NextSwitchEntity();
 
-        var request = new SwitchUpdateClientRequest(nonExistingSwitch.ExpectedState);
+        var request = new SwitchUpdateRequest(nonExistingSwitch.ExpectedState);
         IActionResult response = await controllerUnderTest.UpdateSwitch(nonExistingSwitch.Id, request, CancellationToken.None);
         response.AssertNotFoundResult();
 
@@ -561,7 +561,7 @@ public sealed class SwitchesControllerTests
             switchManagerFactoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateClientRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
         response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
 
@@ -641,7 +641,7 @@ public sealed class SwitchesControllerTests
             switchManagerFactoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateClientRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
         response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
 
@@ -719,7 +719,7 @@ public sealed class SwitchesControllerTests
             switchManagerFactoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateClientRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
         response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
 
@@ -807,7 +807,7 @@ public sealed class SwitchesControllerTests
             switchManagerFactoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateClientRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
         response.AssertStatusCodeResult(StatusCodes.Status503ServiceUnavailable);
 
