@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace SmartHome.Server.Tests.Utilities;
 
-internal static class IActionResultTestingUtilities
+public static class IActionResultTestingUtilities
 {
     #region Generic assertions
     private static void AssertStatusCodeActionResult<TResult>(

@@ -3,8 +3,6 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.Services;
-using SmartHome.Server.Services.Processors;
 
 namespace SmartHome.UnitTests.Server.Services;
 
