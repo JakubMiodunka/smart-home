@@ -5,7 +5,7 @@ using System.Net.NetworkInformation;
 
 namespace SmartHome.Server.Tests.Utilities;
 
-internal static class RepositoriesTestingUtilities
+public static class RepositoriesTestingUtilities
 {
     public static void AssertNoContentModifications(this Mock<IStationsRepository> repositoryMock)
     {
