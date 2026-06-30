@@ -4,14 +4,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.Controllers.Firmware;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Data.Models.Requests;
-using SmartHome.Server.Data.Models.Responses;
-using SmartHome.Server.Data.Repositories;
+using SmartHome.Server.Api.Controllers.Firmware;
+using SmartHome.Server.Api.Controllers.Firmware.Requests;
+using SmartHome.Server.Api.Controllers.Firmware.Responses;
+using SmartHome.Server.Repositories.Abstractions;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
 using System.Net.NetworkInformation;
 
-namespace SmartHome.UnitTests.Server.Controllers.Firmware;
+namespace SmartHome.Server.Tests.Api.Controllers.Firmware;
 
 [Category("UnitTest")]
 [TestOf(typeof(SwitchesController))]
@@ -27,7 +28,7 @@ public sealed class SwitchesControllerTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
             new SwitchesController(
                 httpContextAccessorStub.Object,
                 switchesRepositoryMock.Object,
@@ -46,7 +47,7 @@ public sealed class SwitchesControllerTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
             new SwitchesController(
                 null!,
                 switchesRepositoryMock.Object,
@@ -65,7 +66,7 @@ public sealed class SwitchesControllerTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
             new SwitchesController(
                 httpContextAccessorStub.Object,
                 null!,
@@ -83,7 +84,7 @@ public sealed class SwitchesControllerTests
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var loggerStub = new FakeLogger<SwitchesController>();
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
             new SwitchesController(
                 httpContextAccessorStub.Object,
                 switchesRepositoryMock.Object,
@@ -101,7 +102,7 @@ public sealed class SwitchesControllerTests
         var switchesRepositoryMock = new Mock<ISwitchesRepository>();
         var stationsRepositoryMock = new Mock<IStationsRepository>();
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
             new SwitchesController(
                 httpContextAccessorStub.Object,
                 switchesRepositoryMock.Object,
@@ -162,10 +163,10 @@ public sealed class SwitchesControllerTests
             stationsRepositoryMock.Object,
             loggerMock);
 
-        var request = new SwitchRegistrationStationRequest(newSwitchEntity.LocalId);
+        var request = new SwitchRegistrationRequest(newSwitchEntity.LocalId);
         IActionResult response = await controllerUnderTest.RegisterSwitch(request);
 
-        var expectedResponse = new SwitchRegistrationServerResponse(newSwitchEntity.Id, newSwitchEntity.ExpectedState);
+        var expectedResponse = new SwitchRegistrationResponse(newSwitchEntity.Id, newSwitchEntity.ExpectedState);
         response.AssertOkObjectResult(expectedValue: expectedResponse);
 
         switchesRepositoryMock.Verify(mock => mock
@@ -249,10 +250,10 @@ public sealed class SwitchesControllerTests
             stationsRepositorymock.Object,
             loggerMock);
 
-        var request = new SwitchRegistrationStationRequest(knownSwitchEntity.LocalId);
+        var request = new SwitchRegistrationRequest(knownSwitchEntity.LocalId);
         IActionResult response = await controllerUnderTest.RegisterSwitch(request);
 
-        var expectedResponse = new SwitchRegistrationServerResponse(knownSwitchEntity.Id, knownSwitchEntity.ExpectedState);
+        var expectedResponse = new SwitchRegistrationResponse(knownSwitchEntity.Id, knownSwitchEntity.ExpectedState);
         response.AssertOkObjectResult(expectedValue: expectedResponse);
 
         switchesRepositoryMock.AssertNoContentModifications();
@@ -291,7 +292,7 @@ public sealed class SwitchesControllerTests
             stationsRepositoryMock.Object,
             loggerMock);
 
-        var request = new SwitchRegistrationStationRequest(switchEntity.LocalId);
+        var request = new SwitchRegistrationRequest(switchEntity.LocalId);
         IActionResult response = await controllerUnderTest.RegisterSwitch(request);
         
         response.AssertBadRequestResult();
@@ -331,7 +332,7 @@ public sealed class SwitchesControllerTests
             stationsRepositoryMock.Object,
             loggerMock);
 
-        var request = new SwitchRegistrationStationRequest(newSwitchEntity.LocalId);
+        var request = new SwitchRegistrationRequest(newSwitchEntity.LocalId);
         IActionResult response = await controllerUnderTest.RegisterSwitch(request);
 
         response.AssertNotFoundResult();
@@ -415,7 +416,7 @@ public sealed class SwitchesControllerTests
             stationsRepositoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateStationRequest(switchEntityAfterUpdate.ActualState.Value);
+        var request = new SwitchUpdateRequest(switchEntityAfterUpdate.ActualState.Value);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntityAfterUpdate.Id, request);
 
         response.AssertNoContentResult();
@@ -473,7 +474,7 @@ public sealed class SwitchesControllerTests
             stationsRepositoryMock.Object,
             loggerMock);
 
-        var request = new SwitchUpdateStationRequest(switchEntity.ActualState.Value);
+        var request = new SwitchUpdateRequest(switchEntity.ActualState.Value);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request);
 
         response.AssertBadRequestResult();
@@ -513,7 +514,7 @@ public sealed class SwitchesControllerTests
             stationsRepositoryMock.Object,
             loggerMock);
 
-        var request = new SwitchUpdateStationRequest(switchEntity.ActualState.Value);
+        var request = new SwitchUpdateRequest(switchEntity.ActualState.Value);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request);
 
         response.AssertNotFoundResult();
@@ -564,7 +565,7 @@ public sealed class SwitchesControllerTests
             stationsRepositoryMock.Object,
             loggerMock);
 
-        var request = new SwitchUpdateStationRequest(unregisteredSwitchEntity.ActualState.Value);
+        var request = new SwitchUpdateRequest(unregisteredSwitchEntity.ActualState.Value);
         IActionResult response = await controllerUnderTest.UpdateSwitch(unregisteredSwitchEntity.Id, request);
 
         response.AssertNotFoundResult();
@@ -636,7 +637,7 @@ public sealed class SwitchesControllerTests
             stationsRepositoryStub.Object,
             loggerMock);
 
-        var request = new SwitchUpdateStationRequest(switchEntityAfterUpdate.ActualState.Value);
+        var request = new SwitchUpdateRequest(switchEntityAfterUpdate.ActualState.Value);
         IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntityAfterUpdate.Id, request);
 
         response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);

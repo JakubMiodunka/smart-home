@@ -5,14 +5,15 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.Controllers.Firmware;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Data.Models.Requests;
-using SmartHome.Server.Data.Repositories;
+using SmartHome.Server.Api.Controllers.Firmware;
+using SmartHome.Server.Api.Controllers.Firmware.Requests;
+using SmartHome.Server.Repositories.Abstractions;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace SmartHome.UnitTests.Server.Controllers.Firmware;
+namespace SmartHome.Server.Tests.Api.Controllers.Firmware;
 
 [Category("UnitTest")]
 [TestOf(typeof(StationsController))]
@@ -28,7 +29,7 @@ public sealed class StationsControllerTests
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
-        TestDelegate actionUnderTest = () => new StationsController(
+        Action actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
             timeProviderStub,
@@ -45,7 +46,7 @@ public sealed class StationsControllerTests
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
-        TestDelegate actionUnderTest = () => new StationsController(
+        Action actionUnderTest = () => new StationsController(
             null!,
             stationsRepositoryMock.Object,
             timeProviderStub,
@@ -62,7 +63,7 @@ public sealed class StationsControllerTests
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<StationsController>();
 
-        TestDelegate actionUnderTest = () => new StationsController(
+        Action actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             null!,
             timeProviderStub,
@@ -78,7 +79,7 @@ public sealed class StationsControllerTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<StationsController>();
 
-        TestDelegate actionUnderTest = () => new StationsController(
+        Action actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
             null!,
@@ -95,7 +96,7 @@ public sealed class StationsControllerTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
 
-        TestDelegate actionUnderTest = () => new StationsController(
+        Action actionUnderTest = () => new StationsController(
             httpContextAccessorStub.Object,
             stationsRepositoryMock.Object,
             timeProviderStub,
@@ -139,7 +140,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationStationRequest(
+        var request = new StationRegistrationRequest(
             stationEntity.MacAddress,
             stationEntity.ApiPort!.Value,
             stationEntity.ApiVersion!.Value);
@@ -229,7 +230,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationStationRequest(
+        var request = new StationRegistrationRequest(
             updatedStationEntity.MacAddress,
             updatedStationEntity.ApiPort!.Value,
             updatedStationEntity.ApiVersion!.Value);
@@ -287,7 +288,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationStationRequest(
+        var request = new StationRegistrationRequest(
             stationEntity.MacAddress,
             stationEntity.ApiPort!.Value,
             stationEntity.ApiVersion!.Value);
@@ -345,7 +346,7 @@ public sealed class StationsControllerTests
             timeProviderStub,
             loggerMock);
 
-        var request = new StationRegistrationStationRequest(
+        var request = new StationRegistrationRequest(
             updatedStationEntity.MacAddress,
             updatedStationEntity.ApiPort!.Value,
             updatedStationEntity.ApiVersion!.Value);
