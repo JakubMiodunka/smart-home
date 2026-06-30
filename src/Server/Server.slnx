@@ -16,6 +16,7 @@
   <Folder Name="/Tests/">
     <Project Path="SmartHome.Server.Tests.Api.Clients/SmartHome.Server.Tests.Api.Clients.csproj" Id="19bf0357-2395-4538-8b8d-0caa295b5597" />
     <Project Path="SmartHome.Server.Tests.Api.Controllers.Clients/SmartHome.Server.Tests.Api.Controllers.Clients.csproj" Id="e7112929-4f75-463a-9381-b677b7163946" />
+    <Project Path="SmartHome.Server.Tests.Api.Controllers.Firmware/SmartHome.Server.Tests.Api.Controllers.Firmware.csproj" Id="a54a4e3f-b7ec-48a5-9610-d1fe099158b1" />
     <Project Path="SmartHome.Server.Tests.Utilities/SmartHome.Server.Tests.Utilities.csproj" Id="032c56a8-8290-453d-8a58-a8a9ba690d32" />
     <Project Path="UnitTests/UnitTests.csproj" Id="5c99477b-8dc9-46c4-bcfc-7f9edc979e93" />
   </Folder>

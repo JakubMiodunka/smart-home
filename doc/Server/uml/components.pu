@@ -71,6 +71,19 @@ note as ClientsApiControllersTestsDependencies
 end note
 ClientsApiControllersTestsDependencies -- ClientsApiControllersTests
 
+component "SmartHome.Server.Tests.Api.Controllers.Firmware" as FirmwareApiControllersTests #PaleGreen
+note as FirmwareApiControllersTestsDependencies
+    External dependencies:
+    - coverlet.collector
+    - Microsoft.Extensions.Diagnostics.Testing
+    - Microsoft.Extensions.TimeProvider.Testing
+    - Microsoft.NET.Test.Sdk
+    - NUnit
+    - NUnit.Analyzers
+    - NUnit3TestAdapter
+end note
+FirmwareApiControllersTestsDependencies -- FirmwareApiControllersTests
+
 component "SmartHome.Server.Main" as Main
 note as MainDependencies
     External dependencies:
@@ -92,6 +105,8 @@ CommonApiControllers <.. ClientsApiControllers : use
 
 ClientsApiControllers <.. ClientsApiControllersTests : use
 
+FirmwareApiControllers <.. FirmwareApiControllersTests : use
+
 FeatureManagers <.. ClientsApiControllers : use
 
 ApiClients <.. FeatureManagers : use
@@ -99,6 +114,7 @@ ApiClients <.. ApiClientsTests : use
 
 TestUtilities <.. ApiClientsTests : use
 TestUtilities <.. ClientsApiControllersTests : use
+TestUtilities <.. FirmwareApiControllersTests : use
 
 Main <.. TestUtilities : use
 
