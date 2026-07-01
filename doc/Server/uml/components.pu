@@ -121,6 +121,17 @@ note as RepositoriesTestsDependencies
 end note
 RepositoriesTestsDependencies -- RepositoriesTests
 
+component ""SmartHome.Server.Tests.Api.Controllers.Common"" as CommonApiControllersTests #PaleGreen
+note as CommonApiControllersTestsDependencies
+    External dependencies:
+    - coverlet.collector
+    - Microsoft.NET.Test.Sdk
+    - NUnit
+    - NUnit.Analyzers
+    - NUnit3TestAdapter
+end note
+CommonApiControllersTestsDependencies -- CommonApiControllersTests
+
 component "SmartHome.Server.Main" as Main
 note as MainDependencies
     External dependencies:
@@ -141,6 +152,7 @@ Repositories <.. RepositoriesTests : use
 
 CommonApiControllers <.. FirmwareApiControllers : use
 CommonApiControllers <.. ClientsApiControllers : use
+CommonApiControllers <.. CommonApiControllersTests : use
 
 ClientsApiControllers <.. ClientsApiControllersTests : use
 
@@ -159,6 +171,7 @@ TestUtilities <.. ClientsApiControllersTests : use
 TestUtilities <.. FirmwareApiControllersTests : use
 TestUtilities <.. ServicesTests : use
 TestUtilities <.. RepositoriesTests : use
+TestUtilities <.. CommonApiControllersTests : use
 
 Main <.. TestUtilities : use
 
