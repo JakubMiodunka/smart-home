@@ -18,6 +18,7 @@
     <Project Path="SmartHome.Server.Tests.Api.Controllers.Clients/SmartHome.Server.Tests.Api.Controllers.Clients.csproj" Id="e7112929-4f75-463a-9381-b677b7163946" />
     <Project Path="SmartHome.Server.Tests.Api.Controllers.Firmware/SmartHome.Server.Tests.Api.Controllers.Firmware.csproj" Id="a54a4e3f-b7ec-48a5-9610-d1fe099158b1" />
     <Project Path="SmartHome.Server.Tests.Features.Managers/SmartHome.Server.Tests.Features.Managers.csproj" Id="d9b2e119-22a9-443e-9834-25cdb3e03a3a" />
+    <Project Path="SmartHome.Server.Tests.Repositories/SmartHome.Server.Tests.Repositories.csproj" Id="9428ab42-6f6f-444e-9601-405559bbacdc" />
     <Project Path="SmartHome.Server.Tests.Services/SmartHome.Server.Tests.Services.csproj" Id="fae6d52b-0766-40ae-9688-d312cfeba2dd" />
     <Project Path="SmartHome.Server.Tests.Utilities/SmartHome.Server.Tests.Utilities.csproj" Id="032c56a8-8290-453d-8a58-a8a9ba690d32" />
     <Project Path="UnitTests/UnitTests.csproj" Id="5c99477b-8dc9-46c4-bcfc-7f9edc979e93" />

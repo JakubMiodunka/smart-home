@@ -1,9 +1,9 @@
 ﻿using NUnit.Framework.Internal;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.UnitTests;
+using SmartHome.Server.Repositories.Entities;
 using System.Net;
+using SmartHome.Server.Tests.Utilities;
 
-namespace SmartHome.UnitTests.Server.Data.Models.Entities;
+namespace SmartHome.Server.Tests.Repositories.Entities;
 
 [Category("UnitTest")]
 [TestOf(typeof(StationEntity))]
