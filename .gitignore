@@ -7,10 +7,10 @@ src/.vs/
 src/Server/.vs/
 
 # Directories used during application build.
-src/Server/Database/bin/
-src/Server/Database/obj/
-src/Server/Database/Database.jfm
-src/Server/Database/Database.dbmdl
+src/Server/SmartHome.Server.Databases.Main/bin/
+src/Server/SmartHome.Server.Databases.Main/obj/
+src/Server/SmartHome.Server.Databases.Main/SmartHome.Server.Databases.Main.jfm
+src/Server/SmartHome.Server.Databases.Main/SmartHome.Server.Databases.Main.dbmdl
 
 src/Server/SmartHome.Server.Tests.Utilities/bin/
 src/Server/SmartHome.Server.Tests.Utilities/obj/
