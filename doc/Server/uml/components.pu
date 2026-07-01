@@ -1,6 +1,6 @@
 @startuml
 
-database Database #SkyBlue
+database "SmartHome.Server.Databases.Main" as MainDatabase #SkyBlue
 
 component "SmartHome.Server.Repositories" as Repositories #SkyBlue
 note as RepositoriesDependencies
@@ -139,7 +139,7 @@ note as MainDependencies
 end note
 MainDependencies -- Main
 
-Database <-- Repositories
+MainDatabase <-- Repositories
 
 Repositories <.. ApiClients : use
 Repositories <.. FeatureManagers : use
