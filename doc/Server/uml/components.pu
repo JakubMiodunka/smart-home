@@ -1,178 +1,196 @@
 @startuml
 
-database "SmartHome.Server.Databases.Main" as MainDatabase #SkyBlue
-
-component "SmartHome.Server.Repositories" as Repositories #SkyBlue
-note as RepositoriesDependencies
-    External dependencies:
-    - Dapper
-    - Microsoft.Data.SqlClient
+note as Legend
+    **Legend**:
+        Components:
+        - <color:SkyBlue>Component implementing some functionalities.</color>
+        - <color:PaleGreen>Component responsible for verification of another component.</color>
+        Connections:
+        - Regular UML connection.
+        - <color:Green>Connection specific to component verification.</color>
 end note
-RepositoriesDependencies -- Repositories
 
-component "SmartHome.Server.Api.Clients" as ApiClients #SkyBlue
-note as ApiClientsDependencies
-    External dependencies:
-    - Microsoft.Extensions.Http
-end note
-ApiClientsDependencies -- ApiClients
+package MainCodebase {
+    database "SmartHome.Server.Databases.Main" as MainDatabase #SkyBlue
 
-component "SmartHome.Server.Feature.Managers" as FeatureManagers #SkyBlue
+    component "SmartHome.Server.Repositories" as Repositories #SkyBlue
+    note as RepositoriesDependencies
+        **External dependencies:**
+        - Dapper
+        - Microsoft.Data.SqlClient
+    end note
+    RepositoriesDependencies -- Repositories
 
-component "SmartHome.Server.Services" as Services #SkyBlue
-note as ServicesDependencies
-    External dependencies:
-    - Microsoft.Extensions.Hosting
-end note
-ServicesDependencies -- Services
+    component "SmartHome.Server.Api.Clients" as ApiClients #SkyBlue
+    note as ApiClientsDependencies
+        **External dependencies:**
+        - Microsoft.Extensions.Http
+    end note
+    ApiClientsDependencies -- ApiClients
 
-component "SmartHome.Server.Api.Controllers.Common" as CommonApiControllers #SkyBlue
-note as CommonApiControllersDependencies
-    External dependencies:
-    - Microsoft.AspNetCore.Mvc.Core
-end note
-CommonApiControllersDependencies -- CommonApiControllers
+    component "SmartHome.Server.Feature.Managers" as FeatureManagers #SkyBlue
 
-component "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers #SkyBlue
+    component "SmartHome.Server.Services" as Services #SkyBlue
+    note as ServicesDependencies
+        **External dependencies:**
+        - Microsoft.Extensions.Hosting
+    end note
+    ServicesDependencies -- Services
 
-component "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers #SkyBlue
+    component "SmartHome.Server.Api.Controllers.Common" as CommonApiControllers #SkyBlue
+    note as CommonApiControllersDependencies
+        **External dependencies:**
+        - Microsoft.AspNetCore.Mvc.Core
+    end note
+    CommonApiControllersDependencies -- CommonApiControllers
 
-component "SmartHome.Server.Tests.Utilities" as TestUtilities #PaleGreen
-note as TestUtilitiesDependencies
-    External dependencies:
-    - Microsoft.AspNetCore.Http
-    - Microsoft.AspNetCore.Mvc.Core
-    - Moq
-    - NUnit
-end note
-TestUtilitiesDependencies -- TestUtilities
+    component "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers #SkyBlue
 
-component "SmartHome.Server.Tests.Api.Clients" as ApiClientsTests #PaleGreen
-note as ApiClientsTestsDependencies
-    External dependencies:
-    - coverlet.collector
-    - Microsoft.Extensions.Diagnostics.Testing
-    - Microsoft.NET.Test.Sdk
-    - NUnit
-    - NUnit.Analyzers
-    - NUnit3TestAdapter
-end note
-ApiClientsTestsDependencies -- ApiClientsTests
+    component "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers #SkyBlue
 
-component "SmartHome.Server.Tests.Api.Controllers.Clients" as ClientsApiControllersTests #PaleGreen
-note as ClientsApiControllersTestsDependencies
-    External dependencies:
-    - coverlet.collector
-    - Microsoft.Extensions.Diagnostics.Testing
-    - Microsoft.NET.Test.Sdk
-    - NUnit
-    - NUnit.Analyzers
-    - NUnit3TestAdapter
-end note
-ClientsApiControllersTestsDependencies -- ClientsApiControllersTests
+    component "SmartHome.Server.Main" as Main #SkyBlue
+    note as MainDependencies
+        **External dependencies:**
+        - Microsoft.AspNetCore.OpenApi
+    end note
+    MainDependencies -- Main
 
-component "SmartHome.Server.Tests.Api.Controllers.Firmware" as FirmwareApiControllersTests #PaleGreen
-note as FirmwareApiControllersTestsDependencies
-    External dependencies:
-    - coverlet.collector
-    - Microsoft.Extensions.Diagnostics.Testing
-    - Microsoft.Extensions.TimeProvider.Testing
-    - Microsoft.NET.Test.Sdk
-    - NUnit
-    - NUnit.Analyzers
-    - NUnit3TestAdapter
-end note
-FirmwareApiControllersTestsDependencies -- FirmwareApiControllersTests
+    MainDatabase <-- Repositories : Connection
 
-component "SmartHome.Server.Tests.Features.Managers" as FeaturesManagersTests #PaleGreen
-note as FeaturesManagersTestsDependencies
-    External dependencies:
-    - coverlet.collector
-    - Microsoft.Extensions.Diagnostics.Testing
-    - Microsoft.NET.Test.Sdk
-    - NUnit
-    - NUnit.Analyzers
-    - NUnit3TestAdapter
-end note
-FeaturesManagersTestsDependencies -- FeaturesManagersTests
+    Repositories <.. ApiClients
+    Repositories <.. FeatureManagers
+    Repositories <.. Services
+    Repositories <.. FirmwareApiControllers
+    Repositories <.. ClientsApiControllers
+
+    CommonApiControllers <.. FirmwareApiControllers
+    CommonApiControllers <.. ClientsApiControllers
+
+    FeatureManagers <.. ClientsApiControllers
+
+    ApiClients <.. FeatureManagers
+}
+
+package Tests {
+    component "SmartHome.Server.Tests.Utilities" as TestUtilities #SkyBlue
+    note as TestUtilitiesDependencies
+        **External dependencies:**
+        - Microsoft.AspNetCore.Http
+        - Microsoft.AspNetCore.Mvc.Core
+        - Moq
+        - NUnit
+    end note
+    TestUtilitiesDependencies -- TestUtilities
+
+    component "SmartHome.Server.Tests.Api.Clients" as ApiClientsTests #PaleGreen
+    note as ApiClientsTestsDependencies
+        **External dependencies:**
+        - coverlet.collector
+        - Microsoft.Extensions.Diagnostics.Testing
+        - Microsoft.NET.Test.Sdk
+        - NUnit
+        - NUnit.Analyzers
+        - NUnit3TestAdapter
+    end note
+    ApiClientsTestsDependencies -- ApiClientsTests
+
+    component "SmartHome.Server.Tests.Api.Controllers.Clients" as ClientsApiControllersTests #PaleGreen
+    note as ClientsApiControllersTestsDependencies
+        **External dependencies:**
+        - coverlet.collector
+        - Microsoft.Extensions.Diagnostics.Testing
+        - Microsoft.NET.Test.Sdk
+        - NUnit
+        - NUnit.Analyzers
+        - NUnit3TestAdapter
+    end note
+    ClientsApiControllersTestsDependencies -- ClientsApiControllersTests
+
+    component "SmartHome.Server.Tests.Api.Controllers.Firmware" as FirmwareApiControllersTests #PaleGreen
+    note as FirmwareApiControllersTestsDependencies
+        **External dependencies:**
+        - coverlet.collector
+        - Microsoft.Extensions.Diagnostics.Testing
+        - Microsoft.Extensions.TimeProvider.Testing
+        - Microsoft.NET.Test.Sdk
+        - NUnit
+        - NUnit.Analyzers
+        - NUnit3TestAdapter
+    end note
+    FirmwareApiControllersTestsDependencies -- FirmwareApiControllersTests
+
+    component "SmartHome.Server.Tests.Features.Managers" as FeaturesManagersTests #PaleGreen
+    note as FeaturesManagersTestsDependencies
+        **External dependencies:**
+        - coverlet.collector
+        - Microsoft.Extensions.Diagnostics.Testing
+        - Microsoft.NET.Test.Sdk
+        - NUnit
+        - NUnit.Analyzers
+        - NUnit3TestAdapter
+    end note
+    FeaturesManagersTestsDependencies -- FeaturesManagersTests
 
 
-component "SmartHome.Server.Tests.Services" as ServicesTests #PaleGreen
-note as ServicesTestsDependencies
-    External dependencies:
-    - coverlet.collector
-    - Microsoft.Extensions.Diagnostics.Testing
-    - Microsoft.Extensions.TimeProvider.Testing
-    - Microsoft.NET.Test.Sdk
-    - NUnit
-    - NUnit.Analyzers
-    - NUnit3TestAdapter
-end note
-ServicesTestsDependencies -- ServicesTests
+    component "SmartHome.Server.Tests.Services" as ServicesTests #PaleGreen
+    note as ServicesTestsDependencies
+        **External dependencies:**
+        - coverlet.collector
+        - Microsoft.Extensions.Diagnostics.Testing
+        - Microsoft.Extensions.TimeProvider.Testing
+        - Microsoft.NET.Test.Sdk
+        - NUnit
+        - NUnit.Analyzers
+        - NUnit3TestAdapter
+    end note
+    ServicesTestsDependencies -- ServicesTests
 
-component "SmartHome.Server.Tests.Repositories" as RepositoriesTests #PaleGreen
-note as RepositoriesTestsDependencies
-    External dependencies:
-    - coverlet.collector
-    - Microsoft.NET.Test.Sdk
-    - NUnit
-    - NUnit.Analyzers
-    - NUnit3TestAdapter
-end note
-RepositoriesTestsDependencies -- RepositoriesTests
+    component "SmartHome.Server.Tests.Repositories" as RepositoriesTests #PaleGreen
+    note as RepositoriesTestsDependencies
+        **External dependencies:**
+        - coverlet.collector
+        - Microsoft.NET.Test.Sdk
+        - NUnit
+        - NUnit.Analyzers
+        - NUnit3TestAdapter
+    end note
+    RepositoriesTestsDependencies -- RepositoriesTests
 
-component ""SmartHome.Server.Tests.Api.Controllers.Common"" as CommonApiControllersTests #PaleGreen
-note as CommonApiControllersTestsDependencies
-    External dependencies:
-    - coverlet.collector
-    - Microsoft.NET.Test.Sdk
-    - NUnit
-    - NUnit.Analyzers
-    - NUnit3TestAdapter
-end note
-CommonApiControllersTestsDependencies -- CommonApiControllersTests
+    component ""SmartHome.Server.Tests.Api.Controllers.Common"" as CommonApiControllersTests #PaleGreen
+    note as CommonApiControllersTestsDependencies
+        **External dependencies:**
+        - coverlet.collector
+        - Microsoft.NET.Test.Sdk
+        - NUnit
+        - NUnit.Analyzers
+        - NUnit3TestAdapter
+    end note
+    CommonApiControllersTestsDependencies -- CommonApiControllersTests
 
-component "SmartHome.Server.Main" as Main
-note as MainDependencies
-    External dependencies:
-    - Microsoft.AspNetCore.OpenApi
-end note
-MainDependencies -- Main
+    TestUtilities <.. ApiClientsTests
+    TestUtilities <.. ClientsApiControllersTests
+    TestUtilities <.. FirmwareApiControllersTests
+    TestUtilities <.. ServicesTests
+    TestUtilities <.. RepositoriesTests
+    TestUtilities <.. CommonApiControllersTests
+}
 
-MainDatabase <-- Repositories
+Repositories <.. FeaturesManagersTests
+Repositories <.. RepositoriesTests
+Repositories <.. TestUtilities
 
-Repositories <.. ApiClients : use
-Repositories <.. FeatureManagers : use
-Repositories <.. Services : use
-Repositories <.. TestUtilities : use
-Repositories <.. FirmwareApiControllers : use
-Repositories <.. ClientsApiControllers : use
-Repositories <.. FeaturesManagersTests : use
-Repositories <.. RepositoriesTests : use
+CommonApiControllers <.[#Green]. CommonApiControllersTests
 
-CommonApiControllers <.. FirmwareApiControllers : use
-CommonApiControllers <.. ClientsApiControllers : use
-CommonApiControllers <.. CommonApiControllersTests : use
+ClientsApiControllers <.[#Green]. ClientsApiControllersTests
 
-ClientsApiControllers <.. ClientsApiControllersTests : use
+FirmwareApiControllers <.[#Green]. FirmwareApiControllersTests
 
-FirmwareApiControllers <.. FirmwareApiControllersTests : use
+FeatureManagers <.[#Green]. FeaturesManagersTests
 
-FeatureManagers <.. ClientsApiControllers : use
-FeatureManagers <.. FeaturesManagersTests : use
+ApiClients <.[#Green]. ApiClientsTests
 
-ApiClients <.. FeatureManagers : use
-ApiClients <.. ApiClientsTests : use
+Services <.[#Green]. ServicesTests
 
-Services <.. ServicesTests : use
-
-TestUtilities <.. ApiClientsTests : use
-TestUtilities <.. ClientsApiControllersTests : use
-TestUtilities <.. FirmwareApiControllersTests : use
-TestUtilities <.. ServicesTests : use
-TestUtilities <.. RepositoriesTests : use
-TestUtilities <.. CommonApiControllersTests : use
-
-Main <.. TestUtilities : use
+Main <.. TestUtilities
 
 @enduml
