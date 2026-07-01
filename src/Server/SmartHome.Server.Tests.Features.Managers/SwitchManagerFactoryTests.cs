@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.ApiClients.StationApi;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Managers;
-using SmartHome.Server.Managers.Factories;
-using SmartHome.UnitTests;
+using SmartHome.Server.Api.Clients.Abstractions;
+using SmartHome.Server.Features.Managers;
+using SmartHome.Server.Features.Managers.Abstractions;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
 
-namespace SmartHome.SmartHome.UnitTests.Server.Managers.Factories;
+namespace SmartHome.Server.Tests.Features.Managers;
 
 [Category("UnitTest")]
 [TestOf(typeof(SwitchManagerFactory))]
@@ -22,7 +22,7 @@ public sealed class SwitchManagerFactoryTests
         var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        TestDelegate actionUnderTest = () => new SwitchManagerFactory(
+        Action actionUnderTest = () => new SwitchManagerFactory(
             stationApiClientsFactoryStub.Object,
             loggerFactoryStub.Object);
 
@@ -34,7 +34,7 @@ public sealed class SwitchManagerFactoryTests
     {
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        TestDelegate actionUnderTest = () => new SwitchManagerFactory(
+        Action actionUnderTest = () => new SwitchManagerFactory(
             null!,
             loggerFactoryStub.Object);
 
@@ -47,7 +47,7 @@ public sealed class SwitchManagerFactoryTests
         var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        TestDelegate actionUnderTest = () => new SwitchManagerFactory(
+        Action actionUnderTest = () => new SwitchManagerFactory(
             stationApiClientsFactoryStub.Object,
             null!);
 

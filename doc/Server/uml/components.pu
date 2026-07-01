@@ -84,6 +84,18 @@ note as FirmwareApiControllersTestsDependencies
 end note
 FirmwareApiControllersTestsDependencies -- FirmwareApiControllersTests
 
+component "SmartHome.Server.Tests.Features.Managers" as FeaturesManagersTests #PaleGreen
+note as FeaturesManagersTestsDependencies
+    External dependencies:
+    - coverlet.collector
+    - Microsoft.Extensions.Diagnostics.Testing
+    - Microsoft.NET.Test.Sdk
+    - NUnit
+    - NUnit.Analyzers
+    - NUnit3TestAdapter
+end note
+FeaturesManagersTestsDependencies -- FeaturesManagersTests
+
 component "SmartHome.Server.Main" as Main
 note as MainDependencies
     External dependencies:
@@ -99,6 +111,7 @@ Repositories <.. Services : use
 Repositories <.. TestUtilities : use
 Repositories <.. FirmwareApiControllers : use
 Repositories <.. ClientsApiControllers : use
+Repositories <.. FeaturesManagersTests : use
 
 CommonApiControllers <.. FirmwareApiControllers : use
 CommonApiControllers <.. ClientsApiControllers : use
@@ -108,6 +121,7 @@ ClientsApiControllers <.. ClientsApiControllersTests : use
 FirmwareApiControllers <.. FirmwareApiControllersTests : use
 
 FeatureManagers <.. ClientsApiControllers : use
+FeatureManagers <.. FeaturesManagersTests : use
 
 ApiClients <.. FeatureManagers : use
 ApiClients <.. ApiClientsTests : use

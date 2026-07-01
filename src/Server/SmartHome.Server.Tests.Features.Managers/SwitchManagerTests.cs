@@ -2,13 +2,14 @@
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.ApiClients.StationApi;
-using SmartHome.Server.Data.Models.Entities;
-using SmartHome.Server.Data.Models.Requests;
-using SmartHome.Server.Managers;
+using SmartHome.Server.Api.Clients.Abstractions;
+using SmartHome.Server.Features.Managers.Requests;
+using SmartHome.Server.Features.Managers;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
 using System.Net;
 
-namespace SmartHome.UnitTests.Server.Managers;
+namespace SmartHome.Server.Tests.Features.Managers;
 
 
 [Category("UnitTest")]
@@ -32,7 +33,7 @@ public sealed class SwitchManagerTests
         var loggerStub = new FakeLogger<SwitchManager>();
 
         SwitchManager? managerUnderTest = null;
-        TestDelegate actionUnderTest = () => managerUnderTest =
+        Action actionUnderTest = () => managerUnderTest =
             new SwitchManager(
                 switchEntity,
                 stationEntity,
@@ -56,7 +57,7 @@ public sealed class SwitchManagerTests
         var stationApiClientFactory = new Mock<IStationApiClientFactory>();
         var loggerStub = new FakeLogger<SwitchManager>();
 
-        TestDelegate actionUnderTest = () => new SwitchManager(
+        Action actionUnderTest = () => new SwitchManager(
             null!,
             stationEntity,
             stationApiClientFactory.Object,
@@ -75,7 +76,7 @@ public sealed class SwitchManagerTests
         var stationApiClientFactory = new Mock<IStationApiClientFactory>();
         var loggerStub = new FakeLogger<SwitchManager>();
 
-        TestDelegate actionUnderTest = () => new SwitchManager(
+        Action actionUnderTest = () => new SwitchManager(
             switchEntity,
             null!,
             stationApiClientFactory.Object,
@@ -97,7 +98,7 @@ public sealed class SwitchManagerTests
 
         var loggerStub = new FakeLogger<SwitchManager>();
 
-        TestDelegate actionUnderTest = () => new SwitchManager(
+        Action actionUnderTest = () => new SwitchManager(
             switchEntity,
             stationEntity,
             null!,
@@ -119,7 +120,7 @@ public sealed class SwitchManagerTests
 
         var stationApiClientFactory = new Mock<IStationApiClientFactory>();
 
-        TestDelegate actionUnderTest = () => new SwitchManager(
+        Action actionUnderTest = () => new SwitchManager(
             switchEntity,
             stationEntity,
             stationApiClientFactory.Object,
@@ -147,7 +148,7 @@ public sealed class SwitchManagerTests
         var stationApiClientFactory = new Mock<IStationApiClientFactory>();
         var loggerStub = new FakeLogger<SwitchManager>();
 
-        TestDelegate actionUnderTest = () => new SwitchManager(
+        Action actionUnderTest = () => new SwitchManager(
             switchEntity,
             stationEntity,
             stationApiClientFactory.Object,
@@ -177,7 +178,7 @@ public sealed class SwitchManagerTests
         };
 
         Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
-        var request = new SwitchUpdateServerRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
@@ -358,7 +359,7 @@ public sealed class SwitchManagerTests
         Assert.That(wasAttemptSuccessful, Is.False);
 
         Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
-        var request = new SwitchUpdateServerRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
 
         stationApiClientMock.Verify(client => client
             .SendRequestAsync(
@@ -398,7 +399,7 @@ public sealed class SwitchManagerTests
         }
 
         Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
-        var request = new SwitchUpdateServerRequest(switchEntity.ExpectedState);
+        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
