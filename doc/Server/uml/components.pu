@@ -96,6 +96,20 @@ note as FeaturesManagersTestsDependencies
 end note
 FeaturesManagersTestsDependencies -- FeaturesManagersTests
 
+
+component "SmartHome.Server.Tests.Services" as ServicesTests #PaleGreen
+note as ServicesTestsDependencies
+    External dependencies:
+    - coverlet.collector
+    - Microsoft.Extensions.Diagnostics.Testing
+    - Microsoft.Extensions.TimeProvider.Testing
+    - Microsoft.NET.Test.Sdk
+    - NUnit
+    - NUnit.Analyzers
+    - NUnit3TestAdapter
+end note
+ServicesTestsDependencies -- ServicesTests
+
 component "SmartHome.Server.Main" as Main
 note as MainDependencies
     External dependencies:
@@ -126,9 +140,12 @@ FeatureManagers <.. FeaturesManagersTests : use
 ApiClients <.. FeatureManagers : use
 ApiClients <.. ApiClientsTests : use
 
+Services <.. ServicesTests : use
+
 TestUtilities <.. ApiClientsTests : use
 TestUtilities <.. ClientsApiControllersTests : use
 TestUtilities <.. FirmwareApiControllersTests : use
+TestUtilities <.. ServicesTests : use
 
 Main <.. TestUtilities : use
 

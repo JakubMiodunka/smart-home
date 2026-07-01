@@ -3,8 +3,11 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
+using SmartHome.Server.Services;
+using SmartHome.Server.Services.Abstractions;
+using SmartHome.Server.Tests.Utilities;
 
-namespace SmartHome.UnitTests.Server.Services;
+namespace SmartHome.Server.Tests.Services;
 
 [Category("UnitTest")]
 [TestOf(typeof(BackgroundProcessorService))]

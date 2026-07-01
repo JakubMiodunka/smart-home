@@ -3,12 +3,13 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.Data.Repositories;
+using SmartHome.Server.Repositories.Abstractions;
 using SmartHome.Server.Services.Processors;
+using SmartHome.Server.Tests.Utilities;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace SmartHome.UnitTests.Server.Services;
+namespace SmartHome.Server.Tests.Services.Processors;
 
 [Category("UnitTest")]
 [TestOf(typeof(HeartbeatMonitoringServiceProcessor))]
