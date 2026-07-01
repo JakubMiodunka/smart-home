@@ -59,7 +59,3 @@ src/Server/SmartHome.Server.Tests.Api.Controllers.Clients/obj/
 
 src/Server/SmartHome.Server.Main/bin/
 src/Server/SmartHome.Server.Main/obj/
-
-
-src/Server/UnitTests/bin/
-src/Server/UnitTests/obj/
