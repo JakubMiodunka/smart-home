@@ -64,6 +64,13 @@ package "SmartHome.Server.Repositories" as Repositories {
         StationEntityExtensions <-- SwitchEntityExtensions
     }
 
+    package Configuration {
+        +class RepositoriesConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+            +{static} ConfigureDapper() : void
+        }
+    }
+
     ~class DatabaseClient {
         -_connectionString : string
         +DatabaseClient(string) : DatabaseClient
@@ -81,32 +88,32 @@ package "SmartHome.Server.Repositories" as Repositories {
         +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
     }
 
-    +class Configuration {
-        -{static} ConfigureDefaultTypeMap(DefaultTypeMap) : void
-        -{static} ConfigureTypeConverters(SqlMapper) : void
-        -{static} ConfigureStationsRepository(IHostApplicationBuilder) : void
-        -{static} ConfigureSwitchesRepository(IHostApplicationBuilder) : void
-        +{static} ConfigureServiceProvider(IHostApplicationBuilder, DefaultTypeMap, SqlMapper) : void
-    }
-
     IStationsRepository <|.. DatabaseClient
+    IStationsRepository <-- RepositoriesConfiguration
+
     ISwitchesRepository <|.. DatabaseClient
+    ISwitchesRepository <-- RepositoriesConfiguration
+
     StationEntity <-- IStationsRepository
+
     SwitchEntity <-- ISwitchesRepository
-    IStationsRepository <-- Configuration
-    ISwitchesRepository <-- Configuration
-    DatabaseClient <-- Configuration
-    IPAddressHandler <-- Configuration
-    PhysicalAddressHandler <-- Configuration
 
-    note left of Configuration
+    DatabaseClient <-- RepositoriesConfiguration
+
+    IPAddressHandler <-- RepositoriesConfiguration
+
+    PhysicalAddressHandler <-- RepositoriesConfiguration
+
+    note left of RepositoriesConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
-        repositories through their interface definitions. This approach 
-        prevents exposing the concrete interface implementations publicly.
+        utilities through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
 
-        Each private method handles the configuration of one specific service.
-        The publicly exposed ConfigureServiceProvider(IHostApplicationBuilder) 
-        method calls all private methods in the correct execution order.
+        Shall be called from Program.cs.
+    end note
+
+    note left of RepositoriesConfiguration::ConfigureDapper
+        Configures Dapper utilities to be able to successfully exchange data with database server.
 
         Shall be called from Program.cs.
     end note
