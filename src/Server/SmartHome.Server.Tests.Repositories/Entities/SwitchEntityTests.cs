@@ -8,7 +8,7 @@ namespace SmartHome.Server.Tests.Repositories.Entities;
 [Category("UnitTest")]
 [TestOf(typeof(SwitchEntity))]
 [Author("Jakub Miodunka")]
-public sealed class SwitchEntityTests
+internal sealed class SwitchEntityTests
 {
     #region IsOnline
     [Test]
@@ -72,7 +72,7 @@ public sealed class SwitchEntityTests
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
 
-        TestDelegate actionUnderTest = () => switchEntity.SwitchUrl(null!);
+        Action actionUnderTest = () => switchEntity.SwitchUrl(null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -96,7 +96,7 @@ public sealed class SwitchEntityTests
             Id = stationId
         };
 
-        TestDelegate actionUnderTest = () => switchEntity.SwitchUrl(stationEntity);
+        Action actionUnderTest = () => switchEntity.SwitchUrl(stationEntity);
 
         Assert.Throws<ArgumentOutOfRangeException>(actionUnderTest);
     }
@@ -135,7 +135,7 @@ public sealed class SwitchEntityTests
             StationId = stationEntity.Id
         };
 
-        TestDelegate actionUnderTest = () => switchEntity.SwitchUrl(stationEntity);
+        Action actionUnderTest = () => switchEntity.SwitchUrl(stationEntity);
 
         Assert.Throws<NotSupportedException>(actionUnderTest);
     }

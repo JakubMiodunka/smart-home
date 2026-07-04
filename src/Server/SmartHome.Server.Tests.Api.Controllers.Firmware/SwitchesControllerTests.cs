@@ -17,7 +17,7 @@ namespace SmartHome.Server.Tests.Api.Controllers.Firmware;
 [Category("UnitTest")]
 [TestOf(typeof(SwitchesController))]
 [Author("Jakub Miodunka")]
-public sealed class SwitchesControllerTests
+internal sealed class SwitchesControllerTests
 {
     #region Constructor
     [Test]

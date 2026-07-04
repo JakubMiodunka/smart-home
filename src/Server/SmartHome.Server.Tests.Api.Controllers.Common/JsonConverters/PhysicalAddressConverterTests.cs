@@ -9,13 +9,13 @@ namespace SmartHome.Server.Tests.Api.Controllers.Common.JsonConverters;
 [Category("UnitTest")]
 [TestOf(typeof(PhysicalAddressConverter))]
 [Author("Jakub Miodunka")]
-public sealed class BackgroundProcessorServiceTests
+internal sealed class PhysicalAddressConverterTests
 {
     #region Constructor
     [Test]
     public void InstantiationPossible()
     {
-        TestDelegate actionUnderTest = () => new PhysicalAddressConverter();
+        Action actionUnderTest = () => new PhysicalAddressConverter();
 
         Assert.DoesNotThrow(actionUnderTest);
     }
@@ -32,7 +32,7 @@ public sealed class BackgroundProcessorServiceTests
 
         var converterUnderTest = new PhysicalAddressConverter();
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
         {
             Utf8JsonReader jsonReader = FakeDataGenerationUtilities.CreateJsonReader(macAddress.ToString());
             converterUnderTest.Read(ref jsonReader, null!, jsonSerializerOptions);
@@ -50,7 +50,7 @@ public sealed class BackgroundProcessorServiceTests
 
         var converterUnderTest = new PhysicalAddressConverter();
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
         {
             Utf8JsonReader jsonReader = FakeDataGenerationUtilities.CreateJsonReader(macAddress.ToString());
             converterUnderTest.Read(ref jsonReader, macAddress.GetType(), null!);
@@ -68,7 +68,7 @@ public sealed class BackgroundProcessorServiceTests
 
         var converterUnderTest = new PhysicalAddressConverter();
 
-        TestDelegate actionUnderTest = () => converterUnderTest.Write(jsonWriter, null!, jsonSerializerOptions);
+        Action actionUnderTest = () => converterUnderTest.Write(jsonWriter, null!, jsonSerializerOptions);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -84,7 +84,7 @@ public sealed class BackgroundProcessorServiceTests
 
         var converterUnderTest = new PhysicalAddressConverter();
 
-        TestDelegate actionUnderTest = () => converterUnderTest.Write(jsonWriter, macAddress, null!);
+        Action actionUnderTest = () => converterUnderTest.Write(jsonWriter, macAddress, null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -119,7 +119,7 @@ public sealed class BackgroundProcessorServiceTests
         var jsonSerializerOptions = new JsonSerializerOptions();
         jsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
 
-        TestDelegate actionUnderTest = () =>
+        Action actionUnderTest = () =>
             JsonSerializer.Deserialize<PhysicalAddress>(invalidMacAddressString, jsonSerializerOptions);
 
         Assert.Throws<JsonException>(actionUnderTest);

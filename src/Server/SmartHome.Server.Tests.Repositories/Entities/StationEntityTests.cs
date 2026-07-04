@@ -8,7 +8,7 @@ namespace SmartHome.Server.Tests.Repositories.Entities;
 [Category("UnitTest")]
 [TestOf(typeof(StationEntity))]
 [Author("Jakub Miodunka")]
-public sealed class StationEntityTests
+internal sealed class StationEntityTests
 {
     #region IsOnline
     [Test]
