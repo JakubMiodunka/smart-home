@@ -3,7 +3,7 @@
 /// <summary>
 /// Definition of processor that execute business logic within a background service.
 /// </summary>
-public interface IBackgroundServiceProcessor
+internal interface IBackgroundServiceProcessor
 {
     public string ProcessorName { get; }
 
