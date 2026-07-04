@@ -11,7 +11,7 @@ namespace SmartHome.Server.Services.Processors;
 /// This class encapsulates the business logic for determining station timeouts. 
 /// It is intended to be executed periodically by a <see cref="BackgroundProcessorService"> instance.
 /// </remarks>
-public sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProcessor
+internal sealed class HeartbeatMonitoringServiceProcessor : IBackgroundServiceProcessor
 {
     #region Properties
     private readonly IStationsRepository _stationsRepository;

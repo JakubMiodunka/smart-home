@@ -9,7 +9,7 @@ namespace SmartHome.Server.Services;
 /// Implementation of <see cref="BackgroundService"/> that acts as a runner 
 /// for an <see cref="IBackgroundServiceProcessor"/>, executing its logic at a specified time interval.
 /// </summary>
-public sealed class BackgroundProcessorService : BackgroundService
+internal sealed class BackgroundProcessorService : BackgroundService
 {
     #region Properties
     private readonly IBackgroundServiceProcessor _processor;
