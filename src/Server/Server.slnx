@@ -2,8 +2,8 @@
   <Folder Name="/Tests/">
     <Project Path="SmartHome.Server.Tests.Api.Clients/SmartHome.Server.Tests.Api.Clients.csproj" Id="19bf0357-2395-4538-8b8d-0caa295b5597" />
     <Project Path="SmartHome.Server.Tests.Api.Controllers.Clients/SmartHome.Server.Tests.Api.Controllers.Clients.csproj" Id="e7112929-4f75-463a-9381-b677b7163946" />
-    <Project Path="SmartHome.Server.Tests.Api.Controllers.Common/SmartHome.Server.Tests.Api.Controllers.Common.csproj" Id="eb041252-80bf-49b9-84bb-01ef3176d1e0" />
     <Project Path="SmartHome.Server.Tests.Api.Controllers.Firmware/SmartHome.Server.Tests.Api.Controllers.Firmware.csproj" Id="a54a4e3f-b7ec-48a5-9610-d1fe099158b1" />
+    <Project Path="SmartHome.Server.Tests.Api.Controllers/SmartHome.Server.Tests.Api.Controllers.csproj" />
     <Project Path="SmartHome.Server.Tests.Features.Managers/SmartHome.Server.Tests.Features.Managers.csproj" Id="d9b2e119-22a9-443e-9834-25cdb3e03a3a" />
     <Project Path="SmartHome.Server.Tests.Repositories/SmartHome.Server.Tests.Repositories.csproj" Id="9428ab42-6f6f-444e-9601-405559bbacdc" />
     <Project Path="SmartHome.Server.Tests.Services/SmartHome.Server.Tests.Services.csproj" Id="fae6d52b-0766-40ae-9688-d312cfeba2dd" />
@@ -11,8 +11,8 @@
   </Folder>
   <Project Path="SmartHome.Server.Api.Clients/SmartHome.Server.Api.Clients.csproj" Id="a4f73003-a078-446b-8c6a-db5347f66268" />
   <Project Path="SmartHome.Server.Api.Controllers.Clients/SmartHome.Server.Api.Controllers.Clients.csproj" Id="e696626e-6f51-4267-b982-763d501ade15" />
-  <Project Path="SmartHome.Server.Api.Controllers.Common/SmartHome.Server.Api.Controllers.Common.csproj" Id="acb3ef65-0801-4980-a9c8-5c1c2cfbc926" />
   <Project Path="SmartHome.Server.Api.Controllers.Firmware/SmartHome.Server.Api.Controllers.Firmware.csproj" Id="ccd14656-c6b4-4257-924e-ee537eec0ce6" />
+  <Project Path="SmartHome.Server.Api.Controllers/SmartHome.Server.Api.Controllers.csproj" />
   <Project Path="SmartHome.Server.Databases.Main/SmartHome.Server.Databases.Main.sqlproj" Id="1bee370d-2e75-4493-a5a7-a63234a53665">
     <Build />
     <Deploy />
