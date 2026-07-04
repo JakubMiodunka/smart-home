@@ -18,6 +18,7 @@ package MainCodebase {
         **External dependencies:**
         - Dapper
         - Microsoft.Data.SqlClient
+        - Microsoft.Extensions.Hosting
     end note
     RepositoriesDependencies -- Repositories
 
