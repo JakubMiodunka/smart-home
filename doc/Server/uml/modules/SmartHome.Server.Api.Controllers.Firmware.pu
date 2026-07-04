@@ -24,6 +24,11 @@ package "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers {
         }
     }
 
+    package Configuration {
+        +class FirmwareApiControllersConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
     ~class StationsController {
         -_stationsRepository : IStationsRepository
         -_timeProvider : TimeProvider
@@ -33,7 +38,7 @@ package "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers {
         +ProcessHeartbeatSignal() : Task<IActionResult>
     }
 
-    ~class "SwitchesController" as FirmwareSwitchesController {
+    ~class SwitchesController {
         -{static} DefaultExpectedSwitchState : bool
         -{static} DefaultActualSwitchState : bool?
         -_switchesRepository : ISwitchesRepository
@@ -44,11 +49,24 @@ package "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers {
         +UpdateSwitch(long, SwitchUpdateRequest) : Task<IActionResult>
     }
 
-    
     StationRegistrationRequest <-- StationsController
+
     SwitchRegistrationRequest <-- FirmwareSwitchesController
+
     SwitchUpdateFirmwareRequest <-- FirmwareSwitchesController
+
     SwitchRegistrationResponse <-- FirmwareSwitchesController
+
+    StationsController <-- FirmwareApiControllersConfiguration
+    SwitchesController <-- FirmwareApiControllersConfiguration
+
+    note left of FirmwareApiControllersConfiguration::ConfigureApplicationBuilder
+        Used to configure dependency injection to expose package-defined 
+        utilities through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
+
+        Shall be called from Program.cs.
+    end note
 }
 
 @enduml

@@ -12,7 +12,7 @@ package "SmartHome.Server.Api.Clients" as ApiClient {
     }
 
     package Configuration {
-        +class ApiClientsModuleConfiguration {
+        +class ApiClientsConfiguration {
             +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
         }
     }
@@ -40,10 +40,10 @@ package "SmartHome.Server.Api.Clients" as ApiClient {
     IStationApiClientFactory <|.. StationApiClientFactory
     IStationApiClient <|.. StationApiClient
     StationApiClient <-- StationApiClientFactory
-    IStationApiClientFactory <-- ApiClientsModuleConfiguration
-    StationApiClientFactory <-- ApiClientsModuleConfiguration
+    IStationApiClientFactory <-- ApiClientsConfiguration
+    StationApiClientFactory <-- ApiClientsConfiguration
 
-    note left of ApiClientsModuleConfiguration::ConfigureApplicationBuilder
+    note left of ApiClientsConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
         utilities through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.

@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SmartHome.Server.Api.Clients.Abstractions;
 
-namespace SmartHome.Server.Api.Clients.Configuration;
+namespace SmartHome.Server.Api.Controllers.Clients.Configuration;
 
 /// <summary>
 /// Provides configuration methods to register assembly utilities into the host application.
@@ -10,7 +9,7 @@ namespace SmartHome.Server.Api.Clients.Configuration;
 /// <remarks>
 /// The concrete implementations of the exposed services remain internal to this assembly.
 /// </remarks>
-public static class ApiClientsModuleConfiguration
+public static class ClientsApiControllersConfiguration
 {
     /// <summary>
     /// Registers internal assembly services and utilities into the provided application builder.
@@ -20,7 +19,8 @@ public static class ApiClientsModuleConfiguration
     /// </param>
     public static void ConfigureApplicationBuilder(IHostApplicationBuilder applicationBuilder)
     {
-        applicationBuilder.Services.AddHttpClient();
-        applicationBuilder.Services.AddSingleton<IStationApiClientFactory, StationApiClientFactory>();
+        applicationBuilder.Services
+            .AddControllers()
+            .AddApplicationPart(typeof(ClientsApiControllersConfiguration).Assembly);
     }
 }

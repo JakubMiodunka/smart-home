@@ -8,7 +8,7 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
     }
 
     package Configuration {
-        +class ClientsApiControllersModuleConfiguration {
+        +class ClientsApiControllersConfiguration {
             +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
         }
     }
@@ -26,9 +26,9 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
 
     SwitchUpdateClientRequest <-- ClientSwitchesController
     
-    ClientSwitchesController <-- ClientsApiControllersModuleConfiguration
+    ClientSwitchesController <-- ClientsApiControllersConfiguration
     
-    note left of ClientsApiControllersModuleConfiguration::ConfigureApplicationBuilder
+    note left of ClientsApiControllersConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
         utilities through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.

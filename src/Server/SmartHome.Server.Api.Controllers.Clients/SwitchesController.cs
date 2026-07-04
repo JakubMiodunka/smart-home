@@ -15,7 +15,7 @@ namespace SmartHome.Server.Api.Controllers.Clients;
 /// </summary>
 [ApiController]
 [Route("api/clients/v1/switches")]
-public class SwitchesController : BaseController
+internal class SwitchesController : BaseController
 {
     #region Properties
     private readonly ISwitchesRepository _switchesRepository;

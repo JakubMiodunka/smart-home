@@ -38,12 +38,12 @@ package MainCodebase {
     end note
     ServicesDependencies -- Services
 
-    component "SmartHome.Server.Api.Controllers.Common" as CommonApiControllers #SkyBlue
-    note as CommonApiControllersDependencies
+    component "SmartHome.Server.Api.Controllers" as ApiControllers #SkyBlue
+    note as ApiControllersDependencies
         **Frameworks**
         - Microsoft.AspNetCore.App
     end note
-    CommonApiControllersDependencies -- CommonApiControllers
+    ApiControllersDependencies -- ApiControllers
 
     component "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers #SkyBlue
 
@@ -64,8 +64,8 @@ package MainCodebase {
     Repositories <.. FirmwareApiControllers
     Repositories <.. ClientsApiControllers
 
-    CommonApiControllers <.. FirmwareApiControllers
-    CommonApiControllers <.. ClientsApiControllers
+    ApiControllers <.. FirmwareApiControllers
+    ApiControllers <.. ClientsApiControllers
 
     FeatureManagers <.. ClientsApiControllers
 
@@ -159,8 +159,8 @@ package Tests {
     end note
     RepositoriesTestsDependencies -- RepositoriesTests
 
-    component ""SmartHome.Server.Tests.Api.Controllers.Common"" as CommonApiControllersTests #PaleGreen
-    note as CommonApiControllersTestsDependencies
+    component ""SmartHome.Server.Tests.Api.Controllers"" as ApiControllersTests #PaleGreen
+    note as ApiControllersTestsDependencies
         **External dependencies:**
         - coverlet.collector
         - Microsoft.NET.Test.Sdk
@@ -168,21 +168,21 @@ package Tests {
         - NUnit.Analyzers
         - NUnit3TestAdapter
     end note
-    CommonApiControllersTestsDependencies -- CommonApiControllersTests
+    ApiControllersTestsDependencies -- ApiControllersTests
 
     TestUtilities <.. ApiClientsTests
     TestUtilities <.. ClientsApiControllersTests
     TestUtilities <.. FirmwareApiControllersTests
     TestUtilities <.. ServicesTests
     TestUtilities <.. RepositoriesTests
-    TestUtilities <.. CommonApiControllersTests
+    TestUtilities <.. ApiControllersTests
 }
 
 Repositories <.. FeaturesManagersTests
 Repositories <.. RepositoriesTests
 Repositories <.. TestUtilities
 
-CommonApiControllers <.[#Green]. CommonApiControllersTests
+ApiControllers <.[#Green]. ApiControllersTests
 
 ClientsApiControllers <.[#Green]. ClientsApiControllersTests
 

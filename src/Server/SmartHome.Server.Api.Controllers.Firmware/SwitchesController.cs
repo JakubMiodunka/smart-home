@@ -14,7 +14,7 @@ namespace SmartHome.Server.Api.Controllers.Firmware;
 /// Controller dedicated to managing electrical switches.
 /// </summary>
 [Route("api/firmware/v1/switches")]
-public class SwitchesController : BaseController
+internal class SwitchesController : BaseController
 {
     #region Constraints
     private const bool DefaultExpectedSwitchState = false;
