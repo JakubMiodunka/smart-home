@@ -40,8 +40,8 @@ package MainCodebase {
 
     component "SmartHome.Server.Api.Controllers.Common" as CommonApiControllers #SkyBlue
     note as CommonApiControllersDependencies
-        **External dependencies:**
-        - Microsoft.AspNetCore.Mvc.Core
+        **Frameworks**
+        - Microsoft.AspNetCore.App
     end note
     CommonApiControllersDependencies -- CommonApiControllers
 
@@ -75,11 +75,13 @@ package MainCodebase {
 package Tests {
     component "SmartHome.Server.Tests.Utilities" as TestUtilities #SkyBlue
     note as TestUtilitiesDependencies
-        **External dependencies:**
+        **NuGet:**
         - Microsoft.AspNetCore.Http
         - Microsoft.AspNetCore.Mvc.Core
         - Moq
         - NUnit
+        **Frameworks**
+        - Microsoft.AspNetCore.App
     end note
     TestUtilitiesDependencies -- TestUtilities
 
@@ -191,7 +193,5 @@ FeatureManagers <.[#Green]. FeaturesManagersTests
 ApiClients <.[#Green]. ApiClientsTests
 
 Services <.[#Green]. ServicesTests
-
-Main <.. TestUtilities
 
 @enduml

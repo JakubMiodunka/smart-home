@@ -6,6 +6,12 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
             +ExpectedSwitchState : bool
         }
     }
+
+    package Configuration {
+        +class ClientsApiControllersModuleConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
     
     ~class "SwitchesController" as ClientSwitchesController {
         -_switchesRepository : ISwitchesRepository
@@ -19,6 +25,16 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
     }
 
     SwitchUpdateClientRequest <-- ClientSwitchesController
+    
+    ClientSwitchesController <-- ClientsApiControllersModuleConfiguration
+    
+    note left of ClientsApiControllersModuleConfiguration::ConfigureApplicationBuilder
+        Used to configure dependency injection to expose package-defined 
+        utilities through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
+
+        Shall be called from Program.cs.
+    end note
 }
 
 @enduml
