@@ -11,6 +11,12 @@ package "SmartHome.Server.Api.Clients" as ApiClient {
         }
     }
 
+    package Configuration {
+        +class ApiClientsModuleConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
+
     ~class StationApiClient {
         +{static} MinTimeout : TimeSpan
         +{static} MaxTimeout : TimeSpan
@@ -31,17 +37,13 @@ package "SmartHome.Server.Api.Clients" as ApiClient {
         +CreateFor(StationEntity, TimeSpan) : IStationApiClient
     }
 
-    +class ApplicationBuilderConfiguration {
-        +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
-    }
-
     IStationApiClientFactory <|.. StationApiClientFactory
     IStationApiClient <|.. StationApiClient
     StationApiClient <-- StationApiClientFactory
-    IStationApiClientFactory <-- ApplicationBuilderConfiguration
-    StationApiClientFactory <-- ApplicationBuilderConfiguration
+    IStationApiClientFactory <-- ApiClientsModuleConfiguration
+    StationApiClientFactory <-- ApiClientsModuleConfiguration
 
-    note left of ApplicationBuilderConfiguration::ConfigureApplicationBuilder
+    note left of ApiClientsModuleConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
         utilities through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.
