@@ -8,7 +8,7 @@ using System.Net;
 namespace SmartHome.Server.Features.Managers;
 
 /// <inheritdoc cref="ISwitchManager"/>
-public sealed class SwitchManager : ISwitchManager
+internal sealed class SwitchManager : ISwitchManager
 {
     #region Properties
     // TODO: Move this value to some cinfiguration file.

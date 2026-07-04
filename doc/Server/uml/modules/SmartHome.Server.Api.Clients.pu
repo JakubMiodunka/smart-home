@@ -31,25 +31,20 @@ package "SmartHome.Server.Api.Clients" as ApiClient {
         +CreateFor(StationEntity, TimeSpan) : IStationApiClient
     }
 
-    +class Configuration {
-        -{static} ConfigureStationApiClientFactory(IHostApplicationBuilder) : void
-        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
+    +class ApplicationBuilderConfiguration {
+        +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
     }
 
     IStationApiClientFactory <|.. StationApiClientFactory
     IStationApiClient <|.. StationApiClient
     StationApiClient <-- StationApiClientFactory
-    IStationApiClientFactory <-- Configuration
-    StationApiClientFactory <-- Configuration
+    IStationApiClientFactory <-- ApplicationBuilderConfiguration
+    StationApiClientFactory <-- ApplicationBuilderConfiguration
 
-    note left of Configuration
+    note left of ApplicationBuilderConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
-        managers and manager factories through their interface definitions.
+        utilities through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.
-        
-        Each private method handles the configuration of one specific service.
-        The publicly exposed ConfigureServiceProvider(IHostApplicationBuilder) 
-        method calls all private methods in the correct execution order.
         
         Shall be called from Program.cs.
     end note

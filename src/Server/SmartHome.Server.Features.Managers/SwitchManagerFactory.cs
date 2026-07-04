@@ -6,7 +6,7 @@ using SmartHome.Server.Repositories.Entities;
 namespace SmartHome.Server.Features.Managers;
 
 /// <inheritdoc cref="ISwitchManagerFactory"/>
-public sealed class SwitchManagerFactory : ISwitchManagerFactory
+internal sealed class SwitchManagerFactory : ISwitchManagerFactory
 {
     #region Properties
     private readonly IStationApiClientFactory _stationApiClientsFactory;

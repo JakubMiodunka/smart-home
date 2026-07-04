@@ -15,7 +15,7 @@ namespace SmartHome.Server.Api.Clients;
 /// but in the future some station-specific configuration may be required.
 /// </remarks>
 /// <inheritdoc cref="IStationApiClient"/>
-public sealed class StationApiClient : IStationApiClient
+internal sealed class StationApiClient : IStationApiClient
 {
     #region Properties
     public static readonly TimeSpan MinTimeout = TimeSpan.FromMicroseconds(1);

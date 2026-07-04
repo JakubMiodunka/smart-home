@@ -25,6 +25,7 @@ package MainCodebase {
     note as ApiClientsDependencies
         **External dependencies:**
         - Microsoft.Extensions.Http
+        - Microsoft.Extensions.Hosting
     end note
     ApiClientsDependencies -- ApiClients
 

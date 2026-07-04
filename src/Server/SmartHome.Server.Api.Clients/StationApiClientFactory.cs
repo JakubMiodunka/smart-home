@@ -4,10 +4,8 @@ using SmartHome.Server.Repositories.Entities;
 
 namespace SmartHome.Server.Api.Clients;
 
-
-
 /// <inheritdoc cref="IStationApiClientFactory"/>
-public sealed class StationApiClientFactory : IStationApiClientFactory
+internal sealed class StationApiClientFactory : IStationApiClientFactory
 {
     #region Properties
     private readonly IHttpClientFactory _httpClientFactory;
