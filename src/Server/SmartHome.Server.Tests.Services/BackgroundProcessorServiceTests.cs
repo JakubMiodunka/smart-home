@@ -12,7 +12,7 @@ namespace SmartHome.Server.Tests.Services;
 [Category("UnitTest")]
 [TestOf(typeof(BackgroundProcessorService))]
 [Author("Jakub Miodunka")]
-public sealed class BackgroundProcessorServiceTests
+internal sealed class BackgroundProcessorServiceTests
 {
     #region Constructor
     [Test]
@@ -27,7 +27,7 @@ public sealed class BackgroundProcessorServiceTests
         var serviceProcessorStub = new Mock<IBackgroundServiceProcessor>();
         var loggerStub = new FakeLogger<BackgroundProcessorService>();
 
-        TestDelegate actionUnderTest = () => new BackgroundProcessorService(
+        Action actionUnderTest = () => new BackgroundProcessorService(
                 serviceProcessorStub.Object,
                 timeProviderStub,
                 serviceExecutionInterval,
@@ -47,7 +47,7 @@ public sealed class BackgroundProcessorServiceTests
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<BackgroundProcessorService>();
 
-        TestDelegate actionUnderTest = () => new BackgroundProcessorService(
+        Action actionUnderTest = () => new BackgroundProcessorService(
                 null!,
                 timeProviderStub,
                 serviceExecutionInterval,
@@ -67,7 +67,7 @@ public sealed class BackgroundProcessorServiceTests
         var serviceProcessorStub = new Mock<IBackgroundServiceProcessor>();
         var loggerStub = new FakeLogger<BackgroundProcessorService>();
 
-        TestDelegate actionUnderTest = () => new BackgroundProcessorService(
+        Action actionUnderTest = () => new BackgroundProcessorService(
                 serviceProcessorStub.Object,
                 null!,
                 serviceExecutionInterval,
@@ -87,7 +87,7 @@ public sealed class BackgroundProcessorServiceTests
         var timeProviderStub = new FakeTimeProvider();
         var serviceProcessorStub = new Mock<IBackgroundServiceProcessor>();
 
-        TestDelegate actionUnderTest = () => new BackgroundProcessorService(
+        Action actionUnderTest = () => new BackgroundProcessorService(
                 serviceProcessorStub.Object,
                 timeProviderStub,
                 serviceExecutionInterval,
@@ -106,7 +106,7 @@ public sealed class BackgroundProcessorServiceTests
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<BackgroundProcessorService>();
 
-        TestDelegate actionUnderTest = () => new BackgroundProcessorService(
+        Action actionUnderTest = () => new BackgroundProcessorService(
                 serviceProcessorStub.Object,
                 timeProviderStub,
                 serviceExecutionInterval,
