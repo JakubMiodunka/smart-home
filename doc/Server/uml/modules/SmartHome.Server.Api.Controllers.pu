@@ -1,0 +1,34 @@
+@startuml
+
+package "SmartHome.Server.Api.Controllers" as ApiControllers {
+    package JsonConverters {
+        ~class PhysicalAddressConverter {
+            +Read(ref Utf8JsonReader, Type, JsonSerializerOptions) : PhysicalAddress
+            +Write(Utf8JsonWriter, PhysicalAddress, JsonSerializerOptions) : void
+        }
+    }
+
+    package Configuration {
+        +class ApiControllersConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
+
+    +class BaseController {
+        #_httpContextAccessor : IHttpContextAccessor
+        #BaseController(IHttpContextAccessor) : BaseController
+        #TryGetRemoteIpAddress(out IPAddress?) : bool
+    }
+
+    PhysicalAddressConverter <-- ApiControllersConfiguration
+
+    note left of ApiControllersConfiguration::ConfigureApplicationBuilder
+        Used to configure dependency injection to expose package-defined 
+        utilities through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
+
+        Shall be called from Program.cs.
+    end note
+}
+
+@enduml
