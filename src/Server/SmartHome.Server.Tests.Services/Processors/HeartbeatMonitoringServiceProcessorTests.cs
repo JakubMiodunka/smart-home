@@ -14,7 +14,7 @@ namespace SmartHome.Server.Tests.Services.Processors;
 [Category("UnitTest")]
 [TestOf(typeof(HeartbeatMonitoringServiceProcessor))]
 [Author("Jakub Miodunka")]
-public sealed class HeartbeatMonitoringServiceProcessorTests
+internal sealed class HeartbeatMonitoringServiceProcessorTests
 {
     #region Constructor
     [Test]
@@ -29,7 +29,7 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
 
-        TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
+        Action actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
             stationsRepositoryMock.Object,
             timeProviderStub,
             maxHeartbeatInterval,
@@ -51,7 +51,7 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         var timeProviderStub = new FakeTimeProvider();
         var loggerStub = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
 
-        TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
+        Action actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
             null!,
             timeProviderStub,
             maxHeartbeatInterval,
@@ -71,7 +71,7 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var loggerStub = new FakeLogger<HeartbeatMonitoringServiceProcessor>();
 
-        TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
+        Action actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
             stationsRepositoryMock.Object,
             null!,
             maxHeartbeatInterval,
@@ -93,7 +93,7 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
 
-        TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
+        Action actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
             stationsRepositoryMock.Object,
             timeProviderStub,
             maxHeartbeatInterval,
@@ -113,7 +113,7 @@ public sealed class HeartbeatMonitoringServiceProcessorTests
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         var timeProviderStub = new FakeTimeProvider();
 
-        TestDelegate actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
+        Action actionUnderTest = () => new HeartbeatMonitoringServiceProcessor(
             stationsRepositoryMock.Object,
             timeProviderStub,
             maxHeartbeatInterval,

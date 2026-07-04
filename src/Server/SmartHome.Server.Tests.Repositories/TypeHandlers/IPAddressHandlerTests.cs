@@ -10,13 +10,13 @@ namespace SmartHome.Server.Tests.Repositories.TypeHandlers;
 [Category("UnitTest")]
 [TestOf(typeof(IPAddressHandler))]
 [Author("Jakub Miodunka")]
-public sealed class IPAddressHandlerTests
+internal sealed class IPAddressHandlerTests
 {
     #region Constructor
     [Test]
     public void InstantiationPossible()
     {
-        TestDelegate actionUnderTest = () => new IPAddressHandler();
+        Action actionUnderTest = () => new IPAddressHandler();
 
         Assert.DoesNotThrow(actionUnderTest);
     }
@@ -31,7 +31,7 @@ public sealed class IPAddressHandlerTests
         IPAddress ipAddress = randomizer.NextIpAddress();
 
         var handlerUnderTest = new IPAddressHandler();
-        TestDelegate actionUnderTest = () => handlerUnderTest.SetValue(null!, ipAddress);
+        Action actionUnderTest = () => handlerUnderTest.SetValue(null!, ipAddress);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -134,7 +134,7 @@ public sealed class IPAddressHandlerTests
         }
 
         var handlerUnderTest = new IPAddressHandler();
-        TestDelegate actionUnderTest = () => handlerUnderTest.Parse(invalidIpAddressString);
+        Action actionUnderTest = () => handlerUnderTest.Parse(invalidIpAddressString);
 
         Assert.Throws<FormatException>(actionUnderTest);
     }

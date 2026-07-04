@@ -10,13 +10,13 @@ namespace SmartHome.Server.Tests.Repositories.TypeHandlers;
 [Category("UnitTest")]
 [TestOf(typeof(PhysicalAddressHandler))]
 [Author("Jakub Miodunka")]
-public sealed class PhysicalAddressHandlerTests
+internal sealed class PhysicalAddressHandlerTests
 {
     #region Constructor
     [Test]
     public void InstantiationPossible()
     {
-        TestDelegate actionUnderTest = () => new PhysicalAddressHandler();
+        Action actionUnderTest = () => new PhysicalAddressHandler();
 
         Assert.DoesNotThrow(actionUnderTest);
     }
@@ -31,7 +31,7 @@ public sealed class PhysicalAddressHandlerTests
         PhysicalAddress macAddress = randomizer.NextMacAddress();
 
         var handlerUnderTest = new PhysicalAddressHandler();
-        TestDelegate actionUnderTest = () => handlerUnderTest.SetValue(null!, macAddress);
+        Action actionUnderTest = () => handlerUnderTest.SetValue(null!, macAddress);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
     }
@@ -134,7 +134,7 @@ public sealed class PhysicalAddressHandlerTests
         }
 
         var handlerUnderTest = new PhysicalAddressHandler();
-        TestDelegate actionUnderTest = () => handlerUnderTest.Parse(invalidMacAddressString);
+        Action actionUnderTest = () => handlerUnderTest.Parse(invalidMacAddressString);
 
         Assert.Throws<FormatException>(actionUnderTest);
     }
