@@ -10,7 +10,7 @@ namespace SmartHome.Server.Repositories.TypeHandlers;
 /// <remarks>
 /// This handler serializes MAC addresses to a flat 12-character string format (without separators).
 /// </remarks>
-public sealed class PhysicalAddressHandler : SqlMapper.TypeHandler<PhysicalAddress>
+internal sealed class PhysicalAddressHandler : SqlMapper.TypeHandler<PhysicalAddress>
 {
     #region Type conversion
     /// <summary>
