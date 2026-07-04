@@ -15,7 +15,7 @@ namespace SmartHome.Server.Tests.Features.Managers;
 [Category("UnitTest")]
 [TestOf(typeof(SwitchManager))]
 [Author("Jakub Miodunka")]
-public sealed class SwitchManagerTests
+internal sealed class SwitchManagerTests
 {
     #region Constructor
     [Test]
