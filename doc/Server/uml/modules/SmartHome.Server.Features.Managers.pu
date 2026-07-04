@@ -17,6 +17,12 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
         }
     }
 
+    package Configuration {
+        +class FeaturesManagersModuleConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
+
     ~class SwitchManager {
         -{static} s_httpClientTimeout : TimeSpan
         -_stationApiClientsFactory : IStationApiClientFactory
@@ -34,18 +40,14 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
         +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
     }
 
-    +class ApplicationBuilderConfiguration {
-        +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
-    }
-
     ISwitchManagerFactory <|.. SwitchManagerFactory
     ISwitchManager <|-- SwitchManager
     SwitchUpdateRequest <-- SwitchManager
     SwitchManager <-- SwitchManagerFactory
-    ISwitchManagerFactory <-- ApplicationBuilderConfiguration
-    SwitchManagerFactory <-- ApplicationBuilderConfiguration
+    ISwitchManagerFactory <-- FeaturesManagersModuleConfiguration
+    SwitchManagerFactory <-- FeaturesManagersModuleConfiguration
 
-    note left of ApplicationBuilderConfiguration::ConfigureApplicationBuilder
+    note left of FeaturesManagersModuleConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
         utilities through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.
