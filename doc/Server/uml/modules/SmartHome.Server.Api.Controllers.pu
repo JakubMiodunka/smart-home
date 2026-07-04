@@ -29,6 +29,11 @@ package "SmartHome.Server.Api.Controllers" as ApiControllers {
 
         Shall be called from Program.cs.
     end note
+
+    note bottom of JsonConverters
+        Provides custom serialization and deserialization 
+        for JSON serializer used by API controllers.
+    end note
 }
 
 @enduml

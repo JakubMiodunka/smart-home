@@ -10,7 +10,7 @@ namespace SmartHome.Server.Repositories.TypeHandlers;
 /// <remarks>
 /// Both IPv4 and IPv6 addresses are supported.
 /// </remarks>
-public sealed class IPAddressHandler : SqlMapper.TypeHandler<IPAddress>
+internal sealed class IPAddressHandler : SqlMapper.TypeHandler<IPAddress>
 {
     #region Type conversion
     /// <summary>
