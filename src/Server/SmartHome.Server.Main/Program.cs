@@ -19,10 +19,6 @@ var builder = WebApplication.CreateBuilder(args);
 // SqlMapper.AddTypeHandler(new IPAddressHandler());
 
 // JSON serializer configuration
-// builder.Services.AddControllers().AddJsonOptions(options =>
-// {
-//     options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter());
-// });
 
 // Dependency injection configuration
 builder.Services.AddSingleton(TimeProvider.System);

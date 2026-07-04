@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SmartHome.Server.Api.Controllers.Common\SmartHome.Server.Api.Controllers.Common.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Api.Controllers\SmartHome.Server.Api.Controllers.csproj" />
     <ProjectReference Include="..\SmartHome.Server.Tests.Utilities\SmartHome.Server.Tests.Utilities.csproj" />
   </ItemGroup>
 

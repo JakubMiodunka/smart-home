@@ -18,7 +18,7 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
     }
 
     package Configuration {
-        +class FeaturesManagersModuleConfiguration {
+        +class FeaturesManagersConfiguration {
             +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
         }
     }
@@ -44,10 +44,10 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
     ISwitchManager <|-- SwitchManager
     SwitchUpdateRequest <-- SwitchManager
     SwitchManager <-- SwitchManagerFactory
-    ISwitchManagerFactory <-- FeaturesManagersModuleConfiguration
-    SwitchManagerFactory <-- FeaturesManagersModuleConfiguration
+    ISwitchManagerFactory <-- FeaturesManagersConfiguration
+    SwitchManagerFactory <-- FeaturesManagersConfiguration
 
-    note left of FeaturesManagersModuleConfiguration::ConfigureApplicationBuilder
+    note left of FeaturesManagersConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
         utilities through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.

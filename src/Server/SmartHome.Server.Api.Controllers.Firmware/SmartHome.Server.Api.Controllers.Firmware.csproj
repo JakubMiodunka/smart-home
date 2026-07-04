@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SmartHome.Server.Api.Controllers.Common\SmartHome.Server.Api.Controllers.Common.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Api.Controllers\SmartHome.Server.Api.Controllers.csproj" />
     <ProjectReference Include="..\SmartHome.Server.Repositories\SmartHome.Server.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+  	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+  	  <_Parameter1>SmartHome.Server.Tests.Api.Controllers.Firmware</_Parameter1>
+  	</AssemblyAttribute>
+  </ItemGroup>
+	
 </Project>

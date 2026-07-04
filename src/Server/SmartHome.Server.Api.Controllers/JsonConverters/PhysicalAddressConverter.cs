@@ -10,7 +10,7 @@ namespace SmartHome.Server.Api.Controllers.Common.JsonConverters;
 /// <remarks>
 /// This handler serializes MAC addresses to a flat 12-character string format (without separators).
 /// </remarks>
-public class PhysicalAddressConverter : JsonConverter<PhysicalAddress>
+internal class PhysicalAddressConverter : JsonConverter<PhysicalAddress>
 {
     #region Type conversion
     /// <summary>

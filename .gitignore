@@ -39,11 +39,11 @@ src/Server/SmartHome.Server.Features.Managers/obj/
 src/Server/SmartHome.Server.Tests.Features.Managers/bin/
 src/Server/SmartHome.Server.Tests.Features.Managers/obj/
 
-src/Server/SmartHome.Server.Api.Controllers.Common/bin/
-src/Server/SmartHome.Server.Api.Controllers.Common/obj/
+src/Server/SmartHome.Server.Api.Controllers/bin/
+src/Server/SmartHome.Server.Api.Controllers/obj/
 
-src/Server/SmartHome.Server.Tests.Api.Controllers.Common/bin/
-src/Server/SmartHome.Server.Tests.Api.Controllers.Common/obj/
+src/Server/SmartHome.Server.Tests.Api.Controllers/bin/
+src/Server/SmartHome.Server.Tests.Api.Controllers/obj/
 
 src/Server/SmartHome.Server.Api.Controllers.Firmware/bin/
 src/Server/SmartHome.Server.Api.Controllers.Firmware/obj/
