@@ -12,7 +12,7 @@ namespace SmartHome.UnitTests.Server.Tests.Api.Clients;
 [Category("UnitTest")]
 [TestOf(typeof(StationApiClient))]
 [Author("Jakub Miodunka")]
-public sealed class StationApiClientTests
+internal sealed class StationApiClientTests
 {
     #region Constructor
     [Test]

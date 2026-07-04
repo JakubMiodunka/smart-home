@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
   </ItemGroup>
 
@@ -14,4 +15,10 @@
     <ProjectReference Include="..\SmartHome.Server.Repositories\SmartHome.Server.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+  	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+  		<_Parameter1>SmartHome.Server.Tests.Api.Clients</_Parameter1>
+  	</AssemblyAttribute>
+  </ItemGroup>
+	
 </Project>
