@@ -34,27 +34,22 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
         +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
     }
 
-    +class Configuration {
-        -{static} ConfigureSwitchManagerFactory(IHostApplicationBuilder) : void
-        +{static} ConfigureServiceProvider(IHostApplicationBuilder) : void
+    +class ApplicationBuilderConfiguration {
+        +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
     }
 
     ISwitchManagerFactory <|.. SwitchManagerFactory
     ISwitchManager <|-- SwitchManager
     SwitchUpdateRequest <-- SwitchManager
     SwitchManager <-- SwitchManagerFactory
-    ISwitchManagerFactory <-- Configuration
-    SwitchManagerFactory <-- Configuration
+    ISwitchManagerFactory <-- ApplicationBuilderConfiguration
+    SwitchManagerFactory <-- ApplicationBuilderConfiguration
 
-    note left of Configuration
+    note left of ApplicationBuilderConfiguration::ConfigureApplicationBuilder
         Used to configure dependency injection to expose package-defined 
-        managers and manager factories through their interface definitions.
+        utilities through their interface definitions.
         This approach prevents exposing the concrete interface implementations publicly.
-        
-        Each private method handles the configuration of one specific service.
-        The publicly exposed ConfigureServiceProvider(IHostApplicationBuilder) 
-        method calls all private methods in the correct execution order.
-        
+
         Shall be called from Program.cs.
     end note
 }

@@ -89,8 +89,7 @@
       <Value>$(SqlCmdVar__1)</Value>
     </SqlCmdVariable>
     <SqlCmdVariable Include="AppUserName">
-      <DefaultValue>
-      </DefaultValue>
+      <DefaultValue>app_user</DefaultValue>
       <Value>$(SqlCmdVar__2)</Value>
     </SqlCmdVariable>
   </ItemGroup>
