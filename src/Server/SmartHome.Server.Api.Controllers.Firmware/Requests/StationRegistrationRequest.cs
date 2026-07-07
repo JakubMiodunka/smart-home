@@ -19,7 +19,7 @@ namespace SmartHome.Server.Api.Controllers.Firmware.Requests;
 /// <param name="StationApiVersion">
 /// Version of the API exposed by the station.
 /// </param>
-internal sealed record StationRegistrationRequest(
+public sealed record StationRegistrationRequest(
     [Required]
     PhysicalAddress StationMacAddress,
 
