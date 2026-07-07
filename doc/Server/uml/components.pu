@@ -64,13 +64,23 @@ package MainCodebase {
     Repositories <.. Services
     Repositories <.. FirmwareApiControllers
     Repositories <.. ClientsApiControllers
+    Repositories <.. Main
 
     ApiControllers <.. FirmwareApiControllers
     ApiControllers <.. ClientsApiControllers
+    ApiControllers <.. Main
+
+    ClientsApiControllers <.. Main
+
+    FirmwareApiControllers <.. Main
 
     FeatureManagers <.. ClientsApiControllers
+    FeatureManagers <.. Main
 
     ApiClients <.. FeatureManagers
+    ApiClients <.. Main
+
+    Services <.. Main
 }
 
 package Tests {

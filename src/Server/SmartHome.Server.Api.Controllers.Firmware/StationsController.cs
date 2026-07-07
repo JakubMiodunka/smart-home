@@ -13,7 +13,7 @@ namespace SmartHome.Server.Api.Controllers.Firmware;
 /// Controller providing endpoints for firmware to manage stations.
 /// </summary>
 [Route("api/firmware/v1/stations")]
-internal class StationsController : BaseController
+public sealed class StationsController : BaseController
 {
     #region Properties
     private readonly IStationsRepository _stationsRepository;
