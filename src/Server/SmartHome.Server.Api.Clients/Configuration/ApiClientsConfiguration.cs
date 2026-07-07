@@ -20,7 +20,15 @@ public static class ApiClientsConfiguration
     /// </param>
     public static void ConfigureApplicationBuilder(IHostApplicationBuilder applicationBuilder)
     {
+        /*
+         * Register a generic IHttpClientFactory to manage connection pooling for remote Stations.
+         * Each feature is implemented in its own dedicated manager class, allowing for 
+         * granular and optimized timeout policies tailored to specific operation types. 
+         * This approach ensures high performance and fast-fail behavior while keeping 
+         * the codebase clean, modular, and DRY.
+         */
         applicationBuilder.Services.AddHttpClient();
+
         applicationBuilder.Services.AddSingleton<IStationApiClientFactory, StationApiClientFactory>();
     }
 }

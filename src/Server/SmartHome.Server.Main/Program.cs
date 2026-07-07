@@ -1,15 +1,33 @@
-var builder = WebApplication.CreateBuilder(args);
+using SmartHome.Server.Api.Clients.Configuration;
+using SmartHome.Server.Api.Controllers.Clients.Configuration;
+using SmartHome.Server.Api.Controllers.Configuration;
+using SmartHome.Server.Api.Controllers.Firmware.Configuration;
+using SmartHome.Server.Features.Managers.Configuration;
+using SmartHome.Server.Repositories.Configuration;
+using SmartHome.Server.Services.Configuration;
 
-// Dependency injection configuration
-builder.Services.AddSingleton(TimeProvider.System);
+var applicationBuilder = WebApplication.CreateBuilder(args);
 
+applicationBuilder.Services.AddSingleton(TimeProvider.System);
 
+ApiClientsConfiguration.ConfigureApplicationBuilder(applicationBuilder);
 
-builder.Services.AddControllers();
+FeaturesManagersConfiguration.ConfigureApplicationBuilder(applicationBuilder);
 
-builder.Services.AddOpenApi();
+RepositoriesConfiguration.ConfigureDapper();
+RepositoriesConfiguration.ConfigureApplicationBuilder(applicationBuilder);
 
-var app = builder.Build();
+ApiControllersConfiguration.ConfigureApplicationBuilder(applicationBuilder);
+
+ClientsApiControllersConfiguration.ConfigureApplicationBuilder(applicationBuilder);
+
+FirmwareApiControllersConfiguration.ConfigureApplicationBuilder(applicationBuilder);
+
+ServicesConfiguration.ConfigureApplicationBuilder(applicationBuilder);
+
+applicationBuilder.Services.AddOpenApi();
+
+var app = applicationBuilder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

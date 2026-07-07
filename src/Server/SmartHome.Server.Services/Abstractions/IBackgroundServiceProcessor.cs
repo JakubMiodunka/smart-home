@@ -5,7 +5,7 @@
 /// </summary>
 internal interface IBackgroundServiceProcessor
 {
-    public string ProcessorName { get; }
+    string ProcessorName { get; }
 
     /// <summary>
     /// Performs a single iteration of the background processing logic asynchronously.

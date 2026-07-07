@@ -2,7 +2,7 @@
 
 package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
     package Requests {
-        ~record "SwitchUpdateRequest" as SwitchUpdateClientRequest {
+        +record "SwitchUpdateRequest" as SwitchUpdateClientRequest {
             +ExpectedSwitchState : bool
         }
     }
@@ -13,7 +13,7 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
         }
     }
     
-    ~class "SwitchesController" as ClientSwitchesController {
+    +class "SwitchesController" as ClientSwitchesController {
         -_switchesRepository : ISwitchesRepository
         -_stationsRepository : IStationsRepository
         -_switchManagerFactory : ISwitchManagerFactory
@@ -29,9 +29,7 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
     ClientSwitchesController <-- ClientsApiControllersConfiguration
     
     note left of ClientsApiControllersConfiguration::ConfigureApplicationBuilder
-        Used to configure dependency injection to expose package-defined 
-        utilities through their interface definitions.
-        This approach prevents exposing the concrete interface implementations publicly.
+        Used to expose controllers defined in package.
 
         Shall be called from Program.cs.
     end note
