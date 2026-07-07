@@ -20,6 +20,8 @@ public static class ApiControllersConfiguration
     /// </param>
     public static void ConfigureApplicationBuilder(IHostApplicationBuilder applicationBuilder)
     {
+        applicationBuilder.Services.AddHttpContextAccessor();
+
         applicationBuilder.Services.AddControllers().AddJsonOptions(options =>
             options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter()));
     }

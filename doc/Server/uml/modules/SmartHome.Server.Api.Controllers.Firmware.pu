@@ -2,17 +2,17 @@
 
 package "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers {
     package Requests as FirmwareRequests {
-        ~record StationRegistrationRequest {
+        +record StationRegistrationRequest {
             +StationMacAddress : PhysicalAddress
             +StationApiPort : int
             +StationApiVersion : byte
         }
 
-        ~record SwitchRegistrationRequest {
+        +record SwitchRegistrationRequest {
             +SwitchLocalId : byte
         }
 
-        ~record "SwitchUpdateRequest" as SwitchUpdateFirmwareRequest {
+        +record "SwitchUpdateRequest" as SwitchUpdateFirmwareRequest {
             +ActualSwitchState : bool
         }
     }
@@ -29,7 +29,8 @@ package "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers {
             +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
         }
     }
-    ~class StationsController {
+
+    +class StationsController {
         -_stationsRepository : IStationsRepository
         -_timeProvider : TimeProvider
         -_logger : ILogger<StationsController>
@@ -38,7 +39,7 @@ package "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers {
         +ProcessHeartbeatSignal() : Task<IActionResult>
     }
 
-    ~class SwitchesController {
+    +class SwitchesController {
         -{static} DefaultExpectedSwitchState : bool
         -{static} DefaultActualSwitchState : bool?
         -_switchesRepository : ISwitchesRepository
@@ -61,9 +62,7 @@ package "SmartHome.Server.Api.Controllers.Firmware" as FirmwareApiControllers {
     SwitchesController <-- FirmwareApiControllersConfiguration
 
     note left of FirmwareApiControllersConfiguration::ConfigureApplicationBuilder
-        Used to configure dependency injection to expose package-defined 
-        utilities through their interface definitions.
-        This approach prevents exposing the concrete interface implementations publicly.
+        Used to expose controllers defined in package.
 
         Shall be called from Program.cs.
     end note

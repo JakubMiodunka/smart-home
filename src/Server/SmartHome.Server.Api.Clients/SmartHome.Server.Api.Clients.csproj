@@ -16,9 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-  	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-  		<_Parameter1>SmartHome.Server.Tests.Api.Clients</_Parameter1>
-  	</AssemblyAttribute>
+  	<!-- Unit tests project. -->
+  	<InternalsVisibleTo Include="SmartHome.Server.Tests.Api.Clients" />
   </ItemGroup>
 	
 </Project>
