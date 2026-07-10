@@ -90,6 +90,7 @@ ensuring that the *SQLCMD variables* are adjusted to match your target *SQL Serv
 update the network interface settings in the [*launchSettings.json*](./src/Server/Server/Properties/launchSettings.json)
 file to match your host's local IP address.
 * Build [*Server.slnx*](./src/Server/Server.slnx) and run new server instance.
+* To accept network traffic from other devices, you may need to add an inbound rule to your network or system firewall for the application's port.
 
 Note: As this project is currently in development, file-oriented configuration management has not yet been implemented.
 All configurations are handled directly within the source code.
