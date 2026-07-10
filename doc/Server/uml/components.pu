@@ -14,28 +14,26 @@ package MainCodebase {
     database "SmartHome.Server.Databases.Main" as MainDatabase #SkyBlue
 
     component "SmartHome.Server.Repositories" as Repositories #SkyBlue
-    note as RepositoriesDependencies
+    note right of Repositories
         **Dependencies**
         NuGet packages:
         - Dapper
         - Microsoft.Data.SqlClient
         - Microsoft.Extensions.Hosting.Abstractions
     end note
-    RepositoriesDependencies -- Repositories
 
     component "SmartHome.Server.Api.Clients" as ApiClients #SkyBlue
-    note as ApiClientsDependencies
+    note right of ApiClients
         **Dependencies**
         NuGet packages:
         - Microsoft.Extensions.Http
         - Microsoft.Extensions.Hosting
     end note
-    ApiClientsDependencies -- ApiClients
 
     component "SmartHome.Server.Feature.Managers" as FeatureManagers #SkyBlue
 
     component "SmartHome.Server.Api.Controllers" as ApiControllers #SkyBlue
-    note top of ApiControllers
+    note right of ApiControllers
         **Dependencies**
         Frameworks
         - Microsoft.AspNetCore.App
@@ -46,14 +44,14 @@ package MainCodebase {
     component "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers #SkyBlue
 
     component "SmartHome.Server.Services" as Services #SkyBlue
-    note bottom of Services
+    note right of Services
         **Dependencies**
         NuGet packages:
         - Microsoft.Extensions.Hosting
     end note
 
     component "SmartHome.Server.Main" as Main #SkyBlue
-    note left of Main
+    note right of Main
         **Dependencies**
         Frameworks
         - Microsoft.AspNetCore.App (through SDK)
