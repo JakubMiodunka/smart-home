@@ -9,6 +9,14 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
         +interface ISwitchManager {
             +TryChangeState(bool, CancellationToken) : Task<bool>
         }
+        
+        ~abstract FeatureManager {
+            ~{abstract} HttpClientTimeout : TimeSpan
+            ~ StationApiClientsFactory : IStationApiClientFactory
+            ~ParentStation : StationEntity
+            ~FeatureManager(StationEntity, IStationApiClientFactory) : FeatureManager
+            ~GetBaseStationApiUrl() : Uri?
+        }
     }
 
     package Requests {
@@ -24,12 +32,10 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
     }
 
     ~class SwitchManager {
-        -{static} s_httpClientTimeout : TimeSpan
-        -_stationApiClientsFactory : IStationApiClientFactory
         -_logger : ILogger<SwitchManager>
         +ManagedSwitch : SwitchEntity
-        +SwitchParentStation : StationEntity
         +SwitchManager(SwitchEntity, StationEntity, IStationApiClientFactory, ILogger<SwitchManager>) : SwitchManager
+        -GetSwitchUrl : Uri?
         +TryChangeState(bool, CancellationToken) : Task<bool>
     }
 
@@ -40,11 +46,17 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
         +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
     }
 
-    ISwitchManagerFactory <|.. SwitchManagerFactory
-    ISwitchManager <|-- SwitchManager
-    SwitchUpdateRequest <-- SwitchManager
+    ISwitchManager <|.. SwitchManager
+
+    FeatureManager <|-- SwitchManager
+    
     SwitchManager <-- SwitchManagerFactory
+    
+    SwitchUpdateRequest <-- SwitchManager
+    
+    ISwitchManagerFactory <|.. SwitchManagerFactory
     ISwitchManagerFactory <-- FeaturesManagersConfiguration
+    
     SwitchManagerFactory <-- FeaturesManagersConfiguration
 
     note left of FeaturesManagersConfiguration::ConfigureApplicationBuilder

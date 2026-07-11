@@ -8,21 +8,20 @@ using System.Net;
 namespace SmartHome.Server.Features.Managers;
 
 /// <inheritdoc cref="ISwitchManager"/>
-internal sealed class SwitchManager : ISwitchManager
+internal sealed class SwitchManager : FeatureManager, ISwitchManager
 {
     #region Properties
-    // TODO: Move this value to some cinfiguration file.
-    private static readonly TimeSpan s_httpClientTimeout = TimeSpan.FromMilliseconds(5000);
-
-    private readonly IStationApiClientFactory _stationApiClientsFactory;
     private readonly ILogger<SwitchManager> _logger;
+
+    // TODO: Move this value to some cinfiguration file.
+    protected override TimeSpan HttpClientTimeout => 
+        TimeSpan.FromMilliseconds(5000);
 
     /// <remarks>
     /// This property reflects the most recent state of the switch, 
     /// updated automatically whenever any property is modified by this manager instance.
     /// </remarks>
     public SwitchEntity ManagedSwitch { get; private set; }
-    public StationEntity SwitchParentStation { get; init; }
     #endregion
 
     #region Instantiation
@@ -32,7 +31,7 @@ internal sealed class SwitchManager : ISwitchManager
     /// <param name="managedSwitch">
     /// Entity of the switch managed by created manager instance.
     /// </param>
-    /// <param name="switchParentStation">
+    /// <param name="parentStation">
     /// Parent station of the managed switch.
     /// </param>
     /// <param name="stationApiClientsFactory">
@@ -50,31 +49,51 @@ internal sealed class SwitchManager : ISwitchManager
     /// </exception>
     public SwitchManager(
         SwitchEntity managedSwitch,
-        StationEntity switchParentStation,
+        StationEntity parentStation,
         IStationApiClientFactory stationApiClientsFactory,
         ILogger<SwitchManager> logger)
+        : base(parentStation, stationApiClientsFactory)
     {
         ArgumentNullException.ThrowIfNull(managedSwitch, nameof(managedSwitch));
-        ArgumentNullException.ThrowIfNull(switchParentStation, nameof(switchParentStation));
-        ArgumentNullException.ThrowIfNull(stationApiClientsFactory, nameof(stationApiClientsFactory));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
-        if (managedSwitch.StationId != switchParentStation.Id)
+        if (managedSwitch.StationId != ParentStation.Id)
         {
             throw new ArgumentException(
                 "The station entity shall be the parent station of the switch entity: " +
-                $"SwitchStationId=[{managedSwitch.StationId}], StationId=[{switchParentStation.Id}]",
-                nameof(switchParentStation));
+                $"SwitchStationId=[{managedSwitch.StationId}], StationId=[{parentStation.Id}]",
+                nameof(parentStation));
         }
 
-        ManagedSwitch = managedSwitch;
-        SwitchParentStation = switchParentStation;
-        _stationApiClientsFactory = stationApiClientsFactory;
         _logger = logger;
+        ManagedSwitch = managedSwitch;
     }
     #endregion
 
     #region Interacitons
+    /// <summary>
+    /// Determines the URL of API endpoint which controls the switch.
+    /// </summary>
+    /// <returns>
+    /// Absolute URL of API endpoint which controls the switch,
+    /// or <see langword="null"/> if endpoint is considered as unreachable.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when generation of switch URL is not supported switch parent station API version.
+    /// </exception>
+    private Uri? GetSwitchUrl()
+    {
+        if (GetStationBaseApiUrl() is not Uri baseStationApiUrl) return null;
+
+        Uri switchApiEndpoint = ParentStation.ApiVersion switch
+        {
+            1 => new Uri($"switches/{ManagedSwitch.LocalId}", UriKind.Relative),
+            _ => throw new NotSupportedException($"Station API version not supported: ApiVersion=[{ParentStation.ApiVersion}]")
+        };
+
+        return new Uri(baseStationApiUrl, switchApiEndpoint);
+    }
+
     /// <inheritdoc cref="ISwitchManager"/>
     /// <summary>
     /// Sends a command to station associated with managed switch to change its state.
@@ -84,16 +103,6 @@ internal sealed class SwitchManager : ISwitchManager
         _logger.LogInformation(
             "Attempting to change state of switch: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}]",
             ManagedSwitch.Id, expectedSwitchState);
-
-        if (ManagedSwitch.SwitchUrl(SwitchParentStation) is not Uri endpointUrl)
-        {
-            _logger.LogWarning(
-                "Switch is unreachable: SwitchId=[{SwitchId}], StationId=[{StationId}]",
-                ManagedSwitch.Id,
-                SwitchParentStation.Id);
-
-            return false;
-        }
 
         if (ManagedSwitch.ActualState == expectedSwitchState)
         {
@@ -106,8 +115,18 @@ internal sealed class SwitchManager : ISwitchManager
             return true;
         }
 
+        if (GetSwitchUrl() is not Uri endpointUrl)
+        {
+            _logger.LogWarning(
+                "Switch is unreachable: SwitchId=[{SwitchId}], StationId=[{StationId}]",
+                ManagedSwitch.Id,
+                ParentStation.Id);
+
+            return false;
+        }
+
         var request = new SwitchUpdateRequest(expectedSwitchState);
-        IStationApiClient apiClient = _stationApiClientsFactory.CreateFor(SwitchParentStation, s_httpClientTimeout);
+        IStationApiClient apiClient = StationApiClientsFactory.CreateFor(ParentStation, HttpClientTimeout);
         HttpStatusCode? responseStatusCode = await apiClient.SendRequestAsync(endpointUrl, HttpMethod.Patch, request, cancellationToken);
 
         if (responseStatusCode is HttpStatusCode.NoContent)
