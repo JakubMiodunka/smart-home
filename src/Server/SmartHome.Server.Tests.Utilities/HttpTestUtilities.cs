@@ -5,13 +5,30 @@ using NUnit.Framework;
 
 namespace SmartHome.Server.Tests.Utilities;
 
-public static class IActionResultTestingUtilities
+public static class HttpTestUtilities
 {
+    #region Utilities
+    /// <remarks>
+    /// Introduced because non-constant expressions are not permitted
+    /// in contexts such as attribute declarations.
+    /// </remarks>
+    public static HttpMethod GetHttpMethodFromName(string name) =>
+        name switch
+        {
+            "GET" => HttpMethod.Get,
+            "POST" => HttpMethod.Post,
+            "PUT" => HttpMethod.Put,
+            "PATCH" => HttpMethod.Patch,
+            "DELETE" => HttpMethod.Delete,
+            _ => throw new NotSupportedException($"HTTP method {name} is not supported.")
+        };
+    #endregion
+
     #region Generic assertions
     private static void AssertStatusCodeActionResult<TResult>(
         IActionResult actionResultUnderTest,
         int expectedStatusCode)
-        where TResult : IStatusCodeActionResult // TODO: After adding reference (direct or indirect) to some ASP.NET project this type will work.
+        where TResult : IStatusCodeActionResult
     {
         Assert.That(actionResultUnderTest, Is.Not.Null);
         Assert.That(actionResultUnderTest, Is.InstanceOf<TResult>());
