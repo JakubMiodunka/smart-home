@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Api.Clients.Abstractions;
-using SmartHome.Server.Features.Managers.Requests;
 using SmartHome.Server.Features.Managers;
+using SmartHome.Server.Features.Managers.Requests;
 using SmartHome.Server.Repositories.Entities;
 using SmartHome.Server.Tests.Utilities;
 using System.Net;
@@ -17,6 +17,15 @@ namespace SmartHome.Server.Tests.Features.Managers;
 [Author("Jakub Miodunka")]
 internal sealed class SwitchManagerTests
 {
+    #region Test utilities
+    private static Uri GetSwitchUrl(SwitchEntity switchEntity, StationEntity parentStation) =>
+        parentStation.ApiVersion switch
+        {
+            1 => new Uri($"http://{parentStation.IpAddress}:{parentStation.ApiPort}/api/v1/switches/{switchEntity.LocalId}"),
+            _ => throw new NotSupportedException($"Station API version {parentStation.ApiVersion} is not supported.")
+        };
+    #endregion
+
     #region Constructor
     [Test]
     public void InstantiationPossible()
@@ -44,7 +53,7 @@ internal sealed class SwitchManagerTests
 
         Assert.That(managerUnderTest, Is.Not.Null);
         Assert.That(managerUnderTest.ManagedSwitch, Is.EqualTo(switchEntity));
-        Assert.That(managerUnderTest.SwitchParentStation, Is.EqualTo(stationEntity));
+        Assert.That(managerUnderTest.ParentStation, Is.EqualTo(stationEntity));
     }
 
     [Test]
@@ -160,8 +169,11 @@ internal sealed class SwitchManagerTests
     #endregion
 
     #region Switch state change
-    [Test]
-    public async Task SwitchStateChangeSuccessfulIfExpectedSwitchStateIsNotEqualToItsActualState()
+    [TestCase(1, "PATCH", HttpStatusCode.NoContent)]
+    public async Task SwitchStateChangeSuccessfulIfExpectedSwitchStateIsNotEqualToItsActualState(
+        byte stationApiVersion,
+        string expectedHttpMethodName,
+        HttpStatusCode expectedStatusCode)
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -174,20 +186,21 @@ internal sealed class SwitchManagerTests
         StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             Id = switchEntity.StationId,
-            ApiVersion = 1
+            ApiVersion = stationApiVersion
         };
 
-        Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
+        HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
+        Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
         
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
             .SendRequestAsync(
-                endpointUrl,
-                HttpMethod.Patch,
+                expectedEndpointUrl,
+                expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(HttpStatusCode.NoContent);
+            .ReturnsAsync(expectedStatusCode);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -209,8 +222,8 @@ internal sealed class SwitchManagerTests
 
         stationApiClientMock.Verify(client => client
             .SendRequestAsync(
-                endpointUrl,
-                HttpMethod.Patch,
+                expectedEndpointUrl,
+                expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()),
             Times.Once);
@@ -234,8 +247,7 @@ internal sealed class SwitchManagerTests
 
         StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
-            Id = switchEntity.StationId,
-            ApiVersion = 1
+            Id = switchEntity.StationId
         };
 
         var stationApiClientMock = new Mock<IStationApiClient>();
@@ -315,8 +327,10 @@ internal sealed class SwitchManagerTests
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
-    [Test]
-    public async Task SwitchStateChangeFailsIfRequestSendingFails()
+    [TestCase(1, "PATCH")]
+    public async Task SwitchStateChangeFailsIfRequestSendingFails(
+        byte stationApiVersion,
+        string expectedHttpMethodName)
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -329,7 +343,7 @@ internal sealed class SwitchManagerTests
         StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             Id = switchEntity.StationId,
-            ApiVersion = 1
+            ApiVersion = stationApiVersion
         };
 
         var stationApiClientMock = new Mock<IStationApiClient>();
@@ -358,13 +372,13 @@ internal sealed class SwitchManagerTests
 
         Assert.That(wasAttemptSuccessful, Is.False);
 
-        Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
+        Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
 
         stationApiClientMock.Verify(client => client
             .SendRequestAsync(
-                endpointUrl,
-                HttpMethod.Patch,
+                expectedEndpointUrl,
+                HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName),
                 request,
                 It.IsAny<CancellationToken>()),
             Times.Once);
@@ -375,8 +389,11 @@ internal sealed class SwitchManagerTests
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
-    [Test]
-    public async Task SwitchStateChangeFailsIfStationReturnsInvalidStatusCode()
+    [TestCase(1, "PATCH", HttpStatusCode.NoContent)]
+    public async Task SwitchStateChangeFailsIfStationReturnsInvalidStatusCode(
+        byte stationApiVersion,
+        string expectedHttpMethodName,
+        HttpStatusCode expectedStatusCode)
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -389,23 +406,24 @@ internal sealed class SwitchManagerTests
         StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
         {
             Id = switchEntity.StationId,
-            ApiVersion = 1
+            ApiVersion = stationApiVersion
         };
 
         HttpStatusCode invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        while (invalidStatusCode == HttpStatusCode.NoContent)
+        while (invalidStatusCode == expectedStatusCode)
         {
             invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         }
 
-        Uri endpointUrl = switchEntity.SwitchUrl(stationEntity)!;
+        HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
+        Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
             .SendRequestAsync(
-                endpointUrl,
-                HttpMethod.Patch,
+                expectedEndpointUrl,
+                expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(invalidStatusCode);
@@ -429,8 +447,8 @@ internal sealed class SwitchManagerTests
 
         stationApiClientMock.Verify(client => client
             .SendRequestAsync(
-                endpointUrl,
-                HttpMethod.Patch,
+                expectedEndpointUrl,
+                expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()),
             Times.Once);
