@@ -123,13 +123,12 @@ package Tests {
     end note
 
     component "SmartHome.Server.Tests.Features.Managers" as FeaturesManagersTests #PaleGreen
-    note top of FeaturesManagersTests
+    note bottom of FeaturesManagersTests
         **Dependencies**
         NuGet packages:
         - coverlet.collector
         - Microsoft.Extensions.Diagnostics.Testing
         - Microsoft.NET.Test.Sdk
-        - NUnit
         - NUnit.Analyzers
         - NUnit3TestAdapter
     end note
@@ -185,6 +184,7 @@ package Tests {
     TestUtilities <.. ServicesTests
     TestUtilities <.. RepositoriesTests
     TestUtilities <.. ApiControllersTests
+    TestUtilities <.. FeaturesManagersTests
 }
 
 Repositories <.. FeaturesManagersTests
