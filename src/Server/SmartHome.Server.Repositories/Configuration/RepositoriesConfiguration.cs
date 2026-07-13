@@ -14,7 +14,8 @@ namespace SmartHome.Server.Repositories.Configuration;
 /// </remarks>
 public static class RepositoriesConfiguration
 {
-    private const string ConnectionString = "Server=127.0.0.1;Database=smart_home;User Id=smart_home_app_user;Password=1234; Encrypt=True; TrustServerCertificate=True"; // TODO: Provide connection string to SQL server instance here.
+    // TODO: Provide connection string to SQL server instance here.
+    private const string ConnectionString = "Connection string not provided.";
 
     /// <summary>
     /// Registers internal assembly services and utilities into the provided application builder.
