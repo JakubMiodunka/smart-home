@@ -6,6 +6,7 @@ This repository provides an [IoT](https://en.wikipedia.org/wiki/Internet_of_thin
 designed to transition standard residential spaces into modern 
 [smart-home](https://en.wikipedia.org/wiki/Home_automation "Wikipedia article") environments. The system architecture
 is centered around a single server instance that orchestrates a distributed network of stations within a single household.
+
 Communication is established over the local [Wi-Fi](https://en.wikipedia.org/wiki/Wi-Fi "Wikipedia article") network,
 leveraging the infrastructure existing nowadays in most households to facilitate data exchange between the central
 controller and the individual hardware nodes. Primary communication within the system is driven by
@@ -71,6 +72,10 @@ Implemented in [Arduino](https://www.arduino.cc/ "Arduino website") ecosystem.
 * [*/src/Server*](./src/Server/) - Source code for the central server responsible for managing the system
 and aggregating data from all components.
 Implemented in [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language) "Wikipedia article") and ADO.NET.
+* [*/doc/Server/uml*](./doc/Server/uml/) - UML-based description of the current system architecture 
+(component diagram) along with the class diagrams for each individual module.
+All diagrams are created using [PlantUML](https://plantuml.com/ "PlantUML website"), meaning they are stored
+as plain text files and can be easily viewed or edited using the [PlantUML Online Editor](https://editor.plantuml.com/ "PlantUML Online Editor").
 * [*/doc/Server/html*](./doc/Server/html) - HTML-based server code documentation, automatically generated using
 [DoxyGen](https://www.doxygen.nl/ "DoxyGen website"). View the content by opening
 [*index.html*](./doc/Server/html/index.html) in Your browser of choice.
@@ -82,12 +87,15 @@ Implemented in [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)
 The backend infrastructure requires instance of SQL Server 2022. For a streamlined deployment, it is recommended
 to use [Docker](https://www.docker.com/ "Docker website") and [Official SQL Server Docker Image](https://hub.docker.com/_/microsoft-mssql-server).
 
-* Initialize your database instance by deploying the schema located in the [*Database.sqlproj*](./src/Server/Database/Database.sqlproj).
-It is recommended to use the *Publish* option in Visual Studio, 
-ensuring that the *SQLCMD variables* are adjusted to match your target *SQL Server* instance configuration.
-* Update the connection string within [*Program.cs*](./src/Server/Server/Program.cs) to match your SQL Server credentials.
+* Initialize your database instance by deploying the schema located in the
+[*SmartHome.Server.Main.sqlproj*](./src/Server/SmartHome.Server.Main/SmartHome.Server.Main.csproj).
+It is recommended to use the *Publish* option in Visual Studio, ensuring that the *SQLCMD variables* 
+are adjusted to match your target *SQL Server* instance configuration.
+* Update the connection string within
+[*RepositoriesConfiguration.cs*](./src/Server/SmartHome.Server.Repositories/Configuration/RepositoriesConfiguration.cs)
+to match your SQL Server credentials.
 * The application is configured to bind to *localhost* by default. To enable communication with external hardware nodes,
-update the network interface settings in the [*launchSettings.json*](./src/Server/Server/Properties/launchSettings.json)
+update the network interface settings in the [*launchSettings.json*](./src/Server/SmartHome.Server.Main/Properties/launchSettings.json)
 file to match your host's local IP address.
 * Build [*Server.slnx*](./src/Server/Server.slnx) and run new server instance.
 * To accept network traffic from other devices, you may need to add an inbound rule to your network or system firewall for the application's port.
@@ -113,16 +121,16 @@ all node features will become operational.
 ### Interactions With The System
 
 As the frontend interface is currently not available, all interactions with the server must be performed via direct API calls.
-You can use tools such as *cURL*, *Postman*, *Insomnia* or the built-in Visual Studio HTTP Client to communicate with the system.
+You can use tools such as *cURL*, *Postman*, *Insomnia* or the built-in *Visual Studio* HTTP Client to communicate with the system.
 For specific request structures and endpoint examples, please inspect 
-the [*Server.http*](./src/Server/Server/Server.http) file located in the repository.
+the [*SmartHome.Server.Main.http*](./src/Server/SmartHome.Server.Main/SmartHome.Server.Main.http) file located in the repository.
 
 ## Project versioning
 
 Versioning for this project follows the established guidelines
 of [semantic versioning](https://en.m.wikipedia.org/wiki/Software_versioning#Semantic_versioning "Wikipedia article").
 
-Current version: 1.0.1
+Current version: 1.0.2
 
 ## Project management
 
@@ -133,10 +141,12 @@ If You spotted some bug or have a suggestion feel free to create corresponding i
 
 ## Used Tools
 
-* Server development IDE: [Visual Studio 2022/2026](https://visualstudio.microsoft.com/vs/ "Visual Studio website")
-* Firmware development IDE: [Arduino IDE](https://www.arduino.cc/en/software/ "Arduino website")
-* Documentation generator: [DoxyGen 1.12.0](https://www.doxygen.nl/ "DoxyGen website")
-* AI model used during development: [Google Gemini](https://gemini.google.com/app "Google Gemini chat")
+* Server Development IDE: [Visual Studio 2022/2026](https://visualstudio.microsoft.com/vs/ "Visual Studio website")
+* Firmware Development IDE: [Arduino IDE](https://www.arduino.cc/en/software/ "Arduino website")
+* Auxiliary Text Editor: [Visual Studio Code](https://code.visualstudio.com/ "Visual Studio Code website")
+* HTML Documentation Generator: [DoxyGen 1.12.0](https://www.doxygen.nl/ "DoxyGen website")
+* UML Diagramming Tool: [PlantUML Online Editor](https://editor.plantuml.com/ "PlantUML Online Editor").
+* AI Coding Assistant: [Google Gemini](https://gemini.google.com/app "Google Gemini chat")
 
 ## AI Disclaimer
 
