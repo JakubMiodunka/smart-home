@@ -7,7 +7,7 @@ using SmartHome.Server.Repositories.Entities;
 using SmartHome.Server.Tests.Utilities;
 using System.Net;
 
-namespace SmartHome.UnitTests.Server.Tests.Api.Clients;
+namespace SmartHome.Server.Tests.Api.Clients;
 
 [Category("UnitTest")]
 [TestOf(typeof(StationApiClient))]
