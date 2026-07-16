@@ -1,0 +1,31 @@
+﻿namespace SmartHome.Server.Repositories.Entities;
+
+/// <summary>
+/// Entity representing the details of an electrical switch functioning within the system.
+/// Used for data exchange between the server and the database.
+/// </summary>
+/// <param name="Id">
+/// The unique global identifier for the electrical switch.
+/// </param>
+/// <param name="StationId">
+/// The unique identifier of the station that controls this switch.
+/// </param>
+/// <param name="LocalId">
+/// The identifier of the switch, unique only at the station level.
+/// </param>
+/// <param name="ExpectedState">
+/// Expected state of the electrical switch.
+/// <see langword="true"/> if the circuit shall be closed 
+/// and current shall flow; <see langword="false"/> otherwise.
+/// </param>
+/// <param name="ActualState">
+/// Actual state of the electrical switch. <see langword="true"/> if the circuit is closed 
+/// and current is flowing; <see langword="false"/> otherwise.
+/// <see langword="null"/> indicates the state is unknown.
+/// </param>
+public sealed record SwitchEntity(
+    long Id,
+    long StationId, // TODO: Rename to ParentStationId.
+    byte LocalId,
+    bool ExpectedState,
+    bool? ActualState);

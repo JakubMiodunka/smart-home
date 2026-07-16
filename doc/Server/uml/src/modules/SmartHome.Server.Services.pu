@@ -1,0 +1,54 @@
+@startuml
+
+package "SmartHome.Server.Services" as Services {
+    package Abstractions {
+        ~interface IBackgroundServiceProcessor {
+            +ProcessorName : string
+            +ProcessAsync(CancellationToken) : Task
+        }
+    }
+
+    package Processors {
+        ~class HeartbeatMonitoringServiceProcessor {
+            -_stationsRepository : IStationsRepository
+            -_timeProvider : TimeProvider
+            -_maxHeartbeatInterval : TimeSpan
+            -_logger : ILogger<HeartbeatMonitoringServiceProcessor>
+            +ProcessorName : string
+            +HeartbeatMonitoringServiceProcessor(IStationsRepository, TimeProvider, TimeSpan, ILogger<HeartbeatMonitoringServiceProcessor>) : HeartbeatMonitoringServiceProcessor
+            +ProcessAsync(CancellationToken) : Task
+        }
+    }
+
+    package Configuration {
+        +class ServicesConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
+
+    ~class BackgroundProcessorService {
+        -_processor : IBackgroundServiceProcessor
+        -_timeProvider : TimeProvider
+        -_serviceExecutionInterval : TimeSpan
+        -_logger : ILogger<BackgroundProcessorService>
+        +BackgroundProcessorService(IBackgroundServiceProcessor, TimeProvider, TimeSpan, ILogger<BackgroundProcessorService>) : BackgroundProcessorService
+        #ExecuteAsync(CancellationToken) : Task
+    }
+        
+    IBackgroundServiceProcessor <|.. HeartbeatMonitoringServiceProcessor
+    IBackgroundServiceProcessor o-- BackgroundProcessorService
+    
+    HeartbeatMonitoringServiceProcessor <-- ServicesConfiguration
+
+    BackgroundProcessorService <-- ServicesConfiguration
+
+    note left of ServicesConfiguration::ConfigureApplicationBuilder
+        Used to configure dependency injection to expose package-defined 
+        utilities through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
+
+        Shall be called from Program.cs.
+    end note
+}
+
+@enduml

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartHome.Server.Api.Clients\SmartHome.Server.Api.Clients.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Api.Controllers.Clients\SmartHome.Server.Api.Controllers.Clients.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Api.Controllers.Firmware\SmartHome.Server.Api.Controllers.Firmware.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Api.Controllers\SmartHome.Server.Api.Controllers.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Features.Managers\SmartHome.Server.Features.Managers.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Repositories\SmartHome.Server.Repositories.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Services\SmartHome.Server.Services.csproj" />
+  </ItemGroup>
+
+</Project>

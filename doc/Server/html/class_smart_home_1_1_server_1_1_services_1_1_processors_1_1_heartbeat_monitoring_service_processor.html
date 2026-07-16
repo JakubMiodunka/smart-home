@@ -78,6 +78,7 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#properties">Properties</a> &#124;
+<a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">SmartHome.Server.Services.Processors.HeartbeatMonitoringServiceProcessor Class Reference<span class="mlabels"><span class="mlabel sealed">sealed</span></span></div></div>
 </div><!--header-->
@@ -91,34 +92,34 @@ Inheritance diagram for SmartHome.Server.Services.Processors.HeartbeatMonitoring
  <div class="center">
   <img src="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor.png" usemap="#SmartHome_2EServer_2EServices_2EProcessors_2EHeartbeatMonitoringServiceProcessor_map" alt=""/>
   <map id="SmartHome_2EServer_2EServices_2EProcessors_2EHeartbeatMonitoringServiceProcessor_map" name="SmartHome_2EServer_2EServices_2EProcessors_2EHeartbeatMonitoringServiceProcessor_map">
-<area href="interface_smart_home_1_1_server_1_1_services_1_1_processors_1_1_i_background_service_processor.html" title="Definition of processor that execute business logic within a background service." alt="SmartHome.Server.Services.Processors.IBackgroundServiceProcessor" shape="rect" coords="0,0,462,24"/>
+<area href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html" title="Definition of processor that execute business logic within a background service." alt="SmartHome.Server.Services.Abstractions.IBackgroundServiceProcessor" shape="rect" coords="0,0,462,24"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af7e808da41538b605e6650bb5ba0ae75" id="r_af7e808da41538b605e6650bb5ba0ae75"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af7e808da41538b605e6650bb5ba0ae75">HeartbeatMonitoringServiceProcessor</a> (<a class="el" href="interface_smart_home_1_1_server_1_1_data_1_1_repositories_1_1_i_stations_repository.html">IStationsRepository</a> stationsRepository, <a class="el" href="interface_smart_home_1_1_server_1_1_data_1_1_repositories_1_1_i_switches_repository.html">ISwitchesRepository</a> switchesRepository, TimeProvider timeProvider, TimeSpan maxHeartbeatInterval, ILogger&lt; <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor.html">HeartbeatMonitoringServiceProcessor</a> &gt; logger)</td></tr>
-<tr class="memdesc:af7e808da41538b605e6650bb5ba0ae75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates new instance of <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor.html" title="A processor responsible for monitoring station heartbeats and marking inactive stations as offline.">HeartbeatMonitoringServiceProcessor</a>.  <br /></td></tr>
+<tr class="memitem:a80df7262948c612abee16ec483abbdbe" id="r_a80df7262948c612abee16ec483abbdbe"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a80df7262948c612abee16ec483abbdbe">HeartbeatMonitoringServiceProcessor</a> (<a class="el" href="interface_smart_home_1_1_server_1_1_repositories_1_1_abstractions_1_1_i_stations_repository.html">IStationsRepository</a> stationsRepository, TimeProvider timeProvider, TimeSpan maxHeartbeatInterval, ILogger&lt; <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor.html">HeartbeatMonitoringServiceProcessor</a> &gt; logger)</td></tr>
+<tr class="memdesc:a80df7262948c612abee16ec483abbdbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates new instance of <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor.html" title="A processor responsible for monitoring station heartbeats and marking inactive stations as offline.">HeartbeatMonitoringServiceProcessor</a>.  <br /></td></tr>
 <tr class="memitem:a713214c21c720be026d8618c21f95fd2" id="r_a713214c21c720be026d8618c21f95fd2"><td class="memItemLeft" align="right" valign="top">async Task&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a713214c21c720be026d8618c21f95fd2">ProcessAsync</a> (CancellationToken cancellationToken)</td></tr>
-<tr class="memdesc:a713214c21c720be026d8618c21f95fd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a single iteration of the background processing logic asynchronously.<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">cancellationToken</td><td>A token to monitor for cancellation requests, ensuring the task stops gracefully when the host shuts down. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A Task representing the asynchronous operation. </dd></dl>
-  <br /></td></tr>
+<tr class="memdesc:a713214c21c720be026d8618c21f95fd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines which stations can be concidered as offline and marks them as such.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-properties" class="groupheader"><a id="properties" name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a53e7a062d3ae5e26158480d24bbae75c" id="r_a53e7a062d3ae5e26158480d24bbae75c"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a53e7a062d3ae5e26158480d24bbae75c">ProcessorName</a><code> [get]</code></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pri-attribs" class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr class="memitem:a0d8e59503107af92dc93abcdfe0b9d95" id="r_a0d8e59503107af92dc93abcdfe0b9d95"><td class="memItemLeft" align="right" valign="top">readonly <a class="el" href="interface_smart_home_1_1_server_1_1_repositories_1_1_abstractions_1_1_i_stations_repository.html">IStationsRepository</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d8e59503107af92dc93abcdfe0b9d95">_stationsRepository</a></td></tr>
+<tr class="memitem:a0e7fc1e641dfeb30ab3bdfe47daf15ce" id="r_a0e7fc1e641dfeb30ab3bdfe47daf15ce"><td class="memItemLeft" align="right" valign="top">readonly TimeProvider&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e7fc1e641dfeb30ab3bdfe47daf15ce">_timeProvider</a></td></tr>
+<tr class="memitem:a617561d5bcff78a4e339735ddf7497ad" id="r_a617561d5bcff78a4e339735ddf7497ad"><td class="memItemLeft" align="right" valign="top">readonly TimeSpan&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a617561d5bcff78a4e339735ddf7497ad">_maxHeartbeatInterval</a></td></tr>
+<tr class="memitem:a67a3b3bf1c9543316ecf6fbd89bd4f6b" id="r_a67a3b3bf1c9543316ecf6fbd89bd4f6b"><td class="memItemLeft" align="right" valign="top">readonly ILogger&lt; <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor.html">HeartbeatMonitoringServiceProcessor</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a67a3b3bf1c9543316ecf6fbd89bd4f6b">_logger</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A processor responsible for monitoring station heartbeats and marking inactive stations as offline. </p>
 <p>This class encapsulates the business logic for determining station timeouts. It is intended to be executed periodically by a <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_background_processor_service.html">instance. </a> </p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="af7e808da41538b605e6650bb5ba0ae75" name="af7e808da41538b605e6650bb5ba0ae75"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7e808da41538b605e6650bb5ba0ae75">&#9670;&#160;</a></span>HeartbeatMonitoringServiceProcessor()</h2>
+<a id="a80df7262948c612abee16ec483abbdbe" name="a80df7262948c612abee16ec483abbdbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80df7262948c612abee16ec483abbdbe">&#9670;&#160;</a></span>HeartbeatMonitoringServiceProcessor()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -126,12 +127,7 @@ Properties</h2></td></tr>
         <tr>
           <td class="memname">SmartHome.Server.Services.Processors.HeartbeatMonitoringServiceProcessor.HeartbeatMonitoringServiceProcessor </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interface_smart_home_1_1_server_1_1_data_1_1_repositories_1_1_i_stations_repository.html">IStationsRepository</a></td>          <td class="paramname"><span class="paramname"><em>stationsRepository</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="interface_smart_home_1_1_server_1_1_data_1_1_repositories_1_1_i_switches_repository.html">ISwitchesRepository</a></td>          <td class="paramname"><span class="paramname"><em>switchesRepository</em></span>, </td>
+          <td class="paramtype"><a class="el" href="interface_smart_home_1_1_server_1_1_repositories_1_1_abstractions_1_1_i_stations_repository.html">IStationsRepository</a></td>          <td class="paramname"><span class="paramname"><em>stationsRepository</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -155,7 +151,6 @@ Properties</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">stationsRepository</td><td>Stations repository which shall be used by created instance. </td></tr>
-    <tr><td class="paramname">switchesRepository</td><td>Switches repository which shall be used by created instance. </td></tr>
     <tr><td class="paramname">timeProvider</td><td>Time reference shall be used by the instance to coordinate time-based operations. </td></tr>
     <tr><td class="paramname">logger</td><td>Logger which shall be used by created instance. </td></tr>
   </table>
@@ -187,6 +182,7 @@ Properties</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Determines which stations can be concidered as offline and marks them as such. </p>
 <p>Performs a single iteration of the background processing logic asynchronously.<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cancellationToken</td><td>A token to monitor for cancellation requests, ensuring the task stops gracefully when the host shuts down. </td></tr>
@@ -196,7 +192,96 @@ Properties</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>A Task representing the asynchronous operation. </dd></dl>
  </p>
 
-<p>Implements <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_processors_1_1_i_background_service_processor.html#a057a7bd5dafa85c4f2d541ed8cf5eebb">SmartHome.Server.Services.Processors.IBackgroundServiceProcessor</a>.</p>
+<p>Implements <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html#a5821f86582337c3d2879e5b3b27fcd15">SmartHome.Server.Services.Abstractions.IBackgroundServiceProcessor</a>.</p>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a67a3b3bf1c9543316ecf6fbd89bd4f6b" name="a67a3b3bf1c9543316ecf6fbd89bd4f6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a67a3b3bf1c9543316ecf6fbd89bd4f6b">&#9670;&#160;</a></span>_logger</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly ILogger&lt;<a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_processors_1_1_heartbeat_monitoring_service_processor.html">HeartbeatMonitoringServiceProcessor</a>&gt; SmartHome.Server.Services.Processors.HeartbeatMonitoringServiceProcessor._logger</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a617561d5bcff78a4e339735ddf7497ad" name="a617561d5bcff78a4e339735ddf7497ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a617561d5bcff78a4e339735ddf7497ad">&#9670;&#160;</a></span>_maxHeartbeatInterval</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly TimeSpan SmartHome.Server.Services.Processors.HeartbeatMonitoringServiceProcessor._maxHeartbeatInterval</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0d8e59503107af92dc93abcdfe0b9d95" name="a0d8e59503107af92dc93abcdfe0b9d95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d8e59503107af92dc93abcdfe0b9d95">&#9670;&#160;</a></span>_stationsRepository</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly <a class="el" href="interface_smart_home_1_1_server_1_1_repositories_1_1_abstractions_1_1_i_stations_repository.html">IStationsRepository</a> SmartHome.Server.Services.Processors.HeartbeatMonitoringServiceProcessor._stationsRepository</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0e7fc1e641dfeb30ab3bdfe47daf15ce" name="a0e7fc1e641dfeb30ab3bdfe47daf15ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e7fc1e641dfeb30ab3bdfe47daf15ce">&#9670;&#160;</a></span>_timeProvider</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly TimeProvider SmartHome.Server.Services.Processors.HeartbeatMonitoringServiceProcessor._timeProvider</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -221,12 +306,12 @@ Properties</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implements <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_processors_1_1_i_background_service_processor.html">SmartHome.Server.Services.Processors.IBackgroundServiceProcessor</a>.</p>
+<p>Implements <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html#a664a1c712238b6bde3e1aeef529253c3">SmartHome.Server.Services.Abstractions.IBackgroundServiceProcessor</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/Users/jmiodunka/source/repos/github/smart-home/src/Server/Server/Services/Processors/<b>HeartbeatMonitoringServiceProcessor.cs</b></li>
+<li>C:/Users/jmiodunka/source/repos/github/smart-home/src/Server/SmartHome.Server.Services/Processors/<a class="el" href="_heartbeat_monitoring_service_processor_8cs.html">HeartbeatMonitoringServiceProcessor.cs</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

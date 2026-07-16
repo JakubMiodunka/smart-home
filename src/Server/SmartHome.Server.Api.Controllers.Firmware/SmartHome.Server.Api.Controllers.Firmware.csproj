@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartHome.Server.Api.Controllers\SmartHome.Server.Api.Controllers.csproj" />
+    <ProjectReference Include="..\SmartHome.Server.Repositories\SmartHome.Server.Repositories.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+  	<!-- Unit tests project. -->
+  	<InternalsVisibleTo Include="SmartHome.Server.Tests.Api.Controllers.Firmware" />
+  </ItemGroup>
+	
+</Project>

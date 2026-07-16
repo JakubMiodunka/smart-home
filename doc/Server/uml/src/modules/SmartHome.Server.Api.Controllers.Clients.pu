@@ -1,0 +1,38 @@
+@startuml
+
+package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
+    package Requests {
+        +record "SwitchUpdateRequest" as SwitchUpdateClientRequest {
+            +ExpectedSwitchState : bool
+        }
+    }
+
+    package Configuration {
+        +class ClientsApiControllersConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
+    
+    +class "SwitchesController" as ClientSwitchesController {
+        -_switchesRepository : ISwitchesRepository
+        -_stationsRepository : IStationsRepository
+        -_switchManagerFactory : ISwitchManagerFactory
+        -_logger : ILogger<SwitchesController>
+        +SwitchesController(IHttpContextAccessor, ISwitchesRepository, IStationsRepository, ISwitchManagerFactory, ILogger<SwitchesController>) : SwitchesController
+        +GetSwitches() : Task<IActionResult>
+        +GetSwitch(long) : Task<IActionResult>
+        +UpdateSwitch(long, SwitchUpdateRequest, CancellationToken) : Task<IActionResult>
+    }
+
+    SwitchUpdateClientRequest <-- ClientSwitchesController
+    
+    ClientSwitchesController <-- ClientsApiControllersConfiguration
+    
+    note left of ClientsApiControllersConfiguration::ConfigureApplicationBuilder
+        Used to expose controllers defined in package.
+
+        Shall be called from Program.cs.
+    end note
+}
+
+@enduml
