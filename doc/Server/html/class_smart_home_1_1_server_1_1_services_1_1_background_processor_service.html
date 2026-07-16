@@ -78,12 +78,13 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="class_smart_home_1_1_server_1_1_services_1_1_background_processor_service-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">SmartHome.Server.Services.BackgroundProcessorService Class Reference<span class="mlabels"><span class="mlabel sealed">sealed</span></span></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Implementation of BackgroundService that acts as a runner for an <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_processors_1_1_i_background_service_processor.html" title="Definition of processor that execute business logic within a background service.">IBackgroundServiceProcessor</a>, executing its logic at a specified time interval.  
+<p>Implementation of BackgroundService that acts as a runner for an <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html" title="Definition of processor that execute business logic within a background service.">IBackgroundServiceProcessor</a>, executing its logic at a specified time interval.  
  <a href="#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for SmartHome.Server.Services.BackgroundProcessorService:</div>
@@ -94,16 +95,23 @@ Inheritance diagram for SmartHome.Server.Services.BackgroundProcessorService:</d
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a2fd3c85f143f34439441898bc83a9c8c" id="r_a2fd3c85f143f34439441898bc83a9c8c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2fd3c85f143f34439441898bc83a9c8c">BackgroundProcessorService</a> (<a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_processors_1_1_i_background_service_processor.html">IBackgroundServiceProcessor</a> serviceProcessor, TimeProvider timeProvider, TimeSpan serviceExecutionInterval, ILogger&lt; <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_background_processor_service.html">BackgroundProcessorService</a> &gt; logger)</td></tr>
+<tr class="memitem:a2fd3c85f143f34439441898bc83a9c8c" id="r_a2fd3c85f143f34439441898bc83a9c8c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2fd3c85f143f34439441898bc83a9c8c">BackgroundProcessorService</a> (<a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html">IBackgroundServiceProcessor</a> serviceProcessor, TimeProvider timeProvider, TimeSpan serviceExecutionInterval, ILogger&lt; <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_background_processor_service.html">BackgroundProcessorService</a> &gt; logger)</td></tr>
 <tr class="memdesc:a2fd3c85f143f34439441898bc83a9c8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates new instance of <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_background_processor_service.html" title="Implementation of BackgroundService that acts as a runner for an IBackgroundServiceProcessor,...">BackgroundProcessorService</a>.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:af37d1549021b38123378b53967010d63" id="r_af37d1549021b38123378b53967010d63"><td class="memItemLeft" align="right" valign="top">override async Task&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af37d1549021b38123378b53967010d63">ExecuteAsync</a> (CancellationToken cancellationToken)</td></tr>
 <tr class="memdesc:af37d1549021b38123378b53967010d63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executes the logic defined in the wrapped service processor within a background processing loop until the application host shuts down.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pri-attribs" class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr class="memitem:a1d5d050c0c16f3f6ee1acd607a2de9ae" id="r_a1d5d050c0c16f3f6ee1acd607a2de9ae"><td class="memItemLeft" align="right" valign="top">readonly <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html">IBackgroundServiceProcessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1d5d050c0c16f3f6ee1acd607a2de9ae">_processor</a></td></tr>
+<tr class="memitem:a26b51b4e9ea9dc97365babe57a4f5b05" id="r_a26b51b4e9ea9dc97365babe57a4f5b05"><td class="memItemLeft" align="right" valign="top">readonly TimeProvider&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26b51b4e9ea9dc97365babe57a4f5b05">_timeProvider</a></td></tr>
+<tr class="memitem:a514ac63ca3e37ca19e0de703174726b2" id="r_a514ac63ca3e37ca19e0de703174726b2"><td class="memItemLeft" align="right" valign="top">readonly TimeSpan&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a514ac63ca3e37ca19e0de703174726b2">_serviceExecutionInterval</a></td></tr>
+<tr class="memitem:ae216956bb4012944ff200e110b1797ff" id="r_ae216956bb4012944ff200e110b1797ff"><td class="memItemLeft" align="right" valign="top">readonly ILogger&lt; <a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_background_processor_service.html">BackgroundProcessorService</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae216956bb4012944ff200e110b1797ff">_logger</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Implementation of BackgroundService that acts as a runner for an <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_processors_1_1_i_background_service_processor.html" title="Definition of processor that execute business logic within a background service.">IBackgroundServiceProcessor</a>, executing its logic at a specified time interval. </p>
+<div class="textblock"><p>Implementation of BackgroundService that acts as a runner for an <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html" title="Definition of processor that execute business logic within a background service.">IBackgroundServiceProcessor</a>, executing its logic at a specified time interval. </p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a2fd3c85f143f34439441898bc83a9c8c" name="a2fd3c85f143f34439441898bc83a9c8c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2fd3c85f143f34439441898bc83a9c8c">&#9670;&#160;</a></span>BackgroundProcessorService()</h2>
@@ -114,7 +122,7 @@ Protected Member Functions</h2></td></tr>
         <tr>
           <td class="memname">SmartHome.Server.Services.BackgroundProcessorService.BackgroundProcessorService </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_processors_1_1_i_background_service_processor.html">IBackgroundServiceProcessor</a></td>          <td class="paramname"><span class="paramname"><em>serviceProcessor</em></span>, </td>
+          <td class="paramtype"><a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html">IBackgroundServiceProcessor</a></td>          <td class="paramname"><span class="paramname"><em>serviceProcessor</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -188,8 +196,97 @@ Protected Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ae216956bb4012944ff200e110b1797ff" name="ae216956bb4012944ff200e110b1797ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae216956bb4012944ff200e110b1797ff">&#9670;&#160;</a></span>_logger</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly ILogger&lt;<a class="el" href="class_smart_home_1_1_server_1_1_services_1_1_background_processor_service.html">BackgroundProcessorService</a>&gt; SmartHome.Server.Services.BackgroundProcessorService._logger</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1d5d050c0c16f3f6ee1acd607a2de9ae" name="a1d5d050c0c16f3f6ee1acd607a2de9ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d5d050c0c16f3f6ee1acd607a2de9ae">&#9670;&#160;</a></span>_processor</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly <a class="el" href="interface_smart_home_1_1_server_1_1_services_1_1_abstractions_1_1_i_background_service_processor.html">IBackgroundServiceProcessor</a> SmartHome.Server.Services.BackgroundProcessorService._processor</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a514ac63ca3e37ca19e0de703174726b2" name="a514ac63ca3e37ca19e0de703174726b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a514ac63ca3e37ca19e0de703174726b2">&#9670;&#160;</a></span>_serviceExecutionInterval</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly TimeSpan SmartHome.Server.Services.BackgroundProcessorService._serviceExecutionInterval</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a26b51b4e9ea9dc97365babe57a4f5b05" name="a26b51b4e9ea9dc97365babe57a4f5b05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26b51b4e9ea9dc97365babe57a4f5b05">&#9670;&#160;</a></span>_timeProvider</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly TimeProvider SmartHome.Server.Services.BackgroundProcessorService._timeProvider</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/Users/jmiodunka/source/repos/github/smart-home/src/Server/Server/Services/<b>BackgroundProcessorService.cs</b></li>
+<li>C:/Users/jmiodunka/source/repos/github/smart-home/src/Server/SmartHome.Server.Services/<a class="el" href="_background_processor_service_8cs.html">BackgroundProcessorService.cs</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

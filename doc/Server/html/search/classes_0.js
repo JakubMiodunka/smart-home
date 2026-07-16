@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['backgroundprocessorservice_0',['BackgroundProcessorService',['../class_smart_home_1_1_server_1_1_services_1_1_background_processor_service.html',1,'SmartHome::Server::Services']]],
-  ['backgroundprocessorservicetests_1',['BackgroundProcessorServiceTests',['../class_smart_home_1_1_unit_tests_1_1_server_1_1_data_1_1_converters_1_1_json_converters_1_1_background_processor_service_tests.html',1,'SmartHome.UnitTests.Server.Data.Converters.JsonConverters.BackgroundProcessorServiceTests'],['../class_smart_home_1_1_unit_tests_1_1_server_1_1_services_1_1_background_processor_service_tests.html',1,'SmartHome.UnitTests.Server.Services.BackgroundProcessorServiceTests']]],
-  ['basecontroller_2',['BaseController',['../class_server_1_1_controllers_1_1_base_controller.html',1,'Server::Controllers']]]
+  ['apiclientsconfiguration_0',['ApiClientsConfiguration',['../class_smart_home_1_1_server_1_1_api_1_1_clients_1_1_configuration_1_1_api_clients_configuration.html',1,'SmartHome::Server::Api::Clients::Configuration']]],
+  ['apicontrollersconfiguration_1',['ApiControllersConfiguration',['../class_smart_home_1_1_server_1_1_api_1_1_controllers_1_1_configuration_1_1_api_controllers_configuration.html',1,'SmartHome::Server::Api::Controllers::Configuration']]]
 ];
