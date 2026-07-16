@@ -30,7 +30,7 @@ Add a new entry to [CHANGELOG.md](../../CHANGELOG.md) using the following templa
 
 ## UML Documentation
 
-1. Verify UML diagrams stored in [uml/plant-uml](./uml/plant-uml) directory.
+1. Verify UML diagrams stored in [uml/src](./uml/src) directory.
 2. Render PlantUML source code to SVG images and place them in in [uml/images](./uml/images) directory.
 
 ## Text Documentation
