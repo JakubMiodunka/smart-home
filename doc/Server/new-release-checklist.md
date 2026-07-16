@@ -48,6 +48,7 @@ Ensure the following files content is factually correct and remains relevant to 
 3. Verify that all client-facing API endpoints have call examples in
 [SmartHome.Server.Main.http](../../src/Server/SmartHome.Server.Main/SmartHome.Server.Main.http).
 4. Check that the base URL in [SmartHome.Server.Main.http](../../src/Server/SmartHome.Server.Main/SmartHome.Server.Main.http) points to localhost and the port specified in [launchSettings.json](../../src/Server/SmartHome.Server.Main/Properties/launchSettings.json).
+5. Ensure all unit tests pass successfully.
 
 ## Firmware codebase
 

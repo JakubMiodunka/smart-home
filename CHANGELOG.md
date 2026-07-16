@@ -2,7 +2,7 @@
 
 ## Version 1.0.2
 
-**Release Date:** TODO  
+**Release Date:** 2026-07-16
 **License:** MIT  
 **Contributors:**
 - [Jakub Miodunka](https://github.com/JakubMiodunka "GitHub profile")
