@@ -5,6 +5,11 @@ The Server API is segmented into two primary components based on the target cons
 * **Firmware API:** Dedicated to communication between the server and the IoT node firmware.
 * **Clients API:** Dedicated to handling incoming requests from system users (hereafter referred to as clients).
 
+## API Versioning
+The Firmware and Clients APIs utilize independent versioning schemas. API versions are represented
+by positive integers (e.g., *v1*, *v2*), allowing them to be seamlessly embedded directly into
+the endpoint URL paths to prevent breaking changes across updates.
+
 ## Endpoints of the Firmware API
 URLs for the Firmware API endpoints adhere to a standardized routing convention described by the following pattern:
 
@@ -18,8 +23,3 @@ Clients API endpoints follow a similar routing convention tailored for user-faci
 `<BASE_URL>/api/clients/v<API_VERSION>/<ENDPOINT>`
 
 **Example:** *http://192.168.1.10/api/clients/v1/switches*
-
-## API Versioning
-The Firmware and Clients APIs utilize independent versioning schemas. API versions are represented
-by positive integers (e.g., *v1*, *v2*), allowing them to be seamlessly embedded directly into
-the endpoint URL paths to prevent breaking changes across updates.
