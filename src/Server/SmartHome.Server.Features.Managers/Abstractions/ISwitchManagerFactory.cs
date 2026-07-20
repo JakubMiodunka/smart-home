@@ -3,7 +3,7 @@
 namespace SmartHome.Server.Features.Managers.Abstractions;
 
 /// <summary>
-/// Factory for creating managers that control electrical switches.
+/// Factory for creating managers that controls electrical switches.
 /// </summary>
 public interface ISwitchManagerFactory
 {
