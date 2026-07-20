@@ -25,7 +25,7 @@
 /// </param>
 public sealed record SwitchEntity(
     long Id,
-    long StationId, // TODO: Rename to ParentStationId.
+    long StationId,
     byte LocalId,
     bool ExpectedState,
     bool? ActualState);
