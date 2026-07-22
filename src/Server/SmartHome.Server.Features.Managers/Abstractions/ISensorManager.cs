@@ -12,8 +12,8 @@ public interface ISensorManager
     /// A token to cancel the asynchronous operation.
     /// </param>
     /// <returns>
-    /// Indicator of success and value measured by the sensor.
-    /// If attempt failed, the value will be <see langword="null"/>.
+    /// Value of measuremnt taken by the sensor if attempt was successful,
+    /// <see langword="null"/> otherwise.
     /// </returns>
-    Task<(bool success, double? value)> TryGetMeasurement(CancellationToken cancellationToken);
+    Task<double?> TryGetMeasurement(CancellationToken cancellationToken);
 }
