@@ -101,14 +101,19 @@ internal sealed class SwitchManager : FeatureManager, ISwitchManager
     public async Task<bool> TryChangeState(bool expectedSwitchState, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Attempting to change state of switch: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}]",
-            ManagedSwitch.Id, expectedSwitchState);
+            "Attempting to change state of switch: " +
+            "SwitchId=[{SwitchId}], StationId=[{StationId}], ExpectedState=[{ExpectedState}]",
+            ManagedSwitch.Id,
+            ParentStation.Id,
+            expectedSwitchState);
 
         if (ManagedSwitch.ActualState == expectedSwitchState)
         {
             _logger.LogInformation(
-                "Switch already in expected state: SwitchId=[{SwitchId}], ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
+                "Switch already in expected state: SwitchId=[{SwitchId}], StationId=[{StationId}], " +
+                "ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
                 ManagedSwitch.Id,
+                ParentStation.Id,
                 ManagedSwitch.ExpectedState,
                 ManagedSwitch.ActualState);
 
@@ -127,13 +132,14 @@ internal sealed class SwitchManager : FeatureManager, ISwitchManager
 
         var request = new SwitchUpdateRequest(expectedSwitchState);
         IStationApiClient apiClient = StationApiClientsFactory.CreateFor(ParentStation, HttpClientTimeout);
-        HttpStatusCode? responseStatusCode = await apiClient.SendRequestAsync(endpointUrl, HttpMethod.Patch, request, cancellationToken);
+        HttpResponseMessage? response = await apiClient.SendRequestAsync(endpointUrl, HttpMethod.Patch, request, cancellationToken);
 
-        if (responseStatusCode is HttpStatusCode.NoContent)
+        if (response?.StatusCode is HttpStatusCode.NoContent)
         {
-            _logger.LogInformation("Attempting to change state of switch successful: SwitchId=[{SwitchId}], " +
+            _logger.LogInformation("Attempting to change state of switch successful: SwitchId=[{SwitchId}], StationId=[{StationId}]" +
                 "ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
                 ManagedSwitch.Id,
+                ParentStation.Id,
                 ManagedSwitch.ExpectedState,
                 ManagedSwitch.ActualState);
 
@@ -141,10 +147,12 @@ internal sealed class SwitchManager : FeatureManager, ISwitchManager
             return true;
         }
 
-        _logger.LogWarning(
-                "Attempting to change state of switch failed: Message=[{Message}], StatusCode=[{StatusCode}]",
-                "Unexpected station response received.",
-                responseStatusCode);
+        _logger.Log(
+            response is null ? LogLevel.Warning : LogLevel.Error,
+            "Attempting to change state of switch failed: Message=[{Message}], SwitchId=[{SwitchId}], StationId=[{StationId}]",
+            response is null ? "Failed to send a request" : "Unexpected HTTP status received.",
+            ManagedSwitch.Id,
+            ParentStation.Id);
 
         return false;
     }
