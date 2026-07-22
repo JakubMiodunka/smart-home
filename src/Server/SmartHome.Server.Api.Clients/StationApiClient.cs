@@ -158,7 +158,7 @@ internal sealed class StationApiClient : IStationApiClient
     /// <exception cref="ArgumentException">
     /// Thrown, when at least one of provided arguments is invalid.
     /// </exception>
-    public async Task<HttpStatusCode?> SendRequestAsync(
+    public async Task<HttpResponseMessage?> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
@@ -182,7 +182,7 @@ internal sealed class StationApiClient : IStationApiClient
             httpMethod,
             requestBody);
 
-        using HttpRequestMessage request = new HttpRequestMessage(httpMethod, endpointUrl)
+        using var request = new HttpRequestMessage(httpMethod, endpointUrl)
         {
             Content = requestBody is null ? null : await AsHttpContent(requestBody)
         };
@@ -202,7 +202,7 @@ internal sealed class StationApiClient : IStationApiClient
                 _station.Id,
                 response.StatusCode);
 
-            return response.StatusCode;
+            return response;
         }
         catch (HttpRequestException exception)
         {

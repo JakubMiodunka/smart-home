@@ -145,7 +145,8 @@ internal sealed class StationApiClientTests
         StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
+        var expectedResponse = new HttpResponseMessage(responseStatusCode);
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => expectedResponse);
         var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
@@ -165,13 +166,13 @@ internal sealed class StationApiClientTests
         HttpMethod httpMethod = randomizer.NextHttpMethod();
         GenericHttpRequestBody requestBody = randomizer.NextHttpRequestBody();
 
-        HttpStatusCode? statusCode = await clientUnderTest.SendRequestAsync(
+        HttpResponseMessage? actualResponse = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             requestBody,
             CancellationToken.None);
 
-        Assert.That(statusCode, Is.EqualTo(responseStatusCode));
+        Assert.That(expectedResponse, Is.SameAs(actualResponse));
 
         Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
 
@@ -323,13 +324,13 @@ internal sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        HttpStatusCode? statusCode = await clientUnderTest.SendRequestAsync(
+        HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             null,
             CancellationToken.None);
 
-        Assert.That(statusCode, Is.Null);
+        Assert.That(response, Is.Null);
 
         Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
 
@@ -373,13 +374,13 @@ internal sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        HttpStatusCode? statusCode = await clientUnderTest.SendRequestAsync(
+        HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             null,
             CancellationToken.None);
 
-        Assert.That(statusCode, Is.Null);
+        Assert.That(response, Is.Null);
 
         Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
 
