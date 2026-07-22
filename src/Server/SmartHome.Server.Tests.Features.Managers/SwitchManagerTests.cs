@@ -192,7 +192,8 @@ internal sealed class SwitchManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
-        
+        var response = new HttpResponseMessage(expectedStatusCode);
+
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
             .SendRequestAsync(
@@ -200,7 +201,7 @@ internal sealed class SwitchManagerTests
                 expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedStatusCode);
+            .ReturnsAsync(response);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -353,7 +354,7 @@ internal sealed class SwitchManagerTests
                 It.IsAny<HttpMethod>(),
                 It.IsAny<object?>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as HttpStatusCode?);
+            .ReturnsAsync(null as HttpResponseMessage);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -418,6 +419,7 @@ internal sealed class SwitchManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
+        var response = new HttpResponseMessage(invalidStatusCode);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
@@ -426,7 +428,7 @@ internal sealed class SwitchManagerTests
                 expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(invalidStatusCode);
+            .ReturnsAsync(response);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
