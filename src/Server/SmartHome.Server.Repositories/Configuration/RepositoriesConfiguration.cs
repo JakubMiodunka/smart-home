@@ -25,9 +25,9 @@ public static class RepositoriesConfiguration
     /// </param>
     public static void ConfigureApplicationBuilder(IHostApplicationBuilder applicationBuilder)
     {
-        applicationBuilder.Services.AddSingleton(new DatabaseClient(ConnectionString));
-        applicationBuilder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
-        applicationBuilder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
+        applicationBuilder.Services.AddSingleton<IStationsRepository>(new StationsRepository(ConnectionString));
+        applicationBuilder.Services.AddSingleton<ISwitchesRepository>(new SwitchesRepository(ConnectionString));
+        applicationBuilder.Services.AddSingleton<ISensorsRepository>(new SensorsRepository(ConnectionString));
     }
 
     /// <summary>
