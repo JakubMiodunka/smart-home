@@ -10,7 +10,7 @@ using System.Net;
 
 namespace SmartHome.Server.Api.Controllers.Firmware;
 
-/// TODO: Add unit tests.
+// TODO: Add unit tests.
 /// <summary>
 /// Controller dedicated to sensor management.
 /// </summary>
