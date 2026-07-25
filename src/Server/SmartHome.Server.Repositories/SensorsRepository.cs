@@ -75,5 +75,12 @@ internal sealed class SensorsRepository : DatabaseClient, ISensorsRepository
 
         return await GetSingleEntityAsync<SensorEntity>("sensors_get", parameters);
     }
+
+    /// <inheritdoc cref="ISensorsRepository"/>
+    public async Task<SensorEntity[]> GetMultipleSensorsAsync()
+    {
+        var parameters = new DynamicParameters();
+        return await GetMultipleEntitiesAsync<SensorEntity>("sensors_get", parameters);
+    }
     #endregion
 }

@@ -7,9 +7,6 @@ namespace SmartHome.Server.Api.Controllers.Firmware.Requests;
 /// <summary>
 /// Data transfer object (DTO) representing a request to register a station within the system.
 /// </summary>
-/// <remarks>
-/// Used for data exchange between the server and station firmware.
-/// </remarks>
 /// <param name="StationMacAddress">
 /// The MAC address of the station to be registered.
 /// </param>
