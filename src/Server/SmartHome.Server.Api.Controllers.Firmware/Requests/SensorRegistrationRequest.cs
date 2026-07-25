@@ -6,9 +6,6 @@ namespace SmartHome.Server.Api.Controllers.Firmware.Requests;
 /// <summary>
 /// Data transfer object (DTO) representing a request to register a sensor within the system.
 /// </summary>
-/// <remarks>
-/// Used for data exchange between the server and station firmware.
-/// </remarks>
 /// <param name="SensorLocalId">
 /// The identifier of the sensor, unique only at the station level.
 /// </param>
