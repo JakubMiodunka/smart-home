@@ -60,4 +60,16 @@ public interface ISensorsRepository
         long? stationId = null,
         bool filterByLocalId = false,
         byte? localId = null);
+
+    /// <summary>
+    /// Retrieves collection of sensors from the repository basing on provided criteria.
+    /// </summary>
+    /// <remarks>
+    /// At the monent, there is no deed to use any filtering criteria here,
+    /// but method is designed to be flexible to filtering in the future if needed.
+    /// </remarks>
+    /// <returns>
+    /// Collection of sensor entities that matches the provided criteria.
+    /// </returns>
+    Task<SensorEntity[]> GetMultipleSensorsAsync();
 }
