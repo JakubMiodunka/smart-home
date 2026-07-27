@@ -39,7 +39,7 @@ internal sealed class SwitchManagerFactory : ISwitchManagerFactory
     #endregion
 
     #region Interactions
-    /// <inheritdoc cref="ISwitchManagerFactory.CreateFor(SwitchEntity)"/>
+    /// <inheritdoc cref="ISwitchManagerFactory"/>
     public ISwitchManager CreateFor(SwitchEntity switchEntity, StationEntity parentStation) =>
         new SwitchManager(
             switchEntity,
