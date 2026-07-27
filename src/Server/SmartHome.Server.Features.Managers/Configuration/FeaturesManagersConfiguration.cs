@@ -21,5 +21,6 @@ public static class FeaturesManagersConfiguration
     public static void ConfigureApplicationBuilder(IHostApplicationBuilder applicationBuilder)
     {
         applicationBuilder.Services.AddSingleton<ISwitchManagerFactory, SwitchManagerFactory>();
+        applicationBuilder.Services.AddSingleton<ISensorManagerFactory, SensorManagerFactory>();
     }
 }

@@ -145,7 +145,7 @@ internal sealed class StationApiClientTests
         StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        var expectedResponse = new HttpResponseMessage(responseStatusCode);
+        using var expectedResponse = new HttpResponseMessage(responseStatusCode);
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => expectedResponse);
         var httpClient = new HttpClient(httpMessageHandlerMock);
 
@@ -166,7 +166,7 @@ internal sealed class StationApiClientTests
         HttpMethod httpMethod = randomizer.NextHttpMethod();
         GenericHttpRequestBody requestBody = randomizer.NextHttpRequestBody();
 
-        HttpResponseMessage? actualResponse = await clientUnderTest.SendRequestAsync(
+        using HttpResponseMessage? actualResponse = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             requestBody,
@@ -215,11 +215,14 @@ internal sealed class StationApiClientTests
 
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
-            null!,
-            httpMethod,
-            null,
-            CancellationToken.None);
+        Func<Task> actionUnderTest = async () =>
+        {
+            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+                null!,
+                httpMethod,
+                null,
+                CancellationToken.None);
+        };
 
         Assert.ThrowsAsync<ArgumentNullException>(actionUnderTest);
         Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
@@ -252,11 +255,14 @@ internal sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl(UriKind.Relative);
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
-            endpointUrl,
-            httpMethod,
-            null,
-            CancellationToken.None);
+        Func<Task> actionUnderTest = async () =>
+        {
+            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+                endpointUrl,
+                httpMethod,
+                null,
+                CancellationToken.None);
+        };
 
         Assert.ThrowsAsync<ArgumentException>(actionUnderTest);
         Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
@@ -288,11 +294,14 @@ internal sealed class StationApiClientTests
 
         Uri endpointUrl = randomizer.NextHttpUrl();
 
-        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
-            endpointUrl,
-            null!,
-            null,
-            CancellationToken.None);
+        Func<Task> actionUnderTest = async () =>
+        {
+            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+                endpointUrl,
+                null!,
+                null,
+                CancellationToken.None);
+        };
 
         Assert.ThrowsAsync<ArgumentNullException>(actionUnderTest);
         Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
@@ -324,7 +333,7 @@ internal sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+        using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             null,
@@ -374,7 +383,7 @@ internal sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+        using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
             endpointUrl,
             httpMethod,
             null,
@@ -423,11 +432,14 @@ internal sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
-        Func<Task> actionUnderTest = async () => await clientUnderTest.SendRequestAsync(
-            endpointUrl,
-            httpMethod,
-            null,
-            CancellationToken.None);
+        Func<Task> actionUnderTest = async () =>
+        {
+            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+                endpointUrl,
+                httpMethod,
+                null,
+                CancellationToken.None);
+        };
 
         Assert.ThrowsAsync<OperationCanceledException>(actionUnderTest);
 

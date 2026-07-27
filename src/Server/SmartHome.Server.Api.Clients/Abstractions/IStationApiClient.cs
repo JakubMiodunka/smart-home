@@ -1,4 +1,6 @@
-﻿namespace SmartHome.Server.Api.Clients.Abstractions;
+﻿using System.Reflection.Metadata;
+
+namespace SmartHome.Server.Api.Clients.Abstractions;
 
 /// <summary>
 /// An HTTP client designed for communication with a specific station API.
@@ -29,6 +31,8 @@ public interface IStationApiClient
     /// <returns>
     /// HTTP response returned by the station API if 
     /// the request was processed successfully, <see langword="null"/> otherwise.
+    /// <see cref="HttpResponseMessage"/> implements <see cref="IDisposable"/> - it is caller's
+    /// responsibility to dispose it, as when disposed it will be impossible to read the response content.
     /// </returns>
     Task<HttpResponseMessage?> SendRequestAsync(
         Uri endpointUrl,
