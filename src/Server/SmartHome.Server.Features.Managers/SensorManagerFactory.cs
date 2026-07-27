@@ -5,8 +5,8 @@ using SmartHome.Server.Repositories.Entities;
 
 namespace SmartHome.Server.Features.Managers;
 
-/// <inheritdoc cref="ISwitchManagerFactory"/>
-internal sealed class SwitchManagerFactory : ISwitchManagerFactory
+/// <inheritdoc cref="ISensorManagerFactory"/>
+internal sealed class SensorManagerFactory : ISensorManagerFactory
 {
     #region Properties
     private readonly IStationApiClientFactory _stationApiClientsFactory;
@@ -15,7 +15,7 @@ internal sealed class SwitchManagerFactory : ISwitchManagerFactory
 
     #region Instantiation
     /// <summary>
-    /// Creates a new instance of <see cref="SwitchManagerFactory"/>.
+    /// Creates a new instance of <see cref="SensorManagerFactory"/>.
     /// </summary>
     /// <param name="stationApiClientsFactory">
     /// Factory, which shall be used to obtain station API clients for created managers.
@@ -26,7 +26,7 @@ internal sealed class SwitchManagerFactory : ISwitchManagerFactory
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
-    public SwitchManagerFactory(
+    public SensorManagerFactory(
         IStationApiClientFactory stationApiClientsFactory,
         ILoggerFactory loggerFactory)
     {
@@ -39,12 +39,12 @@ internal sealed class SwitchManagerFactory : ISwitchManagerFactory
     #endregion
 
     #region Interactions
-    /// <inheritdoc cref="ISwitchManagerFactory"/>
-    public ISwitchManager CreateFor(SwitchEntity switchEntity, StationEntity parentStation) =>
-        new SwitchManager(
-            switchEntity,
+    /// <inheritdoc cref="ISensorManagerFactory"/>
+    public ISensorManager CreateFor(SensorEntity sensorEntity, StationEntity parentStation) =>
+        new SensorManager(
+            sensorEntity,
             parentStation,
             _stationApiClientsFactory,
-            _loggerFactory.CreateLogger<SwitchManager>());
+            _loggerFactory.CreateLogger<SensorManager>());
     #endregion
 }

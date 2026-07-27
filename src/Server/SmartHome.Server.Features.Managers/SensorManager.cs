@@ -92,7 +92,12 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
         }
     
         IStationApiClient apiClient = StationApiClientsFactory.CreateFor(ParentStation, HttpClientTimeout);
-        HttpResponseMessage? response = await apiClient.SendRequestAsync(endpointUrl, HttpMethod.Get, null, cancellationToken);
+
+        using HttpResponseMessage? response = await apiClient.SendRequestAsync(
+            endpointUrl,
+            HttpMethod.Get,
+            null,
+            cancellationToken);
     
         if (response is null)
         {
@@ -131,9 +136,9 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
             "SensorId=[{SensorId}], StationId=[{StationId}], Value=[{Value}]",
             ManagedSensor.Id,
             ParentStation.Id,
-            responseBody.Value);
+            responseBody.MeasurementValue);
 
-        return responseBody.Value;
+        return responseBody.MeasurementValue;
     }
     #endregion
 }

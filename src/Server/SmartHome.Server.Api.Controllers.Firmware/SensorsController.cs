@@ -59,6 +59,7 @@ public sealed class SensorsController : BaseController
     }
     #endregion
 
+    // TODO: Add check if repotted measurement type is same as saved in DB
     /// <summary>
     /// Registers a sensor within the system using details provided in request body.
     /// </summary>

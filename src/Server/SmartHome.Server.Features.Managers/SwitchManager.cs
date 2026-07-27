@@ -132,7 +132,12 @@ internal sealed class SwitchManager : FeatureManager, ISwitchManager
 
         var request = new SwitchUpdateRequest(expectedSwitchState);
         IStationApiClient apiClient = StationApiClientsFactory.CreateFor(ParentStation, HttpClientTimeout);
-        HttpResponseMessage? response = await apiClient.SendRequestAsync(endpointUrl, HttpMethod.Patch, request, cancellationToken);
+
+        using HttpResponseMessage? response = await apiClient.SendRequestAsync(
+            endpointUrl,
+            HttpMethod.Patch,
+            request,
+            cancellationToken);
 
         if (response?.StatusCode is HttpStatusCode.NoContent)
         {

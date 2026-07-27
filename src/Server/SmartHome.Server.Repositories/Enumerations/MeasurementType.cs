@@ -1,6 +1,7 @@
 ﻿namespace SmartHome.Server.Repositories.Enumerations;
 
-public enum MeasurementType
+// TODO: Add doc-string
+public enum MeasurementType : byte
 {
-    Temperature,
+    Temperature
 }

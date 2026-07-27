@@ -193,8 +193,12 @@ internal sealed class StationApiClient : IStationApiClient
              * Methods as HttpClient.PatchAsJsonAsync are avoided here because they uses chunked transfer encoding,
              * which is not supported by certain station types (e.g. stations based on the ESP8266 
              * chip running a server using the ESP8266WebServer library).
+             * 
+             * HttpResponseMessage type is disposable - it is caller's responsibility to dispose it,
+             * as when disposed it will be impossible to read the response content.
              */
-            using HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
+            // TODO: Maybe add tests to check if the response is actually dispoded in classes that use it.
+            HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
 
             _logger.Log(
                 response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
