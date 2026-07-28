@@ -62,7 +62,6 @@ bool sendHttpRequest(ESP8266WiFiMulti& wiFiManager, const String url, const Http
     return false;
   }
 
-  // TODO: Optimize JSON parsing - why to do this for GET and DELETE?
   String serializedRequest;
   serializeJson(request, serializedRequest);
 

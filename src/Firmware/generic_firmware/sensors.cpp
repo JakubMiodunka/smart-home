@@ -30,7 +30,7 @@ bool SensorRegistrationServerResponse::tryParseJsonDocument(const JsonDocument& 
   }
   
   if (!sensorIdVariant.is<uint32_t>()) {
-    logToSerial(ERROR, "Type of JSON key invalid: JSON_KEY=[%s], EXPECTED_TYPE=[uint32_t]", SENSOR_ID_KEY);
+    logToSerial(ERROR, "Type of JSON value invalid: JSON_KEY=[%s], EXPECTED_TYPE=[uint32_t]", SENSOR_ID_KEY);
     return false;
   }
 
@@ -50,17 +50,19 @@ bool Sensor::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
   
   const String url = getRemoteBaseUrl() + "/sensors";
   const HttpMethod httpMethod = PUT;
-  SensorRegistrationStationRequest request = { this->localId };
+  
+  SensorRegistrationStationRequest request = { this->localId, this->measurementType };
   JsonDocument requestJson;
   request.toJsonDocument(requestJson);
+  
   JsonDocument responseJson;
-  int httpReturnCode;
+  int httpStatusCode;
     
-  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpReturnCode);
-  bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_OK;
+  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpStatusCode);
+  bool wasOperationSuccessful = httpStatusCode == HTTP_CODE_OK;
 
   if (!wasOperationSuccessful) {
-    logToSerial(WARNING, "Sensor registration failed: LOCAL_ID=[%d]", this->localId);
+    logToSerial(WARNING, "Sensor registration failed: LOCAL_ID=[%d], HTTP_STATUS_CODE=[%d]", this->localId, httpStatusCode);
     return false;
   }
 
@@ -88,19 +90,21 @@ void Sensor::setupControlEndpoint(ESP8266WebServer& server) {
   logToSerial(INFO, "Attempting to setup an endpoint: ENDPOINT=[%s]", endpoint.c_str());
 
   server.on(endpoint, HTTP_GET, [this, &server]() {
-    logToSerial(INFO, "Request received: TYPE=[GetMeasurementServerRequest], BODY=[]");
+    String requestBody = server.arg("plain"); // Used only for debug purposes - empty body is expected.
+    logToSerial(INFO, "Request received: TYPE=[GetMeasurementServerRequest], BODY=[%s]", requestBody.c_str());
     
-    int httpCode;
+    int httpStatusCode;
 
     if (!isRequestAuthorized(server)) {
-      httpCode = HTTP_CODE_UNAUTHORIZED;
-      logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
-      server.send(httpCode);
+      httpStatusCode = HTTP_CODE_UNAUTHORIZED;
+      logToSerial(INFO, "Sending response: HTTP_STATUS_CODE=[%d], BODY=[]", httpStatusCode);
+      server.send(httpStatusCode);
 
       return;
     }
 
     double measurementValue = this->takeMeasurement();
+    
     GetMeasurementStationResponse response = { measurementValue };
     JsonDocument repsonseJson;
     response.toJsonDocument(repsonseJson);
@@ -108,9 +112,9 @@ void Sensor::setupControlEndpoint(ESP8266WebServer& server) {
     String serializedResponse;
     serializeJson(repsonseJson, serializedResponse);
 
-    httpCode = HTTP_CODE_OK;
-    logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[%s]", httpCode, serializedResponse.c_str());
-    server.send(httpCode, "application/json", serializedResponse);
+    httpStatusCode = HTTP_CODE_OK;
+    logToSerial(INFO, "Sending response: HTTP_STATUS_CODE=[%d], BODY=[%s]", httpStatusCode, serializedResponse.c_str());
+    server.send(httpStatusCode, "application/json", serializedResponse);
   });
 
   logToSerial(INFO, "Endpoint setup successful: ENDPOINT=[%s]", endpoint.c_str());

@@ -4,7 +4,6 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
-#include <WiFiClient.h> // TODO: Not sure if required here.
 
 #include "config.h"
 #include "secrets.h"
@@ -20,14 +19,35 @@ ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
 // Peripherals definition:
 Station ThisStation = {};
-Switch Switches[] = { {0, 1, LED_BUILTIN, HIGH, true} };
-Sensor Sensors[] = { { 0, 1, []() {}, []() { return 21.37; }} };
+Switch Switches[] = 
+  { 
+    {
+      0,  // Global ID unknown until registration.
+      1,
+      LED_BUILTIN,
+      HIGH, 
+      true
+    }
+  };
+
+Sensor Sensors[] = 
+  { 
+    { 
+      0,  // Global ID unknown until registration.
+      1,
+      MeasurementType::Temperature,
+      []() {},  // No initializaion required.
+      []() { return 21.37; }  // Returning fake measurement.
+    } 
+  };
 
 // Timekeeping:
 uint32_t LastHeartbeatTimestamp = 0;    // Given in milliseconds.
 uint32_t LastLocalApiPollTimestamp = 0; // Given in milliseconds.
 
-// TODO: Add doc-string.
+/// <summary>
+/// Registers all peripherals on remote server.
+/// </summary>
 void registerAll() {
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");

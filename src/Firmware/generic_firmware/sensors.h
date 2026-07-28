@@ -6,10 +6,15 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFiMulti.h>
 
+/// <summary>
+/// Describes the type of a measurement.
+/// </summary>
 /// <remarks>
-/// Should be in sync with enumeration in remote server codebase.
+/// Also serves as an implicit unit for the recorded value, 
+/// as all measurements are expressed in SI units.
+/// Must be kept in sync with the corresponding enumeration in the remote server codebase.
 /// </remarks>
-enum MeasurementType {
+enum MeasurementType : uint8_t {
   Temperature
 };
 
@@ -99,6 +104,11 @@ struct Sensor {
   uint8_t localId = 0;
 
   /// <summary>
+  /// Type of measurements taken by the sensor.
+  /// </summary>
+  MeasurementType measurementType;
+
+  /// <summary>
   /// Performs initial configuration of the sensor.
   /// </summary>
   /// <remarks>
@@ -113,7 +123,7 @@ struct Sensor {
   /// Needs to be assigned during structure creation according to particualr sensor hardware.
   /// </remarks>
   /// <returns>
-  /// Value of the measurement retrieved from the sensor.
+  /// Measurement value retrieved from the sensor.
   /// </returns>
   double (* const takeMeasurement)();
 

@@ -25,7 +25,7 @@ bool SwitchRegistrationServerResponse::tryParseJsonDocument(const JsonDocument& 
   }
   
   if (!switchIdVariant.is<uint32_t>()) {
-    logToSerial(ERROR, "Type of JSON key invalid: JSON_KEY=[%s], EXPECTED_TYPE=[uint32_t]", SWITCH_ID_KEY);
+    logToSerial(ERROR, "Type of JSON value invalid: JSON_KEY=[%s], EXPECTED_TYPE=[uint32_t]", SWITCH_ID_KEY);
     return false;
   }
 
@@ -120,13 +120,13 @@ bool Switch::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
   JsonDocument requestJson;
   request.toJsonDocument(requestJson);
   JsonDocument responseJson;
-  int httpReturnCode;
+  int httpStatusCode;
     
-  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpReturnCode);
-  bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_OK;
+  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpStatusCode);
+  bool wasOperationSuccessful = httpStatusCode == HTTP_CODE_OK;
 
   if (!wasOperationSuccessful) {
-    logToSerial(WARNING, "Switch registration failed: LOCAL_ID=[%d]", this->localId);
+    logToSerial(WARNING, "Switch registration failed: LOCAL_ID=[%d], HTTP_STATUS_CODE=[%d]", this->localId, httpStatusCode);
     return false;
   }
 
@@ -164,10 +164,10 @@ bool Switch::tryUpdateOnRemoteServer(ESP8266WiFiMulti& wiFiManager) const {
   JsonDocument requestJson;
   request.toJsonDocument(requestJson);
   JsonDocument responseJson;
-  int httpReturnCode;
+  int httpStatusCode;
 
-  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpReturnCode);
-  bool wasOperationSuccessful = httpReturnCode == HTTP_CODE_NO_CONTENT;
+  sendHttpRequest(wiFiManager, url, httpMethod, requestJson, responseJson, httpStatusCode);
+  bool wasOperationSuccessful = httpStatusCode == HTTP_CODE_NO_CONTENT;
 
   if (wasOperationSuccessful) {
     logToSerial(INFO, "Switch update successful: LOCAL_ID=[%d]", this->localId);
@@ -194,12 +194,12 @@ void Switch::setupControlEndpoint(ESP8266WebServer& server) {
     String requestBody = server.arg("plain");
     logToSerial(INFO, "Request received: TYPE=[UpdateSwitchServerRequest], BODY=[%s]", requestBody.c_str());
     
-    int httpCode;
+    int httpStatusCode;
 
     if (!isRequestAuthorized(server)) {
-      httpCode = HTTP_CODE_UNAUTHORIZED;
-      logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
-      server.send(httpCode);
+      httpStatusCode = HTTP_CODE_UNAUTHORIZED;
+      logToSerial(INFO, "Sending response: HTTP_STATUS_CODE=[%d], BODY=[]", httpStatusCode);
+      server.send(httpStatusCode);
 
       return;
     }
@@ -212,18 +212,18 @@ void Switch::setupControlEndpoint(ESP8266WebServer& server) {
 
       this->setState(request.expectedSwitchState);
     
-      httpCode = HTTP_CODE_NO_CONTENT;
-      logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
-      server.send(httpCode);
+      httpStatusCode = HTTP_CODE_NO_CONTENT;
+      logToSerial(INFO, "Sending response: HTTP_STATUS_CODE=[%d], BODY=[]", httpStatusCode);
+      server.send(httpStatusCode);
 
       return;
     }
 
     logToSerial(ERROR, "Request body parsing failed:");
 
-    httpCode = HTTP_CODE_BAD_REQUEST;
-    logToSerial(INFO, "Sending response: HTTP_CODE=[%d], BODY=[]", httpCode);
-    server.send(httpCode);
+    httpStatusCode = HTTP_CODE_BAD_REQUEST;
+    logToSerial(INFO, "Sending response: HTTP_STATUS_CODE=[%d], BODY=[]", httpStatusCode);
+    server.send(httpStatusCode);
   });
 
   logToSerial(INFO, "Endpoint setup successful: ENDPOINT=[%s]", endpoint.c_str());
