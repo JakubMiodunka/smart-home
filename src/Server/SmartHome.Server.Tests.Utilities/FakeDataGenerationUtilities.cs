@@ -2,6 +2,7 @@
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Repositories.Enumerations;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -245,6 +246,20 @@ public static class FakeDataGenerationUtilities
         bool? actualState = randomizer.NextNullableBool();
 
         return new SwitchEntity(id, stationId, localId, expectedState, actualState);
+    }
+    
+    public static SensorEntity NextSensorEntity(this Randomizer randomizer)
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        MeasurementType[] allMeasurementTypes = Enum.GetValues<MeasurementType>();
+
+        long id = randomizer.NextInt64(1, long.MaxValue);
+        long stationId = randomizer.NextInt64(1, long.MaxValue);
+        byte localId = randomizer.NextByte();
+        MeasurementType measurementType = randomizer.PickFrom(allMeasurementTypes);
+        
+        return new SensorEntity(id, stationId, localId, measurementType);
     }
     #endregion
 }

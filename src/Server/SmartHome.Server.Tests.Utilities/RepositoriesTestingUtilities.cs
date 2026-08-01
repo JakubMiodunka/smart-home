@@ -1,5 +1,6 @@
 ﻿using Moq;
 using SmartHome.Server.Repositories.Abstractions;
+using SmartHome.Server.Repositories.Enumerations;
 using System.Net;
 using System.Net.NetworkInformation;
 
@@ -55,4 +56,12 @@ public static class RepositoriesTestingUtilities
                 It.IsAny<bool?>()),
             Times.Never);
     }
+
+    public static void AssertNoContentModifications(this Mock<ISensorsRepository> repositoryMock) =>
+        repositoryMock.Verify(mock =>
+            mock.CreateSensorAsync(
+                It.IsAny<long>(),
+                It.IsAny<byte>(),
+                It.IsAny<MeasurementType>()),
+            Times.Never);
 }
