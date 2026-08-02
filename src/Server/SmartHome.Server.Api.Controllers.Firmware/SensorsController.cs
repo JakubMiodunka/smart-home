@@ -10,7 +10,6 @@ using System.Net;
 
 namespace SmartHome.Server.Api.Controllers.Firmware;
 
-// TODO: Add unit tests.
 /// <summary>
 /// Controller dedicated to sensor management.
 /// </summary>
@@ -59,7 +58,7 @@ public sealed class SensorsController : BaseController
     }
     #endregion
 
-    // TODO: Add check if repotted measurement type is same as saved in DB
+    // TODO: Add check if repotted measurement type is same as saved in DB + unit test to check if works
     /// <summary>
     /// Registers a sensor within the system using details provided in request body.
     /// </summary>
