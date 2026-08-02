@@ -432,12 +432,43 @@ internal sealed class SensorsControllerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Information));
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
     }
 
     [Test]
-    public async Task TakingMeasurementReturnsBadRequestIfClientIpAddressCannotBeDetermined() =>
-        throw new NotImplementedException();
+    public async Task TakingMeasurementReturnsBadRequestIfClientIpAddressCannotBeDetermined()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(remoteIpAddress: null);
+
+        var sensorsRepositoryMock = new Mock<ISensorsRepository>();
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        var sensorManagerFactoryStub = new Mock<ISensorManagerFactory>();
+        var loggerMock = new FakeLogger<SensorsController>();
+
+        var controllerUnderTest = new SensorsController(
+            httpContextAccessorStub.Object,
+            sensorsRepositoryMock.Object,
+            stationsRepositoryMock.Object,
+            sensorManagerFactoryStub.Object,
+            loggerMock);
+
+        SensorEntity sensorntity = randomizer.NextSensorEntity();
+
+        IActionResult response = await controllerUnderTest.GetMeasurement(sensorntity.Id, CancellationToken.None);
+        response.AssertBadRequestResult();
+
+        sensorsRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
+    }
 
     [Test]
     public async Task TakingMeasurementReturnsNotFoundIfSensorDoesNotExist()
@@ -451,7 +482,7 @@ internal sealed class SensorsControllerTests
         var sensorsRepositoryMock = new Mock<ISensorsRepository>();
         var stationsRepositoryMock = new Mock<IStationsRepository>();
         double expectedMeasurementValue = randomizer.NextDouble();
-        var sensorManagerMock = new Mock<ISensorManager>();
+        var sensorManagerStub = new Mock<ISensorManager>();
         var sensorManagerFactoryStub = new Mock<ISensorManagerFactory>();
         var loggerMock = new FakeLogger<SensorsController>();
 
@@ -477,11 +508,122 @@ internal sealed class SensorsControllerTests
     }
 
     [Test]
-    public async Task TakingMeasurementReturnsInternalServerErrorIfParentStationDoesNotExist() =>
-        throw new NotImplementedException();
+    public async Task TakingMeasurementReturnsInternalServerErrorIfParentStationDoesNotExist()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        IPAddress clientIpAddress = randomizer.NextIpAddress();
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(clientIpAddress);
+
+        SensorEntity sensorEntity = randomizer.NextSensorEntity();
+
+        var sensorsRepositoryMock = new Mock<ISensorsRepository>();
+
+        sensorsRepositoryMock.Setup(mock => mock
+            .GetSingleSensorAsync(
+                filterById: true,
+                id: sensorEntity.Id,
+                filterByStationId: false,
+                stationId: null,
+                filterByLocalId: false,
+                localId: null))
+            .ReturnsAsync(sensorEntity);
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+        var sensorManagerFactoryStub = new Mock<ISensorManagerFactory>();
+        var loggerMock = new FakeLogger<SensorsController>();
+
+        var controllerUnderTest = new SensorsController(
+            httpContextAccessorStub.Object,
+            sensorsRepositoryMock.Object,
+            stationsRepositoryMock.Object,
+            sensorManagerFactoryStub.Object,
+            loggerMock);
+
+        IActionResult response = await controllerUnderTest.GetMeasurement(sensorEntity.Id, CancellationToken.None);
+        response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
+
+        sensorsRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
+    }
 
     [Test]
-    public async Task TakingMeasurementReturnsServiceUnavailableIfCannotTakeMeasurement() =>
-        throw new NotImplementedException();
+    public async Task TakingMeasurementReturnsServiceUnavailableIfCannotTakeMeasurement()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        IPAddress clientIpAddress = randomizer.NextIpAddress();
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(clientIpAddress);
+
+        SensorEntity sensorEntity = randomizer.NextSensorEntity();
+
+        var sensorsRepositoryMock = new Mock<ISensorsRepository>();
+
+        sensorsRepositoryMock.Setup(mock => mock
+            .GetSingleSensorAsync(
+                filterById: true,
+                id: sensorEntity.Id,
+                filterByStationId: false,
+                stationId: null,
+                filterByLocalId: false,
+                localId: null))
+            .ReturnsAsync(sensorEntity);
+
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
+        {
+            Id = sensorEntity.StationId
+        };
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        stationsRepositoryMock.Setup(mock => mock
+            .GetSingleStationAsync(
+               filterById: true,
+                id: parentStation.Id,
+                filterByIpAddress: false,
+                ipAddress: null,
+                filterByMacAddress: false,
+                macAddress: null))
+            .ReturnsAsync(parentStation);
+
+        var sensorManagerMock = new Mock<ISensorManager>();
+
+        sensorManagerMock.Setup(mock =>
+            mock.TryGetMeasurement(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as double?);
+
+        var sensorManagerFactoryStub = new Mock<ISensorManagerFactory>();
+
+        sensorManagerFactoryStub.Setup(mock => mock
+            .CreateFor(sensorEntity, parentStation))
+            .Returns(sensorManagerMock.Object);
+
+        var loggerMock = new FakeLogger<SensorsController>();
+
+        var controllerUnderTest = new SensorsController(
+            httpContextAccessorStub.Object,
+            sensorsRepositoryMock.Object,
+            stationsRepositoryMock.Object,
+            sensorManagerFactoryStub.Object,
+            loggerMock);
+
+        IActionResult response = await controllerUnderTest.GetMeasurement(sensorEntity.Id, CancellationToken.None);
+        response.AssertStatusCodeResult(StatusCodes.Status503ServiceUnavailable);
+
+        sensorsRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Information));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
+    }
     #endregion
 }
