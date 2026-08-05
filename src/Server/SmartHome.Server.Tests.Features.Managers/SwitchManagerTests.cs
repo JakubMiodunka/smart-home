@@ -290,6 +290,11 @@ internal sealed class SwitchManagerTests
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        switchEntity = switchEntity with
+        {
+            ActualState = !switchEntity.ExpectedState
+        };
+
         StationEntity stationEntity = randomizer.NextOfflineStationEntity() with
         {
             Id = switchEntity.StationId
@@ -348,13 +353,6 @@ internal sealed class SwitchManagerTests
         };
 
         var stationApiClientMock = new Mock<IStationApiClient>();
-        stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
-                It.IsAny<Uri>(),
-                It.IsAny<HttpMethod>(),
-                It.IsAny<object?>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as HttpResponseMessage);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -457,8 +455,8 @@ internal sealed class SwitchManagerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
 }
