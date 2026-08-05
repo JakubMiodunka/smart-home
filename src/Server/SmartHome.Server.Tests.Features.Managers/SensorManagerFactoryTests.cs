@@ -11,9 +11,9 @@ using SmartHome.Server.Tests.Utilities;
 namespace SmartHome.Server.Tests.Features.Managers;
 
 [Category("UnitTest")]
-[TestOf(typeof(SwitchManagerFactory))]
+[TestOf(typeof(SensorManagerFactory))]
 [Author("Jakub Miodunka")]
-internal sealed class SwitchManagerFactoryTests
+internal sealed class SensorManagerFactoryTests
 {
     #region Constructor
     [Test]
@@ -22,7 +22,7 @@ internal sealed class SwitchManagerFactoryTests
         var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        Action actionUnderTest = () => new SwitchManagerFactory(
+        Action actionUnderTest = () => new SensorManagerFactory(
             stationApiClientsFactoryStub.Object,
             loggerFactoryStub.Object);
 
@@ -34,7 +34,7 @@ internal sealed class SwitchManagerFactoryTests
     {
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        Action actionUnderTest = () => new SwitchManagerFactory(
+        Action actionUnderTest = () => new SensorManagerFactory(
             null!,
             loggerFactoryStub.Object);
 
@@ -47,7 +47,7 @@ internal sealed class SwitchManagerFactoryTests
         var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
         var loggerFactoryStub = new Mock<ILoggerFactory>();
 
-        Action actionUnderTest = () => new SwitchManagerFactory(
+        Action actionUnderTest = () => new SensorManagerFactory(
             stationApiClientsFactoryStub.Object,
             null!);
 
@@ -68,20 +68,20 @@ internal sealed class SwitchManagerFactoryTests
             .CreateLogger(It.IsAny<string>()))
             .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
 
-        var factoryUnderTest = new SwitchManagerFactory(
+        var factoryUnderTest = new SensorManagerFactory(
             stationApiClientsFactoryStub.Object,
             loggerFactoryStub.Object);
 
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        StationEntity parentStation = randomizer.NextOnlineStationEntity() with { Id = switchEntity.StationId };
-        ISwitchManager switchManager = factoryUnderTest.CreateFor(switchEntity, parentStation);
+        SensorEntity sensorEntity = randomizer.NextSensorEntity();
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with { Id = sensorEntity.StationId };
+        ISensorManager sensorManager = factoryUnderTest.CreateFor(sensorEntity, parentStation);
 
-        Assert.That(switchManager, Is.Not.Null);
-        Assert.That(switchManager, Is.InstanceOf<SwitchManager>());
+        Assert.That(sensorManager, Is.Not.Null);
+        Assert.That(sensorManager, Is.InstanceOf<SensorManager>());
     }
 
     [Test]
-    public void ManagerCreationImpossibleUsingNullReferenceAsSwitchEntity()
+    public void ManagerCreationImpossibleUsingNullReferenceAsSensorEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -92,17 +92,17 @@ internal sealed class SwitchManagerFactoryTests
             .CreateLogger(It.IsAny<string>()))
             .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
 
-        var factoryUnderTest = new SwitchManagerFactory(
+        var factoryUnderTest = new SensorManagerFactory(
             stationApiClientsFactoryStub.Object,
             loggerFactoryStub.Object);
 
         StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
-        ISwitchManager? switchManager = null;
-        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(null!, stationEntity);
+        ISensorManager? sensorManager = null;
+        Action actionUnderTest = () => sensorManager = factoryUnderTest.CreateFor(null!, stationEntity);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-        Assert.That(switchManager, Is.Null);
+        Assert.That(sensorManager, Is.Null);
     }
 
     [Test]
@@ -117,17 +117,17 @@ internal sealed class SwitchManagerFactoryTests
             .CreateLogger(It.IsAny<string>()))
             .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
 
-        var factoryUnderTest = new SwitchManagerFactory(
+        var factoryUnderTest = new SensorManagerFactory(
             stationApiClientsFactoryStub.Object,
             loggerFactoryStub.Object);
 
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        SensorEntity sensorEntity = randomizer.NextSensorEntity();
 
-        ISwitchManager? switchManager = null;
-        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(switchEntity, null!);
+        ISensorManager? sensorManager = null;
+        Action actionUnderTest = () => sensorManager = factoryUnderTest.CreateFor(sensorEntity, null!);
 
         Assert.Throws<ArgumentNullException>(actionUnderTest);
-        Assert.That(switchManager, Is.Null);
+        Assert.That(sensorManager, Is.Null);
     }
 
     [Test]
@@ -142,24 +142,23 @@ internal sealed class SwitchManagerFactoryTests
             .CreateLogger(It.IsAny<string>()))
             .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
 
-        var factoryUnderTest = new SwitchManagerFactory(
+        var factoryUnderTest = new SensorManagerFactory(
             stationApiClientsFactoryStub.Object,
             loggerFactoryStub.Object);
 
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        SensorEntity sensorEntity = randomizer.NextSensorEntity();
 
         StationEntity parentStation = randomizer.NextOnlineStationEntity();
-        while (parentStation.Id == switchEntity.StationId)
+        while (parentStation.Id == sensorEntity.StationId)
         {
             parentStation = randomizer.NextOnlineStationEntity();
-        }
-        ;
+        };
 
-        ISwitchManager? switchManager = null;
-        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(switchEntity, parentStation);
+        ISensorManager? sensorManager = null;
+        Action actionUnderTest = () => sensorManager = factoryUnderTest.CreateFor(sensorEntity, parentStation);
 
         Assert.Throws<ArgumentException>(actionUnderTest);
-        Assert.That(switchManager, Is.Null);
+        Assert.That(sensorManager, Is.Null);
     }
     #endregion
 }
