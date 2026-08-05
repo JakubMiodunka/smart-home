@@ -131,7 +131,7 @@ internal sealed class SwitchManagerFactoryTests
     }
 
     [Test]
-    public void ManagerCreationImpossibleWhenStationEntityIsNotSensorParentStation()
+    public void ManagerCreationImpossibleUsingStationWhichIsNotSwitchParentStation()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 

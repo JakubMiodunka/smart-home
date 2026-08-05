@@ -1,6 +1,7 @@
 ﻿using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
+using System.Text.Json;
 
 namespace SmartHome.Server.Features.Managers.Abstractions;
 
@@ -12,6 +13,12 @@ internal abstract class FeatureManager
 {
     #region Properties
     protected abstract TimeSpan HttpClientTimeout { get; }
+
+    protected JsonSerializerOptions JsonDeserializationOptions => 
+        new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            RespectRequiredConstructorParameters = true
+        };
     protected IStationApiClientFactory StationApiClientsFactory { get; init; }
     public StationEntity ParentStation { get; init; }
     #endregion
