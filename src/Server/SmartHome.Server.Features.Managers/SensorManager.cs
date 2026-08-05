@@ -3,12 +3,13 @@ using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers.Abstractions;
 using SmartHome.Server.Features.Managers.Requests;
 using SmartHome.Server.Repositories.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace SmartHome.Server.Features.Managers;
 
-/// TODO: Add unit tests.
 /// <inheritdoc cref="ISensorManager"/>
 internal sealed class SensorManager : FeatureManager, ISensorManager
 {
@@ -121,9 +122,18 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
             return null;
         }
 
-        if (await response.Content.ReadFromJsonAsync<GetMeasurementResponse>() is not GetMeasurementResponse responseBody)
+        GetMeasurementResponse? responseBody;
+
+        try
+        {
+            responseBody = await response.Content.ReadFromJsonAsync<GetMeasurementResponse>(
+                JsonDeserializationOptions,
+                cancellationToken);
+        }
+        catch (JsonException exception)
         {
             _logger.LogError(
+                exception,
                 "Attempt to take a measurement failed: Message=[{Message}], SensorId=[{SensorId}], StationId=[{StationId}]",
                 "Response body invalid.",
                 ManagedSensor.Id,
@@ -132,13 +142,14 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
             return null;
         }
 
+        // TODO: Do someting with those null-checks as at this point responseBody is for sure not null.
         _logger.LogInformation("Attempt to take a measurement successful: " +
             "SensorId=[{SensorId}], StationId=[{StationId}], Value=[{Value}]",
             ManagedSensor.Id,
             ParentStation.Id,
-            responseBody.MeasurementValue);
+            responseBody?.MeasurementValue);
 
-        return responseBody.MeasurementValue;
+        return responseBody?.MeasurementValue;
     }
     #endregion
 }
