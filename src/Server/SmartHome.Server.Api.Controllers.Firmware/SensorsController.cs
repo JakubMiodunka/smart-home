@@ -58,18 +58,119 @@ public sealed class SensorsController : BaseController
     }
     #endregion
 
-    // TODO: Add check if repotted measurement type is same as saved in DB + unit test to check if works
+    #region Sensor registration
+    /// <summary>
+    /// Registers provided sensor as new device within the system.
+    /// </summary>
+    /// <param name="request">
+    /// Data transfer object (DTO) containing details about the sensor which shall be registered.
+    /// </param>
+    /// <param name="parentStationEntity">
+    /// Entity of the station which controls the sensor.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> that represents the result of the performed operation.
+    /// </returns>
+    private async Task<IActionResult> RegisterSensorAsNewDeviceAsync(
+        SensorRegistrationRequest request,
+        StationEntity parentStationEntity)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+        ArgumentNullException.ThrowIfNull(parentStationEntity, nameof(parentStationEntity));
+
+        _logger.LogInformation(
+            "Registering sensor as a new device within the system: " +
+            "StationId=[{StationId}], StationIpAddress=[{StationIpAddress}], LocalId=[{LocalId}]",
+            parentStationEntity.Id,
+            parentStationEntity.IpAddress,
+            request.SensorLocalId);
+
+        _logger.LogDebug(
+            "Creating new sensor entity:" +
+            " StationId=[{StationId}], LocalId=[{LocalId}], MeasurementType=[{MeasurementType}]",
+            parentStationEntity.Id,
+            request.SensorLocalId,
+            request.MeasurementType);
+
+        SensorEntity sensorEntity = await _sensorsRepository.CreateSensorAsync(
+            parentStationEntity.Id,
+            request.SensorLocalId,
+            request.MeasurementType);
+
+        _logger.LogDebug("Repository updated successfully: SensorId=[{Id}]", sensorEntity.Id);
+
+        _logger.LogInformation(
+            "Sensor registration successful: " +
+            "SensorId=[{Id}], StationIpAddress=[{StationIpAddress}]",
+            sensorEntity.Id,
+            parentStationEntity.IpAddress);
+
+        var response = new SensorRegistrationResponse(sensorEntity.Id);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Registers provided sensor as device already known within the system.
+    /// </summary>
+    /// <param name="request">
+    /// Data transfer object (DTO) containing details about the sensor which shall be registered.
+    /// </param>
+    /// <param name="sensorEntity">
+    /// Entity of the sensor which shall be registered.
+    /// </param>
+    /// <param name="parentStationEntity">
+    /// Entity of the station which controls the sensor.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> that represents the result of the performed operation.
+    /// </returns>
+    private async Task<IActionResult> RegisterSensorAsKnownDeviceAsync(
+        SensorRegistrationRequest request,
+        SensorEntity sensorEntity,
+        StationEntity parentStationEntity)
+    {
+        _logger.LogInformation(
+                "Registering sensor as already known device: " +
+                "SensorId=[{Id}], StationIpAddress=[{StationIpAddress}]",
+                sensorEntity.Id,
+                parentStationEntity.IpAddress);
+
+        if (sensorEntity.MeasurementType != request.MeasurementType)
+        {
+            _logger.LogWarning(
+                "Failed to process sensor registration request: Message=[{Message}], StationId=[{StationId}]," +
+                "LocalId=[{LocalId}], ExpectedMeasurementType=[{ExpectedMeasurementType}]," +
+                "ActualMeasurementType=[{ActualMeasurementType}]",
+                "Reported measurement type does not match existing sensor.",
+                parentStationEntity.Id,
+                sensorEntity.Id,
+                sensorEntity.MeasurementType,
+                request.MeasurementType);
+
+            return Conflict();
+        }
+
+        _logger.LogInformation(
+            "Sensor registration successful: " +
+            "SensorId=[{Id}], StationIpAddress=[{StationIpAddress}]",
+            sensorEntity.Id,
+            parentStationEntity.IpAddress);
+
+        var response = new SensorRegistrationResponse(sensorEntity.Id);
+        return Ok(response);
+    }
+
     /// <summary>
     /// Registers a sensor within the system using details provided in request body.
     /// </summary>
     /// <param name="request">
-    /// Data transfer object (DTO) containing details about the sensor which shall be registered within the system.
+    /// Data transfer object (DTO) containing details about the sensor which shall be registered.
     /// </param>
     /// <returns>
     /// An <see cref="IActionResult"/> that represents the result of the performed operation.
     /// </returns>
     [HttpPut]
-    public async Task<IActionResult> RegisterSensor([FromBody] SensorRegistrationRequest request)
+    public async Task<IActionResult> RegisterSensorAsync([FromBody] SensorRegistrationRequest request)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
         {
@@ -109,55 +210,22 @@ public sealed class SensorsController : BaseController
             request.SensorLocalId);
 
         if (await _sensorsRepository.GetSingleSensorAsync(
-                filterByStationId: true,
-                stationId: parentStationEntity.Id,
-                filterByLocalId: true,
-                localId: request.SensorLocalId) is not SensorEntity sensorEntity)
-        {
-            _logger.LogDebug(
-                "Sensor entity not found: StationId=[{StationId}], LocalId=[{LocalId}]",
-                parentStationEntity.Id,
-                request.SensorLocalId);
-
-            _logger.LogInformation(
-                "Registering sensor as a new device within the system: " +
-                "StationId=[{StationId}], StationIpAddress=[{StationIpAddress}], LocalId=[{LocalId}]",
-                parentStationEntity.Id,
-                parentStationEntity.IpAddress,
-                request.SensorLocalId);
-
-            _logger.LogDebug(
-                "Creating new sensor entity:" +
-                " StationId=[{StationId}], LocalId=[{LocalId}], MeasurementType=[{MeasurementType}]",
-                parentStationEntity.Id,
-                request.SensorLocalId,
-                request.MeasurementType);
-
-            sensorEntity = await _sensorsRepository.CreateSensorAsync(
-                parentStationEntity.Id,
-                request.SensorLocalId,
-                request.MeasurementType);
-
-            _logger.LogDebug("Repository updated successfully: SensorId=[{Id}]", sensorEntity.Id);
-        }
-        else
+            filterByStationId: true,
+            stationId: parentStationEntity.Id,
+            filterByLocalId: true,
+            localId: request.SensorLocalId) is SensorEntity sensorEntity)
         {
             _logger.LogDebug("Sensor entity found: SensorId=[{Id}]", sensorEntity.Id);
 
-            _logger.LogInformation(
-                "Registering sensor as already known device: " +
-                "SensorId=[{Id}], StationIpAddress=[{StationIpAddress}]",
-                sensorEntity.Id,
-                parentStationEntity.IpAddress);
+            return await RegisterSensorAsKnownDeviceAsync(request, sensorEntity, parentStationEntity);
         }
 
-        _logger.LogInformation(
-            "Sensor registration successful: " +
-            "SensorId=[{Id}], StationIpAddress=[{StationIpAddress}]",
-            sensorEntity.Id,
-            parentStationEntity.IpAddress);
+        _logger.LogDebug(
+            "Sensor entity not found: StationId=[{StationId}], LocalId=[{LocalId}]",
+            parentStationEntity.Id,
+            request.SensorLocalId);
 
-        var response = new SensorRegistrationResponse(sensorEntity.Id);
-        return Ok(response);
+        return await RegisterSensorAsNewDeviceAsync(request, parentStationEntity);
     }
+    #endregion
 }

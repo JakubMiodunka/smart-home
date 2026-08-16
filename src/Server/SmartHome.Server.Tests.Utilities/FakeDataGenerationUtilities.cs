@@ -43,11 +43,20 @@ public static class FakeDataGenerationUtilities
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
         ArgumentNullException.ThrowIfNull(values, nameof(values));
+
         if (values.Count() == 0) throw new ArgumentException("No values to pick from:", nameof(values));
 
         int index = randomizer.Next(values.Count());
 
         return values.ElementAt(index);
+    }
+
+    public static T PickFromEnum<T>(this Randomizer randomizer) where T : struct, Enum
+    {
+        ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
+
+        T[] allEnumValues = Enum.GetValues<T>();
+        return randomizer.PickFrom(allEnumValues);
     }
 
     public static bool? NextNullableBool(this Randomizer randomizer)
@@ -252,12 +261,10 @@ public static class FakeDataGenerationUtilities
     {
         ArgumentNullException.ThrowIfNull(randomizer, nameof(randomizer));
 
-        MeasurementType[] allMeasurementTypes = Enum.GetValues<MeasurementType>();
-
         long id = randomizer.NextInt64(1, long.MaxValue);
         long stationId = randomizer.NextInt64(1, long.MaxValue);
         byte localId = randomizer.NextByte();
-        MeasurementType measurementType = randomizer.PickFrom(allMeasurementTypes);
+        var measurementType = randomizer.PickFromEnum<MeasurementType>();
         
         return new SensorEntity(id, stationId, localId, measurementType);
     }
