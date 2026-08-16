@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Api.Clients.Abstractions;
@@ -189,7 +190,7 @@ internal sealed class SensorManagerTests
 
         double expectedMeasurementValue = randomizer.NextDouble();
         var responseBody = new GetMeasurementResponse(expectedMeasurementValue);
-        var response = new HttpResponseMessage(expectedStatusCode)
+        using var response = new HttpResponseMessage(expectedStatusCode)
         {
             Content = JsonContent.Create(responseBody)
         };
@@ -353,7 +354,7 @@ internal sealed class SensorManagerTests
 
         double expectedMeasurementValue = randomizer.NextDouble();
         var responseBody = new GetMeasurementResponse(expectedMeasurementValue);
-        var response = new HttpResponseMessage(invalidStatusCode)
+        using var response = new HttpResponseMessage(invalidStatusCode)
         {
             Content = JsonContent.Create(responseBody)
         };
@@ -398,12 +399,28 @@ internal sealed class SensorManagerTests
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
 
-    // TODO: Make from following test cases one unified test case with response body taken as parametner.
-    [TestCase(1, "GET", HttpStatusCode.OK)]
-    public async Task SwitchStateChangeFailsIfStationResponsHaveNullBody(
+    private static IEnumerable<TestCaseData> InvalidResponseBodyTestCaseParameters()
+    {
+        yield return new TestCaseData(
+            1,
+            "GET",
+            HttpStatusCode.OK,
+            null);
+
+        yield return new TestCaseData(
+            1,
+            "GET",
+            HttpStatusCode.OK,
+            JsonContent.Create(new { Message = "This is invalid response body." }));
+    }
+
+    [Test]
+    [TestCaseSource(nameof(InvalidResponseBodyTestCaseParameters))]
+    public async Task SwitchStateChangeFailsIfStationResponseHaveInvalidBody(
         byte stationApiVersion,
         string expectedHttpMethodName,
-        HttpStatusCode expectedStatusCode)
+        HttpStatusCode expectedStatusCode,
+        HttpContent? invalidResponseContent)
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -416,9 +433,12 @@ internal sealed class SensorManagerTests
 
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
-        var response = new HttpResponseMessage(expectedStatusCode)
+
+        double expectedMeasurementValue = randomizer.NextDouble();
+
+        using var response = new HttpResponseMessage(expectedStatusCode)
         {
-            Content = null
+            Content = invalidResponseContent
         };
 
         var stationApiClientMock = new Mock<IStationApiClient>();
@@ -478,7 +498,14 @@ internal sealed class SensorManagerTests
 
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
-        var response = new HttpResponseMessage(expectedStatusCode);
+        /*
+         * By default content of newly created message is set to instance of EmptyContent type,
+         * which is private nested class defined in System.Net.Http.HttpResponseMessage.
+         * It indicates that the response body is empty.
+         * Only way to force the response to have empty body is to not set it,
+         * which is the reason why sepparate test case needs to be created for this scenario.
+         */
+        using var response = new HttpResponseMessage(expectedStatusCode);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
@@ -519,79 +546,5 @@ internal sealed class SensorManagerTests
         Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
-
-    [TestCase(1, "GET", HttpStatusCode.OK)]
-    public async Task SwitchStateChangeFailsIfStationResponseHaveInvalidBody(
-        byte stationApiVersion,
-        string expectedHttpMethodName,
-        HttpStatusCode expectedStatusCode)
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        SensorEntity sensorEntity = randomizer.NextSensorEntity();
-        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
-        {
-            Id = sensorEntity.StationId,
-            ApiVersion = stationApiVersion
-        };
-
-        HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
-        Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
-
-        double expectedMeasurementValue = randomizer.NextDouble();
-        dynamic responseBody = new
-        {
-            Message = "This is invalid response body.",
-        };
-
-        var response = new HttpResponseMessage(expectedStatusCode)
-        {
-            Content = JsonContent.Create(responseBody)
-        };
-
-        var stationApiClientMock = new Mock<IStationApiClient>();
-        stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
-        stationApiClientFactoryStub.Setup(mock => mock
-            .CreateFor(parentStation, It.IsAny<TimeSpan>()))
-            .Returns(stationApiClientMock.Object);
-
-        var loggerMock = new FakeLogger<SensorManager>();
-
-        var managerUnderTest = new SensorManager(
-            sensorEntity,
-            parentStation,
-            stationApiClientFactoryStub.Object,
-            loggerMock);
-
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurement(CancellationToken.None);
-
-        Assert.That(actualMeasurementValue, Is.Null);
-
-        stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
-    }
-    
-    
-    
-    
-    
     #endregion
 }
