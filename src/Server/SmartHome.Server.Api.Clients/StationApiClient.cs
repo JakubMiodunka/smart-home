@@ -197,7 +197,6 @@ internal sealed class StationApiClient : IStationApiClient
              * HttpResponseMessage type is disposable - it is caller's responsibility to dispose it,
              * as when disposed it will be impossible to read the response content.
              */
-            // TODO: Maybe add tests to check if the response is actually dispoded in classes that use it.
             HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
 
             _logger.Log(

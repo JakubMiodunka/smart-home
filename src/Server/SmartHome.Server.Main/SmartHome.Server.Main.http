@@ -20,7 +20,7 @@ PATCH {{Server_HostAddress}}/api/clients/v1/switches/30002
 Accept: application/json
 CONTENT-TYPE: application/json
 {
-  "expectedSwitchState" : false
+  "expectedSwitchState" : true
 }
 
 ### SmartHome.Server.Controllers.Clients.SensorsController.TakeMeasurement

@@ -10,6 +10,7 @@ using SmartHome.Server.Api.Controllers.Firmware.Requests;
 using SmartHome.Server.Api.Controllers.Firmware.Responses;
 using SmartHome.Server.Repositories.Abstractions;
 using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Repositories.Enumerations;
 using SmartHome.Server.Tests.Utilities;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -119,7 +120,7 @@ internal sealed class SensorsControllerTests
 
     #region Registration
     [Test]
-    public async Task RegistrationOfUnknownSensorCausesCreationOfNewSwitchEntity()
+    public async Task RegistrationOfUnknownSensorCausesCreationOfNewSensorEntity()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -164,7 +165,7 @@ internal sealed class SensorsControllerTests
             loggerMock);
 
         var request = new SensorRegistrationRequest(sensorEntity.LocalId, sensorEntity.MeasurementType);
-        IActionResult response = await controllerUnderTest.RegisterSensor(request);
+        IActionResult response = await controllerUnderTest.RegisterSensorAsync(request);
 
         var expectedResponse = new SensorRegistrationResponse(sensorEntity.Id);
         response.AssertOkObjectResult(expectedValue: expectedResponse);
@@ -185,7 +186,7 @@ internal sealed class SensorsControllerTests
     }
 
     [Test]
-    public async Task RegistrationOfKnownSwitchCausesReturnOfItsDetails()
+    public async Task RegistrationOfKnownSensorCausesReturnOfItsDetails()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
@@ -232,7 +233,7 @@ internal sealed class SensorsControllerTests
             loggerMock);
 
         var request = new SensorRegistrationRequest(sensorEntity.LocalId, sensorEntity.MeasurementType);
-        IActionResult response = await controllerUnderTest.RegisterSensor(request);
+        IActionResult response = await controllerUnderTest.RegisterSensorAsync(request);
 
         var expectedResponse = new SensorRegistrationResponse(sensorEntity.Id);
         response.AssertOkObjectResult(expectedValue: expectedResponse);
@@ -276,7 +277,7 @@ internal sealed class SensorsControllerTests
 
         SensorEntity sensorEntity = randomizer.NextSensorEntity();
         var request = new SensorRegistrationRequest(sensorEntity.LocalId, sensorEntity.MeasurementType);
-        IActionResult response = await controllerUnderTest.RegisterSensor(request);
+        IActionResult response = await controllerUnderTest.RegisterSensorAsync(request);
 
         response.AssertBadRequestResult();
 
@@ -315,10 +316,87 @@ internal sealed class SensorsControllerTests
         };
 
         var request = new SensorRegistrationRequest(sensorEntity.LocalId, sensorEntity.MeasurementType);
-        IActionResult response = await controllerUnderTest.RegisterSensor(request);
+        IActionResult response = await controllerUnderTest.RegisterSensorAsync(request);
 
         var expectedResponse = new SensorRegistrationResponse(sensorEntity.Id);
         response.AssertNotFoundResult();
+
+        sensorsRepositoryMock.AssertNoContentModifications();
+        stationsRepositoryMock.AssertNoContentModifications();
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
+    }
+
+    [Test]
+    public async Task RegistrationReturnsConflictIfStationReportsNonMatchingMeasurementTypeOfKnownSensor()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity();
+
+        Mock<IHttpContextAccessor> httpContextAccessorStub =
+            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
+
+        var stationsRepositoryMock = new Mock<IStationsRepository>();
+
+        stationsRepositoryMock.Setup(mock =>
+            mock.GetSingleStationAsync(
+                filterById: It.IsAny<bool>(),
+                id: It.IsAny<long?>(),
+                filterByIpAddress: true,
+                ipAddress: parentStationEntity.IpAddress,
+                filterByMacAddress: It.IsAny<bool>(),
+                macAddress: It.IsAny<PhysicalAddress?>()))
+            .ReturnsAsync(parentStationEntity);
+
+        SensorEntity sensorEntity = randomizer.NextSensorEntity() with
+        {
+            StationId = parentStationEntity.Id
+        };
+
+        var sensorsRepositoryMock = new Mock<ISensorsRepository>();
+
+        sensorsRepositoryMock.Setup(mock => mock
+            .GetSingleSensorAsync(
+                filterById: false,
+                id: null,
+                filterByStationId: true,
+                stationId: sensorEntity.StationId,
+                filterByLocalId: true,
+                localId: sensorEntity.LocalId))
+            .ReturnsAsync(sensorEntity);
+
+        var loggerMock = new FakeLogger<SensorsController>();
+
+        var controllerUnderTest = new SensorsController(
+            httpContextAccessorStub.Object,
+            sensorsRepositoryMock.Object,
+            stationsRepositoryMock.Object,
+            loggerMock);
+
+        var invalidMeasurementType = randomizer.PickFromEnum<MeasurementType>();
+        while (invalidMeasurementType == sensorEntity.MeasurementType)
+        {
+            invalidMeasurementType = randomizer.PickFromEnum<MeasurementType>();
+        }
+
+        var request = new SensorRegistrationRequest(sensorEntity.LocalId, invalidMeasurementType);
+        IActionResult response = await controllerUnderTest.RegisterSensorAsync(request);
+        
+        response.AssertConflictResult();
+
+        sensorsRepositoryMock.Verify(mock => mock
+            .GetSingleSensorAsync(
+                filterById: false,
+                id: null,
+                filterByStationId: true,
+                stationId: sensorEntity.StationId,
+                filterByLocalId: true,
+                localId: sensorEntity.LocalId),
+            Times.Once);
 
         sensorsRepositoryMock.AssertNoContentModifications();
         stationsRepositoryMock.AssertNoContentModifications();
