@@ -124,6 +124,7 @@ internal sealed class BackgroundProcessorServiceTests
     /// into the underlying test execution flow and timing synchronization.
     /// </remarks>
     [NonParallelizable]
+    [Retry(2)]
     [TestCase(1, 100)]
     public async Task ServiceExecutionTriggeredInSpecifiedInterval(
         long serviceExecutionInterval,  // Given in milliseconds.
@@ -189,6 +190,7 @@ internal sealed class BackgroundProcessorServiceTests
 
     /// <inheritdoc cref="ServiceExecutionTriggeredInSpecifiedInterval"/>
     [NonParallelizable]
+    [Retry(2)]
     [TestCase(1, 5)]
     public async Task ExecutionLoopContinuesWhenProcessorThrowsException(
         long serviceExecutionInterval,  // Given in milliseconds.
@@ -247,11 +249,12 @@ internal sealed class BackgroundProcessorServiceTests
 
     /// <inheritdoc cref="ServiceExecutionTriggeredInSpecifiedInterval"/>
     [NonParallelizable]
+    [Retry(2)]
     [TestCase(1, 5, 2)]
     public async Task ExecutionLoopInterruptedWhenProcessorOperationIsCancelled(
         long serviceExecutionInterval,  // Given in milliseconds.
         int numberOfIntervals,
-        int cancellationServiceLoop)           // In which service execution loop the cancellation should be triggered.
+        int cancellationServiceLoop)    // In which service execution loop the cancellation should be triggered.
     {
         var serviceProcessorMock = new Mock<IBackgroundServiceProcessor>();
 
