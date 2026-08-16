@@ -107,6 +107,11 @@ public static class HttpTestUtilities
         int expectedStatusCode = StatusCodes.Status404NotFound) =>
         AssertStatusCodeActionResult<NotFoundResult>(actionResultUnderTest, expectedStatusCode);
 
+    public static void AssertConflictResult(
+        this IActionResult actionResultUnderTest,
+        int expectedStatusCode = StatusCodes.Status409Conflict) =>
+        AssertStatusCodeActionResult<ConflictResult>(actionResultUnderTest, expectedStatusCode);
+
     public static void AssertStatusCodeResult(
         this IActionResult actionResultUnderTest,
         int expectedStatusCode) =>

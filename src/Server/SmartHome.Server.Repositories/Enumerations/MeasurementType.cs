@@ -10,5 +10,6 @@
 /// </remarks>
 public enum MeasurementType : byte
 {
-    Temperature
+    Temperature,
+    AirHumidity,
 }

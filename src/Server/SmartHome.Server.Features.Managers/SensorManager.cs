@@ -99,7 +99,11 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
             HttpMethod.Get,
             null,
             cancellationToken);
-    
+
+        /*
+         * TODO: That kind of response validation is a common task amogn managers and generates too much boilerplate code.
+         * Rework needed.
+         */
         if (response is null)
         {
             _logger.LogWarning(
@@ -111,7 +115,7 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
             return null;
         }
 
-        if(response.StatusCode is not HttpStatusCode.OK)
+        if (response.StatusCode is not HttpStatusCode.OK)
         {
             _logger.LogError(
                 "Attempt to take a measurement failed: Message=[{Message}], SensorId=[{SensorId}], StationId=[{StationId}]",
@@ -122,13 +126,13 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
             return null;
         }
 
-        GetMeasurementResponse? responseBody;
+        GetMeasurementResponse responseBody;
 
         try
         {
             responseBody = await response.Content.ReadFromJsonAsync<GetMeasurementResponse>(
                 JsonDeserializationOptions,
-                cancellationToken);
+                cancellationToken) ?? throw new JsonException("JSON deserializer returned null reference.");
         }
         catch (JsonException exception)
         {
@@ -142,14 +146,13 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
             return null;
         }
 
-        // TODO: Do someting with those null-checks as at this point responseBody is for sure not null.
         _logger.LogInformation("Attempt to take a measurement successful: " +
             "SensorId=[{SensorId}], StationId=[{StationId}], Value=[{Value}]",
             ManagedSensor.Id,
             ParentStation.Id,
-            responseBody?.MeasurementValue);
+            responseBody.MeasurementValue);
 
-        return responseBody?.MeasurementValue;
+        return responseBody.MeasurementValue;
     }
     #endregion
 }
