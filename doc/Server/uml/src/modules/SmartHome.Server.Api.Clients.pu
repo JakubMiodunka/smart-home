@@ -1,9 +1,9 @@
 @startuml
 
-package "SmartHome.Server.Api.Clients" as ApiClient {
+package "SmartHome.Server.Api.Clients" as ApiClients {
     package Abstractions {
         +interface IStationApiClient {
-            +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+            +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpResponseMessage?>
         }
 
         +interface IStationApiClientFactory {
@@ -27,7 +27,7 @@ package "SmartHome.Server.Api.Clients" as ApiClient {
         +StationApiClient(StationEntity, IHttpClientFactory, TimeSpan, ILogger<StationApiClient>) : StationApiClient
         -CreateHttpClient(IHttpClientFactory, TimeSpan) : HttpClient
         -AsHttpContent(object?) : Task<HttpContent>
-        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpStatusCode?>
+        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpResponseMessage?>
     }
 
     ~class StationApiClientFactory {

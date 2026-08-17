@@ -15,5 +15,5 @@ public interface ISensorManager
     /// Value of measuremnt taken by the sensor if attempt was successful,
     /// <see langword="null"/> otherwise.
     /// </returns>
-    Task<double?> TryGetMeasurement(CancellationToken cancellationToken);
+    Task<double?> TryGetMeasurementAsync(CancellationToken cancellationToken);
 }
