@@ -1,5 +1,6 @@
 ﻿namespace SmartHome.Server.Repositories.Entities;
 
+// TODO: Not used yet - will be used to store scheduled measurements taken by the sensors.
 /// <summary>
 /// Represents a measurement taken by a sensor.
 /// </summary>
