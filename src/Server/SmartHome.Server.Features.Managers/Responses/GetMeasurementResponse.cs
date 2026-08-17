@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace SmartHome.Server.Features.Managers.Requests;
+namespace SmartHome.Server.Features.Managers.Responses;
 
 /// <summary>
 /// Data transfer object (DTO) representing a response created

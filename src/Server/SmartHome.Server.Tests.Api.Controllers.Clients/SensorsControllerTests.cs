@@ -176,7 +176,7 @@ internal sealed class SensorsControllerTests
             sensorManagerFactoryStub.Object,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.GetSensor(sensorEntity.Id);
+        IActionResult response = await controllerUnderTest.GetSensorAsync(sensorEntity.Id);
         response.AssertOkObjectResult(expectedValue: sensorEntity);
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -227,7 +227,7 @@ internal sealed class SensorsControllerTests
             nonExistingSensorEntityId = randomizer.NextInt64(1, long.MaxValue);
         }
 
-        IActionResult response = await controllerUnderTest.GetSensor(nonExistingSensorEntityId);
+        IActionResult response = await controllerUnderTest.GetSensorAsync(nonExistingSensorEntityId);
         response.AssertNotFoundResult();
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -272,7 +272,7 @@ internal sealed class SensorsControllerTests
             sensorManagerFactoryStub.Object,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.GetSensor(sensorEntity.Id);
+        IActionResult response = await controllerUnderTest.GetSensorAsync(sensorEntity.Id);
         response.AssertBadRequestResult();
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -314,7 +314,7 @@ internal sealed class SensorsControllerTests
             sensorManagerFactoryStub.Object,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.GetSensors();
+        IActionResult response = await controllerUnderTest.GetSensorsAsync();
         response.AssertOkObjectResult(expectedValue: repositoryContent);
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -346,7 +346,7 @@ internal sealed class SensorsControllerTests
             sensorManagerFactoryStub.Object,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.GetSensors();
+        IActionResult response = await controllerUnderTest.GetSensorsAsync();
         response.AssertBadRequestResult();
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -404,7 +404,7 @@ internal sealed class SensorsControllerTests
         var sensorManagerMock = new Mock<ISensorManager>();
 
         sensorManagerMock.Setup(mock =>
-            mock.TryGetMeasurement(It.IsAny<CancellationToken>()))
+            mock.TryGetMeasurementAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedMeasurementValue);
 
         var sensorManagerFactoryStub = new Mock<ISensorManagerFactory>();
@@ -422,7 +422,7 @@ internal sealed class SensorsControllerTests
             sensorManagerFactoryStub.Object,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.GetMeasurement(sensorEntity.Id, CancellationToken.None);
+        IActionResult response = await controllerUnderTest.GetMeasurementAsync(sensorEntity.Id, CancellationToken.None);
 
         var expectedResponse = new GetMeasurementResponse(expectedMeasurementValue);
         response.AssertOkObjectResult(expectedValue: expectedResponse);
@@ -458,7 +458,7 @@ internal sealed class SensorsControllerTests
 
         SensorEntity sensorntity = randomizer.NextSensorEntity();
 
-        IActionResult response = await controllerUnderTest.GetMeasurement(sensorntity.Id, CancellationToken.None);
+        IActionResult response = await controllerUnderTest.GetMeasurementAsync(sensorntity.Id, CancellationToken.None);
         response.AssertBadRequestResult();
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -495,7 +495,7 @@ internal sealed class SensorsControllerTests
 
         SensorEntity nonExistingSensor = randomizer.NextSensorEntity();
 
-        IActionResult response = await controllerUnderTest.GetMeasurement(nonExistingSensor.Id, CancellationToken.None);
+        IActionResult response = await controllerUnderTest.GetMeasurementAsync(nonExistingSensor.Id, CancellationToken.None);
         response.AssertNotFoundResult();
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -541,7 +541,7 @@ internal sealed class SensorsControllerTests
             sensorManagerFactoryStub.Object,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.GetMeasurement(sensorEntity.Id, CancellationToken.None);
+        IActionResult response = await controllerUnderTest.GetMeasurementAsync(sensorEntity.Id, CancellationToken.None);
         response.AssertStatusCodeResult(StatusCodes.Status500InternalServerError);
 
         sensorsRepositoryMock.AssertNoContentModifications();
@@ -596,7 +596,7 @@ internal sealed class SensorsControllerTests
         var sensorManagerMock = new Mock<ISensorManager>();
 
         sensorManagerMock.Setup(mock =>
-            mock.TryGetMeasurement(It.IsAny<CancellationToken>()))
+            mock.TryGetMeasurementAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(null as double?);
 
         var sensorManagerFactoryStub = new Mock<ISensorManagerFactory>();
@@ -614,7 +614,7 @@ internal sealed class SensorsControllerTests
             sensorManagerFactoryStub.Object,
             loggerMock);
 
-        IActionResult response = await controllerUnderTest.GetMeasurement(sensorEntity.Id, CancellationToken.None);
+        IActionResult response = await controllerUnderTest.GetMeasurementAsync(sensorEntity.Id, CancellationToken.None);
         response.AssertStatusCodeResult(StatusCodes.Status503ServiceUnavailable);
 
         sensorsRepositoryMock.AssertNoContentModifications();

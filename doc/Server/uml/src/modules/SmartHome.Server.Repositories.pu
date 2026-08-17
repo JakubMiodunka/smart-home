@@ -16,6 +16,27 @@ package "SmartHome.Server.Repositories" as Repositories {
             +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
             +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
         }
+        
+        +interface ISensorsRepository {
+            +CreateSensorAsync(long, byte, MeasurementType) : Task<SensorEntity>
+            +GetSingleSensorAsync(bool, long?, bool, long?, bool, byte?) : Task<SensorEntity?>
+            +GetMultipleSensorsAsync() : Task<SensorEntity[]>
+        }
+        
+        ~abstract DatabaseClient {
+            -_connectionString : string
+            #DatabaseClient(string) : DatabaseClient
+            #CreateEntityAsync<T>(string, DynamicParameters) : Task<T>
+            #GetSingleEntityAsync<T>(string, DynamicParameters) : Task<T?>
+            #GetMultipleEntitiesAsync<T>(string, DynamicParameters) : Task<T[]>
+        }
+    }
+    
+    package Enumerations {
+        +enum MeasurementType {
+            Temperature
+            AirHumidity
+        }
     }
 
     package TypeHandlers {
@@ -40,11 +61,6 @@ package "SmartHome.Server.Repositories" as Repositories {
             LastHeartbeat : DateTimeOffset
         }
 
-        +class StationEntityExtensions {
-            +{static} IsOnline(this StationEntity) : bool?
-            +{static} BaseApiUrl(this StationEntity) : Uri?
-        }
-
         +record SwitchEntity {
             Id : long
             StationId : long
@@ -52,16 +68,20 @@ package "SmartHome.Server.Repositories" as Repositories {
             ExpectedState : bool
             ActualState : bool?
         }
-
-        +class SwitchEntityExtensions {
-            +{static} IsOnline(this SwitchEntity) : bool
-            +{static} SwitchUrl(this SwitchEntity, StationEntity) : Uri?
+        
+        +record SensorEntity {
+            +Id : long
+            +StationId : long
+            +LocalId : byte
+            +MeasurementType : MeasurementType
         }
-
-        StationEntity <-- StationEntityExtensions
-        SwitchEntity <-- SwitchEntityExtensions
-        StationEntity <-- SwitchEntityExtensions
-        StationEntityExtensions <-- SwitchEntityExtensions
+        
+        +record MeasurementEntity {
+            +Id : long 
+            +SensorId : long
+            +Value : double
+            +Timestamp : DateTimeOffset
+        }
     }
 
     package Configuration {
@@ -71,37 +91,54 @@ package "SmartHome.Server.Repositories" as Repositories {
         }
     }
 
-    ~class DatabaseClient {
-        -_connectionString : string
-        +DatabaseClient(string) : DatabaseClient
-        -CreateEntityAsync<T>(string, DynamicParameters) : Task<T>
-        -GetSingleEntityAsync<T>(string, DynamicParameters) : Task<T?>
-        -GetMultipleEntitiesAsync<T>(string, DynamicParameters) : Task<T[]>
+    ~class StationsRepository {
+        +StationsRepository(string) : StationsRepository
         +CreateStationAsync(PhysicalAddress, IPAddress?, int?, byte?, DateTimeOffset) : Task<StationEntity>
         +GetSingleStationAsync(bool, long?, bool, IPAddress?, bool, PhysicalAddress?) : Task<StationEntity?>
         +GetMultipleStationsAsync() : Task<StationEntity[]>
         +UpdateStationAsync(long id, bool, IPAddress?, bool, int?, bool, byte?, bool, DateTimeOffset?) : Task<StationEntity?>
         +MarkOfflineStations(DateTimeOffset) : Task<long[]>
+    }
+    
+    ~class SwitchesRepository {
+        +SwitchesRepository(string) : SwitchesRepository
         +CreateSwitchAsync(long, byte, bool, bool?) : Task<SwitchEntity>
         +GetSingleSwitchAsync(bool, long?, bool, long?, bool, byte?) : Task<SwitchEntity?>
         +GetMultipleSwitchesAsync(bool, long?) : Task<SwitchEntity[]>
         +UpdateSwitchAsync(long, bool, bool?, bool, bool?) : Task<SwitchEntity?>
     }
-
-    IStationsRepository <|.. DatabaseClient
-    IStationsRepository <-- RepositoriesConfiguration
-
-    ISwitchesRepository <|.. DatabaseClient
-    ISwitchesRepository <-- RepositoriesConfiguration
-
+    
+    ~class SensorsRepository {
+        +SensorsRepository(string) : SensorsRepository
+        +CreateSensorAsync(long, byte, MeasurementType) : Task<SensorEntity>
+        +GetSingleSensorAsync(bool, long?, bool, long?, bool, byte?) : Task<SensorEntity?>
+        +GetMultipleSensorsAsync() : Task<SensorEntity[]>
+    }
+    
+    MeasurementType *-- SensorEntity
+    
     StationEntity <-- IStationsRepository
-
+    
     SwitchEntity <-- ISwitchesRepository
-
-    DatabaseClient <-- RepositoriesConfiguration
-
+    
+    SensorEntity <-- ISensorsRepository
+    
+    DatabaseClient <|-- StationsRepository
+    IStationsRepository <|.. StationsRepository
+    
+    DatabaseClient <|-- SwitchesRepository
+    ISwitchesRepository <|.. SwitchesRepository
+    
+    DatabaseClient <|-- SensorsRepository
+    ISensorsRepository <|.. SensorsRepository
+    
+    StationsRepository <-- RepositoriesConfiguration
+    IStationsRepository <-- RepositoriesConfiguration
+    SwitchesRepository <-- RepositoriesConfiguration
+    ISwitchesRepository <-- RepositoriesConfiguration
+    SensorsRepository <-- RepositoriesConfiguration
+    ISensorsRepository <-- RepositoriesConfiguration
     IPAddressHandler <-- RepositoriesConfiguration
-
     PhysicalAddressHandler <-- RepositoriesConfiguration
 
     note left of RepositoriesConfiguration::ConfigureApplicationBuilder

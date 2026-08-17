@@ -72,7 +72,7 @@ public sealed class SensorsController : BaseController
     /// An <see cref="IActionResult"/> containing a list of sensors.
     /// </returns>
     [HttpGet]
-    public async Task<IActionResult> GetSensors()
+    public async Task<IActionResult> GetSensorsAsync()
     {
         if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
         {
@@ -111,7 +111,7 @@ public sealed class SensorsController : BaseController
     /// An <see cref="IActionResult"/> containing a list of sensors.
     /// </returns>
     [HttpGet("{sensorId}")]
-    public async Task<IActionResult> GetSensor(long sensorId)
+    public async Task<IActionResult> GetSensorAsync(long sensorId)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
         {
@@ -155,7 +155,7 @@ public sealed class SensorsController : BaseController
     /// An <see cref="IActionResult"/> containing value of measurement taken.
     /// </returns>
     [HttpGet("{sensorId}/measurement")]
-    public async Task<IActionResult> GetMeasurement(long sensorId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetMeasurementAsync(long sensorId, CancellationToken cancellationToken)
     {
         if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
         {
@@ -205,7 +205,7 @@ public sealed class SensorsController : BaseController
 
         ISensorManager sensorManager = _sensorManagerFactory.CreateFor(sensorEntity, parentStation);
 
-        if (await sensorManager.TryGetMeasurement(cancellationToken) is double measurementValue)
+        if (await sensorManager.TryGetMeasurementAsync(cancellationToken) is double measurementValue)
         {
             _logger.LogInformation(
                 "Get measurement request processed successfully: " +

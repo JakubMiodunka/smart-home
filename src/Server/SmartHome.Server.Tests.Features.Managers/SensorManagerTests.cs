@@ -5,7 +5,7 @@ using Moq;
 using NUnit.Framework.Internal;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers;
-using SmartHome.Server.Features.Managers.Requests;
+using SmartHome.Server.Features.Managers.Responses;
 using SmartHome.Server.Repositories.Entities;
 using SmartHome.Server.Tests.Utilities;
 using System.Net;
@@ -217,7 +217,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurement(CancellationToken.None);
+        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
 
         Assert.That(actualMeasurementValue, Is.EqualTo(expectedMeasurementValue));
 
@@ -261,7 +261,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurement(CancellationToken.None);
+        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
 
         Assert.That(actualMeasurementValue, Is.Null);
 
@@ -308,7 +308,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurement(CancellationToken.None);
+        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
         
         Assert.That(actualMeasurementValue, Is.Null);
 
@@ -381,7 +381,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurement(CancellationToken.None);
+        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
 
         Assert.That(actualMeasurementValue, Is.Null);
 
@@ -463,7 +463,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurement(CancellationToken.None);
+        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
 
         Assert.That(actualMeasurementValue, Is.Null);
 
@@ -529,7 +529,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurement(CancellationToken.None);
+        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
 
         Assert.That(actualMeasurementValue, Is.Null);
 
