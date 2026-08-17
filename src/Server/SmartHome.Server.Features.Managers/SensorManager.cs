@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers.Abstractions;
-using SmartHome.Server.Features.Managers.Requests;
+using SmartHome.Server.Features.Managers.Responses;
 using SmartHome.Server.Repositories.Entities;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -75,7 +74,7 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
     /// <summary>
     /// Sends a command to station associated with managed switch to take a measurement.
     /// </summary>
-    public async Task<double?> TryGetMeasurement(CancellationToken cancellationToken)
+    public async Task<double?> TryGetMeasurementAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Attempting to take a measurement: SensorId=[{SensorId}], StationId=[{StationId}]",
