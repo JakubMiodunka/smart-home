@@ -79,5 +79,87 @@ internal sealed class SwitchManagerFactoryTests
         Assert.That(switchManager, Is.Not.Null);
         Assert.That(switchManager, Is.InstanceOf<SwitchManager>());
     }
+
+    [Test]
+    public void ManagerCreationImpossibleUsingNullReferenceAsSwitchEntity()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        loggerFactoryStub.Setup(factory => factory
+            .CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
+
+        var factoryUnderTest = new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
+
+        ISwitchManager? switchManager = null;
+        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(null!, stationEntity);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+        Assert.That(switchManager, Is.Null);
+    }
+
+    [Test]
+    public void ManagerCreationImpossibleUsingNullReferenceAsParentStationEntity()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        loggerFactoryStub.Setup(factory => factory
+            .CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
+
+        var factoryUnderTest = new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+
+        ISwitchManager? switchManager = null;
+        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(switchEntity, null!);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+        Assert.That(switchManager, Is.Null);
+    }
+
+    [Test]
+    public void ManagerCreationImpossibleUsingStationWhichIsNotSwitchParentStation()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        loggerFactoryStub.Setup(factory => factory
+            .CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
+
+        var factoryUnderTest = new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+
+        StationEntity parentStation = randomizer.NextOnlineStationEntity();
+        while (parentStation.Id == switchEntity.StationId)
+        {
+            parentStation = randomizer.NextOnlineStationEntity();
+        }
+        ;
+
+        ISwitchManager? switchManager = null;
+        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(switchEntity, parentStation);
+
+        Assert.Throws<ArgumentException>(actionUnderTest);
+        Assert.That(switchManager, Is.Null);
+    }
     #endregion
 }

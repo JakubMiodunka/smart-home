@@ -3,11 +3,8 @@
 /// <summary>
 /// Data transfer object (DTO) representing a response after successful switch registration.
 /// </summary>
-/// <remarks>
-/// Used for data exchange between the server and station firmware.
-/// </remarks>
 /// <param name="SwitchId">
-/// The unique global identifier for the electrical switch.
+/// The unique global identifier assigned to registered switch.
 /// </param>
 /// <param name="ExpectedSwitchState">
 /// Desired state of the switch after its registration.

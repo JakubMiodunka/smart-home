@@ -2,8 +2,14 @@
 
 package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
     package Requests {
-        +record "SwitchUpdateRequest" as SwitchUpdateClientRequest {
+        +record SwitchUpdateRequest {
             +ExpectedSwitchState : bool
+        }
+    }
+
+    package Responses {
+        ~record GetMeasurementResponse {
+            +MeasurementValue : double
         }
     }
 
@@ -13,7 +19,7 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
         }
     }
     
-    +class "SwitchesController" as ClientSwitchesController {
+    +class SwitchesController {
         -_switchesRepository : ISwitchesRepository
         -_stationsRepository : IStationsRepository
         -_switchManagerFactory : ISwitchManagerFactory
@@ -23,11 +29,25 @@ package "SmartHome.Server.Api.Controllers.Clients" as ClientsApiControllers {
         +GetSwitch(long) : Task<IActionResult>
         +UpdateSwitch(long, SwitchUpdateRequest, CancellationToken) : Task<IActionResult>
     }
+    
+    +class SensorsController {
+        -_sensorsRepository : ISensorsRepository
+        -_stationsRepository : IStationsRepository
+        -_sensorManagerFactory : ISensorManagerFactory
+        -_logger : ILogger<SensorsController>
+        +SensorsController(IHttpContextAccessor, ISensorsRepository, IStationsRepository, ISensorManagerFactory, ILogger<SensorsController>) : SensorsController
+        +GetSensorsAsync() : Task<IActionResult>
+        +GetSensorAsync(long) : Task<IActionResult>
+        +GetMeasurementAsync(long, CancellationToken) : Task<IActionResult>
+    }
 
-    SwitchUpdateClientRequest <-- ClientSwitchesController
+    SwitchUpdateRequest <-- SwitchesController
     
-    ClientSwitchesController <-- ClientsApiControllersConfiguration
-    
+    GetMeasurementResponse <-- SensorsController
+
+    SwitchesController <-- ClientsApiControllersConfiguration
+    SensorsController <-- ClientsApiControllersConfiguration
+
     note left of ClientsApiControllersConfiguration::ConfigureApplicationBuilder
         Used to expose controllers defined in package.
 

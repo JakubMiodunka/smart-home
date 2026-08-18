@@ -15,7 +15,7 @@ namespace SmartHome.Server.Repositories.Configuration;
 public static class RepositoriesConfiguration
 {
     // TODO: Provide connection string to SQL server instance here.
-    private const string ConnectionString = "Connection string not provided.";
+    private const string ConnectionString = "Server=127.0.0.1;Database=smart_home;User Id=smart_home_app_user;Password=1234; Encrypt=True; TrustServerCertificate=True";
 
     /// <summary>
     /// Registers internal assembly services and utilities into the provided application builder.
@@ -25,9 +25,9 @@ public static class RepositoriesConfiguration
     /// </param>
     public static void ConfigureApplicationBuilder(IHostApplicationBuilder applicationBuilder)
     {
-        applicationBuilder.Services.AddSingleton(new DatabaseClient(ConnectionString));
-        applicationBuilder.Services.AddSingleton<IStationsRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
-        applicationBuilder.Services.AddSingleton<ISwitchesRepository>(serviceProvider => serviceProvider.GetRequiredService<DatabaseClient>());
+        applicationBuilder.Services.AddSingleton<IStationsRepository>(new StationsRepository(ConnectionString));
+        applicationBuilder.Services.AddSingleton<ISwitchesRepository>(new SwitchesRepository(ConnectionString));
+        applicationBuilder.Services.AddSingleton<ISensorsRepository>(new SensorsRepository(ConnectionString));
     }
 
     /// <summary>

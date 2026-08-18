@@ -1,4 +1,4 @@
-@Server_HostAddress = http://localhost:5236
+@Server_HostAddress = http://192.168.0.199:5236
 
 ### SmartHome.Server.Controllers.Clients.SwitchesController.GetSwitches
 
@@ -22,3 +22,9 @@ CONTENT-TYPE: application/json
 {
   "expectedSwitchState" : true
 }
+
+### SmartHome.Server.Controllers.Clients.SensorsController.TakeMeasurement
+### Note: Update sensor identifier in URL
+GET {{Server_HostAddress}}/api/clients/v1/sensors/1/measurement
+Accept: application/json
+CONTENT-TYPE: application/json

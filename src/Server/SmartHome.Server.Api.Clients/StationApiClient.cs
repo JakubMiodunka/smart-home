@@ -158,7 +158,7 @@ internal sealed class StationApiClient : IStationApiClient
     /// <exception cref="ArgumentException">
     /// Thrown, when at least one of provided arguments is invalid.
     /// </exception>
-    public async Task<HttpStatusCode?> SendRequestAsync(
+    public async Task<HttpResponseMessage?> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
@@ -182,7 +182,7 @@ internal sealed class StationApiClient : IStationApiClient
             httpMethod,
             requestBody);
 
-        using HttpRequestMessage request = new HttpRequestMessage(httpMethod, endpointUrl)
+        using var request = new HttpRequestMessage(httpMethod, endpointUrl)
         {
             Content = requestBody is null ? null : await AsHttpContent(requestBody)
         };
@@ -193,8 +193,11 @@ internal sealed class StationApiClient : IStationApiClient
              * Methods as HttpClient.PatchAsJsonAsync are avoided here because they uses chunked transfer encoding,
              * which is not supported by certain station types (e.g. stations based on the ESP8266 
              * chip running a server using the ESP8266WebServer library).
+             * 
+             * HttpResponseMessage type is disposable - it is caller's responsibility to dispose it,
+             * as when disposed it will be impossible to read the response content.
              */
-            using HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
 
             _logger.Log(
                 response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
@@ -202,7 +205,7 @@ internal sealed class StationApiClient : IStationApiClient
                 _station.Id,
                 response.StatusCode);
 
-            return response.StatusCode;
+            return response;
         }
         catch (HttpRequestException exception)
         {

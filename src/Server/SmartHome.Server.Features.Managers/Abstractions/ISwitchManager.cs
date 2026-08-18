@@ -1,7 +1,7 @@
 ﻿namespace SmartHome.Server.Features.Managers.Abstractions;
 
 /// <summary>
-/// Manages the state of a specific switch on a remote station.
+/// Controlls specific switch on a remote station.
 /// </summary>
 /// <remarks>
 /// Does not update details of managed switch in any repository, that's the responsibility of the caller.

@@ -192,7 +192,8 @@ internal sealed class SwitchManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
-        
+        var response = new HttpResponseMessage(expectedStatusCode);
+
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
             .SendRequestAsync(
@@ -200,7 +201,7 @@ internal sealed class SwitchManagerTests
                 expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedStatusCode);
+            .ReturnsAsync(response);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -289,6 +290,11 @@ internal sealed class SwitchManagerTests
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        switchEntity = switchEntity with
+        {
+            ActualState = !switchEntity.ExpectedState
+        };
+
         StationEntity stationEntity = randomizer.NextOfflineStationEntity() with
         {
             Id = switchEntity.StationId
@@ -347,13 +353,6 @@ internal sealed class SwitchManagerTests
         };
 
         var stationApiClientMock = new Mock<IStationApiClient>();
-        stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
-                It.IsAny<Uri>(),
-                It.IsAny<HttpMethod>(),
-                It.IsAny<object?>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as HttpStatusCode?);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -418,6 +417,7 @@ internal sealed class SwitchManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
+        var response = new HttpResponseMessage(invalidStatusCode);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
@@ -426,7 +426,7 @@ internal sealed class SwitchManagerTests
                 expectedHttpMethod,
                 request,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(invalidStatusCode);
+            .ReturnsAsync(response);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -455,8 +455,8 @@ internal sealed class SwitchManagerTests
 
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
 }

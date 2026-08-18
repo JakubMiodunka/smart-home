@@ -4,10 +4,10 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
-#include <WiFiClient.h> // TODO: Not sure if required here.
 
 #include "config.h"
 #include "secrets.h"
+#include "sensors.h"
 #include "serial_logging.h"
 #include "station.h"
 #include "switches.h"
@@ -19,13 +19,35 @@ ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
 // Peripherals definition:
 Station ThisStation = {};
-Switch Switches[] = { {0, 1, LED_BUILTIN, HIGH, true} };
+Switch Switches[] = 
+  { 
+    {
+      0,  // Global ID unknown until registration.
+      1,
+      LED_BUILTIN,
+      HIGH, 
+      true
+    }
+  };
+
+Sensor Sensors[] = 
+  { 
+    { 
+      0,  // Global ID unknown until registration.
+      1,
+      MeasurementType::Temperature,
+      []() {},  // No initializaion required.
+      []() { return 21.37; }  // Returning fake measurement.
+    } 
+  };
 
 // Timekeeping:
 uint32_t LastHeartbeatTimestamp = 0;    // Given in milliseconds.
 uint32_t LastLocalApiPollTimestamp = 0; // Given in milliseconds.
 
-// TODO: Add doc-string.
+/// <summary>
+/// Registers all peripherals on remote server.
+/// </summary>
 void registerAll() {
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
@@ -46,6 +68,13 @@ void registerAll() {
   }
 
   logToSerial(INFO, "State of all switches updated successfully.");
+  logToSerial(INFO, "Attempting to register all sensors on the remote server.");
+
+  for (Sensor& currentSensor : Sensors) {
+    currentSensor.registerOnRemoteServer(WiFiManager);
+  }
+
+  logToSerial(INFO, "All sensors registered successfully.");
 }
 
 void setup() {
@@ -60,6 +89,13 @@ void setup() {
   }
 
   logToSerial(INFO, "All switches initialized successfully.");
+  logToSerial(INFO, "Attempting to initialize all sensors: COUNT=[%d]", sizeof(Sensors)/sizeof(Sensor));
+
+  for (const Sensor& currentSensor : Sensors) {
+    currentSensor.initialize();
+  }
+
+  logToSerial(INFO, "All sensors initialized successfully.");
   logToSerial(INFO, "Attempting to connect to WiFi network: WIFI_SSID=[%s]", WIFI_SSID);
 
   WiFi.mode(WIFI_STA);
@@ -79,6 +115,10 @@ void setup() {
 
   for (Switch& currentSwitch : Switches) {
     currentSwitch.setupControlEndpoint(LocalServer);
+  }
+
+  for (Sensor& currentSensor : Sensors) {
+    currentSensor.setupControlEndpoint(LocalServer);
   }
 
   LocalServer.begin(LOCAL_SERVER_PORT);
