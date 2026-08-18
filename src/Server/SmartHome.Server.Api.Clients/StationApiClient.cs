@@ -4,6 +4,8 @@ using SmartHome.Server.Repositories.Entities;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
+using static SmartHome.Server.Api.Clients.StationApiClient;
 
 namespace SmartHome.Server.Api.Clients;
 
@@ -33,6 +35,12 @@ internal sealed class StationApiClient : IStationApiClient
     /// </remarks>
     private HttpClient WrappedHttpClient => 
         _lazyWrappedHttpClient.Value;
+
+    private JsonSerializerOptions JsonDeserializationOptions =>
+        new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            RespectRequiredConstructorParameters = true
+        };
     #endregion
 
     #region Instantiation
@@ -174,14 +182,6 @@ internal sealed class StationApiClient : IStationApiClient
                 nameof(endpointUrl));
         }
 
-        _logger.LogInformation(
-            "Attempting to sent station API request: StationId=[{StationId}], " +
-            "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
-            _station.Id,
-            endpointUrl,
-            httpMethod,
-            requestBody);
-
         using var request = new HttpRequestMessage(httpMethod, endpointUrl)
         {
             Content = requestBody is null ? null : await AsHttpContent(requestBody)
@@ -198,12 +198,6 @@ internal sealed class StationApiClient : IStationApiClient
              * as when disposed it will be impossible to read the response content.
              */
             HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
-
-            _logger.Log(
-                response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
-                "Station API response received: StationId=[{StationId}], StatusCode=[{StatusCode}]",
-                _station.Id,
-                response.StatusCode);
 
             return response;
         }
@@ -234,6 +228,84 @@ internal sealed class StationApiClient : IStationApiClient
             _logger.LogWarning(
                 exception,
                 "Sending station API request cancelled: StationId=[{StationId}]",
+                _station.Id);
+
+            throw;
+        }
+    }
+    
+    public record StationApiResponse<T>(HttpStatusCode? StatusCode, T? Content);
+
+    // TODO: Finish
+    public async Task<StationApiResponse<T>?> SendRequestAsync<T>(
+        Uri endpointUrl,
+        HttpMethod httpMethod,
+        object? requestBody,
+        CancellationToken cancellationToken) where T : class
+    {
+        _logger.LogInformation(
+            "Attempting to sent station API request: StationId=[{StationId}], " +
+            "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
+            _station.Id,
+            endpointUrl,
+            httpMethod,
+            requestBody);
+
+        using HttpResponseMessage? response = await SendRequestAsync(
+            endpointUrl,
+            httpMethod,
+            requestBody,
+            cancellationToken);
+
+        if (response is null) return null;
+
+        _logger.Log(
+            response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
+            "Station API response received: StationId=[{StationId}], StatusCode=[{StatusCode}]",
+            _station.Id,
+            response.StatusCode);
+
+        if (!response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NoContent) return null;
+
+        _logger.LogInformation("Attempting to deserialize station API response content: StationId=[{StationId}]",
+            _station.Id);
+
+        try
+        {
+            T? content = await response.Content.ReadFromJsonAsync<T>(
+                JsonDeserializationOptions,
+                cancellationToken);
+
+            if (content is null)
+            {
+                _logger.LogError(
+                    "Response content set to null reference: StationId=[{StationId}]",
+                    _station.Id);
+
+                return null;
+            }
+
+            _logger.LogInformation(
+                "Response content deserialization successful: StationId=[{StationId}], Content=[{Content}]",
+                _station.Id,
+                content);
+
+            return new StationApiResponse<T>(response.StatusCode, content);
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Response content deserialization failed: StationId=[{StationId}]",
+                _station.Id);
+
+            return null;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "Response content deserialization cancelled: StationId=[{StationId}]",
                 _station.Id);
 
             throw;
