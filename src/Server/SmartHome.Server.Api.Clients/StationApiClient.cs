@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using SmartHome.Server.Api.Clients.Abstractions;
+using SmartHome.Server.Api.Clients.Responses;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using static SmartHome.Server.Api.Clients.StationApiClient;
 
 namespace SmartHome.Server.Api.Clients;
 
@@ -35,12 +35,6 @@ internal sealed class StationApiClient : IStationApiClient
     /// </remarks>
     private HttpClient WrappedHttpClient => 
         _lazyWrappedHttpClient.Value;
-
-    private JsonSerializerOptions JsonDeserializationOptions =>
-        new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        {
-            RespectRequiredConstructorParameters = true
-        };
     #endregion
 
     #region Instantiation
@@ -134,7 +128,7 @@ internal sealed class StationApiClient : IStationApiClient
     /// <returns>
     /// A task representing the asynchronous operation, returning the serialized <see cref="HttpContent"/>.
     /// </returns>
-    private async Task<HttpContent> AsHttpContent(object? request)
+    private async Task<HttpContent> AsHttpContentAsync(object? request)
     {
         /*
          * Setting request content to instance of JsonContent class will automatically 
@@ -156,17 +150,107 @@ internal sealed class StationApiClient : IStationApiClient
 
         return requestContent;
     }
+
+    /// <summary>
+    /// Attempts to deserialize the HTTP content into an object of specified type.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type of the object to deserialize into.
+    /// </typeparam>
+    /// <param name="content">
+    /// The HTTP content to deserialize.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// Deserialized object of type <typeparamref name="T"/> if deserialization was successful,
+    /// <see langword="null"/> otherwise.
+    /// </returns>
+    private async Task<T?> FromHttpContentAsync<T>(
+        HttpContent content,
+        CancellationToken cancellationToken) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        _logger.LogDebug(
+            "Attempting to deserialize HTTP content: StationId=[{StationId}]",
+            _station.Id);
+
+        var jsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            RespectRequiredConstructorParameters = true
+        };
+
+        try
+        {
+            T? deserializedContent = await content.ReadFromJsonAsync<T>(
+                jsonSerializerOptions,
+                cancellationToken);
+
+            _logger.Log(
+                deserializedContent is null ? LogLevel.Error : LogLevel.Debug,
+                $"HTTP content deserialization {(deserializedContent is null ? "failed" : "successful")}: " +
+                "StationId=[{StationId}], Content=[{Content}]",
+                _station.Id,
+                deserializedContent);
+
+            return deserializedContent;
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogError(
+                exception,
+                "HTTP content deserialization failed: StationId=[{StationId}]",
+                _station.Id);
+
+            return null;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "HTTP content deserialization cancelled: StationId=[{StationId}]",
+                _station.Id);
+
+            throw;
+        }
+    }
     #endregion
 
     #region Interactions
-    /// <inheritdoc cref="IStationApiClient"/>
+    /// <summary>
+    /// Sends an asynchronous HTTP request to the station associated with this client.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="HttpResponseMessage"/> implements <see cref="IDisposable"/> - it is caller's
+    /// responsibility to dispose instance returned by the method,
+    /// as when disposed it will be impossible to read the response content.
+    /// </remarks>
+    /// <param name="endpointUrl">
+    /// Absolute URL of the station API endpoint.
+    /// </param>
+    /// <param name="httpMethod">
+    /// HTTP method to be used for the request.
+    /// </param>
+    /// <param name="requestBody">
+    /// The object to be serialized into the HTTP request body,
+    /// or <see langword="null"/> if no body is required.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// HTTP response returned by the station API if 
+    /// the request was processed successfully, <see langword="null"/> otherwise.
+    /// </returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// Thrown, when at least one of provided arguments is invalid.
     /// </exception>
-    public async Task<HttpResponseMessage?> SendRequestAsync(
+    private async Task<HttpResponseMessage?> SendRawRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
@@ -184,7 +268,7 @@ internal sealed class StationApiClient : IStationApiClient
 
         using var request = new HttpRequestMessage(httpMethod, endpointUrl)
         {
-            Content = requestBody is null ? null : await AsHttpContent(requestBody)
+            Content = requestBody is null ? null : await AsHttpContentAsync(requestBody)
         };
 
         try
@@ -233,25 +317,23 @@ internal sealed class StationApiClient : IStationApiClient
             throw;
         }
     }
-    
-    public record StationApiResponse<T>(HttpStatusCode? StatusCode, T? Content);
 
-    // TODO: Finish
-    public async Task<StationApiResponse<T>?> SendRequestAsync<T>(
+    /// <inheritdoc cref="IStationApiClient"/>
+    public async Task<ApiResponse<T>?> SendRequestAsync<T>(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
         CancellationToken cancellationToken) where T : class
     {
         _logger.LogInformation(
-            "Attempting to sent station API request: StationId=[{StationId}], " +
+            "Attempting to send station API request: StationId=[{StationId}], " +
             "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
             _station.Id,
             endpointUrl,
             httpMethod,
             requestBody);
 
-        using HttpResponseMessage? response = await SendRequestAsync(
+        using HttpResponseMessage? response = await SendRawRequestAsync(
             endpointUrl,
             httpMethod,
             requestBody,
@@ -265,51 +347,43 @@ internal sealed class StationApiClient : IStationApiClient
             _station.Id,
             response.StatusCode);
 
-        if (!response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NoContent) return null;
+        T? content = await FromHttpContentAsync<T>(response.Content, cancellationToken);
 
-        _logger.LogInformation("Attempting to deserialize station API response content: StationId=[{StationId}]",
-            _station.Id);
+        if (content is null) return null;
 
-        try
-        {
-            T? content = await response.Content.ReadFromJsonAsync<T>(
-                JsonDeserializationOptions,
-                cancellationToken);
+        return new ApiResponse<T>(response.StatusCode, content);
+    }
 
-            if (content is null)
-            {
-                _logger.LogError(
-                    "Response content set to null reference: StationId=[{StationId}]",
-                    _station.Id);
+    /// <inheritdoc cref="IStationApiClient"/>
+    public async Task<ApiResponse?> SendRequestAsync(
+        Uri endpointUrl,
+        HttpMethod httpMethod,
+        object? requestBody,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation(
+            "Attempting to send station API request: StationId=[{StationId}], " +
+            "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
+            _station.Id,
+            endpointUrl,
+            httpMethod,
+            requestBody);
 
-                return null;
-            }
+        using HttpResponseMessage? response = await SendRawRequestAsync(
+            endpointUrl,
+            httpMethod,
+            requestBody,
+            cancellationToken);
 
-            _logger.LogInformation(
-                "Response content deserialization successful: StationId=[{StationId}], Content=[{Content}]",
-                _station.Id,
-                content);
+        if (response is null) return null;
 
-            return new StationApiResponse<T>(response.StatusCode, content);
-        }
-        catch (JsonException exception)
-        {
-            _logger.LogError(
-                exception,
-                "Response content deserialization failed: StationId=[{StationId}]",
-                _station.Id);
+        _logger.Log(
+            response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
+            "Station API response received: StationId=[{StationId}], StatusCode=[{StatusCode}]",
+            _station.Id,
+            response.StatusCode);
 
-            return null;
-        }
-        catch (OperationCanceledException exception)
-        {
-            _logger.LogWarning(
-                exception,
-                "Response content deserialization cancelled: StationId=[{StationId}]",
-                _station.Id);
-
-            throw;
-        }
+        return new ApiResponse(response.StatusCode);
     }
     #endregion
 }

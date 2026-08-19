@@ -1,4 +1,4 @@
-﻿using System.Reflection.Metadata;
+﻿using SmartHome.Server.Api.Clients.Responses;
 
 namespace SmartHome.Server.Api.Clients.Abstractions;
 
@@ -31,12 +31,17 @@ public interface IStationApiClient
     /// <returns>
     /// HTTP response returned by the station API if 
     /// the request was processed successfully, <see langword="null"/> otherwise.
-    /// <see cref="HttpResponseMessage"/> implements <see cref="IDisposable"/> - it is caller's
-    /// responsibility to dispose it, as when disposed it will be impossible to read the response content.
     /// </returns>
-    Task<HttpResponseMessage?> SendRequestAsync(
+    Task<ApiResponse?> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
         CancellationToken cancellationToken);
+
+    /// <inheritdoc cref="SendRequestAsync(Uri, HttpMethod, object?, CancellationToken)"/>
+    Task<ApiResponse<T>?> SendRequestAsync<T>(
+        Uri endpointUrl,
+        HttpMethod httpMethod,
+        object? requestBody,
+        CancellationToken cancellationToken) where T : class;
 }
