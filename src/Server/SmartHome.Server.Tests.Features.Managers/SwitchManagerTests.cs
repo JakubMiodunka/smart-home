@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
+using SmartHome.Server.Api.Clients;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers;
 using SmartHome.Server.Features.Managers.Requests;
@@ -192,7 +193,7 @@ internal sealed class SwitchManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
-        var response = new HttpResponseMessage(expectedStatusCode);
+        var response = new StationApiResponse(expectedStatusCode);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
@@ -417,7 +418,7 @@ internal sealed class SwitchManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
-        var response = new HttpResponseMessage(invalidStatusCode);
+        var response = new StationApiResponse(invalidStatusCode);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock

@@ -1,6 +1,4 @@
-﻿using SmartHome.Server.Api.Clients.Responses;
-
-namespace SmartHome.Server.Api.Clients.Abstractions;
+﻿namespace SmartHome.Server.Api.Clients.Abstractions;
 
 /// <summary>
 /// An HTTP client designed for communication with a specific station API.
@@ -32,14 +30,14 @@ public interface IStationApiClient
     /// HTTP response returned by the station API if 
     /// the request was processed successfully, <see langword="null"/> otherwise.
     /// </returns>
-    Task<ApiResponse?> SendRequestAsync(
+    Task<StationApiResponse?> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
         CancellationToken cancellationToken);
 
     /// <inheritdoc cref="SendRequestAsync(Uri, HttpMethod, object?, CancellationToken)"/>
-    Task<ApiResponse<T>?> SendRequestAsync<T>(
+    Task<StationApiResponse<T>?> SendRequestAsync<T>(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,

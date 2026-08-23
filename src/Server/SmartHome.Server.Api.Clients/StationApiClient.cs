@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using SmartHome.Server.Api.Clients.Abstractions;
-using SmartHome.Server.Api.Clients.Responses;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
 using System.Net.Http.Headers;
@@ -319,7 +318,7 @@ internal sealed class StationApiClient : IStationApiClient
     }
 
     /// <inheritdoc cref="IStationApiClient"/>
-    public async Task<ApiResponse<T>?> SendRequestAsync<T>(
+    public async Task<StationApiResponse<T>?> SendRequestAsync<T>(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
@@ -351,11 +350,11 @@ internal sealed class StationApiClient : IStationApiClient
 
         if (content is null) return null;
 
-        return new ApiResponse<T>(response.StatusCode, content);
+        return new StationApiResponse<T>(response.StatusCode, content);
     }
 
     /// <inheritdoc cref="IStationApiClient"/>
-    public async Task<ApiResponse?> SendRequestAsync(
+    public async Task<StationApiResponse?> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
@@ -383,7 +382,7 @@ internal sealed class StationApiClient : IStationApiClient
             _station.Id,
             response.StatusCode);
 
-        return new ApiResponse(response.StatusCode);
+        return new StationApiResponse(response.StatusCode);
     }
     #endregion
 }
