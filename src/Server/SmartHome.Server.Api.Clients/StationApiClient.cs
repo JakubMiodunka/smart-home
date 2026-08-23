@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
@@ -236,6 +237,10 @@ internal sealed class StationApiClient : IStationApiClient
     /// The object to be serialized into the HTTP request body,
     /// or <see langword="null"/> if no body is required.
     /// </param>
+    /// <param name="expectedResponseStatusCode">
+    /// The expected status code of the response.
+    /// If the actual status code would not match this value, the request will be considered as failed.
+    /// </param>
     /// <param name="cancellationToken">
     /// A token to cancel the asynchronous operation.
     /// </param>
@@ -253,6 +258,7 @@ internal sealed class StationApiClient : IStationApiClient
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
+        HttpStatusCode expectedResponseStatusCode,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(endpointUrl);
@@ -264,6 +270,14 @@ internal sealed class StationApiClient : IStationApiClient
                 $"Endpoint URL is not absolute: {endpointUrl}",
                 nameof(endpointUrl));
         }
+
+        _logger.LogInformation(
+            "Attempting to send station API request: StationId=[{StationId}], " +
+            "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
+            _station.Id,
+            endpointUrl,
+            httpMethod,
+            requestBody);
 
         using var request = new HttpRequestMessage(httpMethod, endpointUrl)
         {
@@ -281,6 +295,24 @@ internal sealed class StationApiClient : IStationApiClient
              * as when disposed it will be impossible to read the response content.
              */
             HttpResponseMessage response = await WrappedHttpClient.SendAsync(request, cancellationToken);
+
+            _logger.Log(
+                response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
+                "Station API response received: StationId=[{StationId}], StatusCode=[{StatusCode}]",
+                _station.Id,
+                response.StatusCode);
+
+            if (response.StatusCode != expectedResponseStatusCode)
+            {
+                _logger.LogWarning(
+                    "Unexpected response status code: StationId=[{StationId}], " +
+                    "ExpectedStatusCode=[{ExpectedStatusCode}], ActualStatusCode=[{ActualStatusCode}]",
+                    _station.Id,
+                    expectedResponseStatusCode,
+                    response.StatusCode);
+
+                return null;
+            }
 
             return response;
         }
@@ -318,71 +350,39 @@ internal sealed class StationApiClient : IStationApiClient
     }
 
     /// <inheritdoc cref="IStationApiClient"/>
-    public async Task<StationApiResponse<T>?> SendRequestAsync<T>(
+    public async Task<T?> SendRequestAsync<T>(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
+        HttpStatusCode expectedResponseStatusCode,
         CancellationToken cancellationToken) where T : class
     {
-        _logger.LogInformation(
-            "Attempting to send station API request: StationId=[{StationId}], " +
-            "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
-            _station.Id,
-            endpointUrl,
-            httpMethod,
-            requestBody);
-
         using HttpResponseMessage? response = await SendRawRequestAsync(
             endpointUrl,
             httpMethod,
             requestBody,
+            expectedResponseStatusCode,
             cancellationToken);
 
-        if (response is null) return null;
-
-        _logger.Log(
-            response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
-            "Station API response received: StationId=[{StationId}], StatusCode=[{StatusCode}]",
-            _station.Id,
-            response.StatusCode);
-
-        T? content = await FromHttpContentAsync<T>(response.Content, cancellationToken);
-
-        if (content is null) return null;
-
-        return new StationApiResponse<T>(response.StatusCode, content);
+        return response is null ? null : await FromHttpContentAsync<T>(response.Content, cancellationToken);
     }
 
     /// <inheritdoc cref="IStationApiClient"/>
-    public async Task<StationApiResponse?> SendRequestAsync(
+    public async Task<bool> SendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
+        HttpStatusCode expectedResponseStatusCode,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Attempting to send station API request: StationId=[{StationId}], " +
-            "EndpointUrl=[{Url}], HttpMethod=[{HttpMethod}], RequestBody=[{Request}]",
-            _station.Id,
-            endpointUrl,
-            httpMethod,
-            requestBody);
-
         using HttpResponseMessage? response = await SendRawRequestAsync(
             endpointUrl,
             httpMethod,
             requestBody,
+            expectedResponseStatusCode,
             cancellationToken);
 
-        if (response is null) return null;
-
-        _logger.Log(
-            response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
-            "Station API response received: StationId=[{StationId}], StatusCode=[{StatusCode}]",
-            _station.Id,
-            response.StatusCode);
-
-        return new StationApiResponse(response.StatusCode);
+        return response is not null;
     }
     #endregion
 }
