@@ -72,7 +72,7 @@ public interface IStationApiClient
     /// Representation of the HTTP response body returned by the station API if 
     /// the request was processed successfully, <see langword="null"/> otherwise.
     /// </returns>
-    Task<T?> SendRequestAsync<T>(
+    Task<T?> TrySendRequestAsync<T>(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
