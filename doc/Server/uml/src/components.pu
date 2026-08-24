@@ -94,8 +94,6 @@ package Tests {
         - Microsoft.AspNetCore.App
 
         NuGet packages:
-        - Microsoft.AspNetCore.Http
-        - Microsoft.AspNetCore.Mvc.Core
         - Moq
         - NUnit
     end note

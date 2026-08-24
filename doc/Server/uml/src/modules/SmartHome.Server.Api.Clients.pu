@@ -3,7 +3,8 @@
 package "SmartHome.Server.Api.Clients" as ApiClients {
     package Abstractions {
         +interface IStationApiClient {
-            +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpResponseMessage?>
+            +TrySendRequestAsync(Uri, HttpMethod, object?, HttpStatusCode, CancellationToken) : Task<bool>
+            +TrySendRequestAsync<T>(Uri, HttpMethod, object?, HttpStatusCode, CancellationToken) : Task<T?>
         }
 
         +interface IStationApiClientFactory {
@@ -26,8 +27,11 @@ package "SmartHome.Server.Api.Clients" as ApiClients {
         -WrappedHttpClient : HttpClient
         +StationApiClient(StationEntity, IHttpClientFactory, TimeSpan, ILogger<StationApiClient>) : StationApiClient
         -CreateHttpClient(IHttpClientFactory, TimeSpan) : HttpClient
-        -AsHttpContent(object?) : Task<HttpContent>
-        +SendRequestAsync(Uri, HttpMethod, object?, CancellationToken) : Task<HttpResponseMessage?>
+        -AsHttpContentAsync(object?) : Task<HttpContent>
+        -FromHttpContentAsync<T>(HttpContent, CancellationToken) : Task<T?>
+        -TrySendRawRequestAsync(Uri, HttpMethod, object?, HttpStatusCode, CancellationToken) : Task<HttpResponseMessage?>
+        +TrySendRequestAsync(Uri, HttpMethod, object?, HttpStatusCode, CancellationToken) : Task<bool>
+        +TrySendRequestAsync<T>(Uri, HttpMethod, object?, HttpStatusCode, CancellationToken) : Task<T?>
     }
 
     ~class StationApiClientFactory {
