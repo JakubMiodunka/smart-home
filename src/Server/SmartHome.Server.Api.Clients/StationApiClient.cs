@@ -349,24 +349,6 @@ internal sealed class StationApiClient : IStationApiClient
     }
 
     /// <inheritdoc cref="IStationApiClient"/>
-    public async Task<T?> TrySendRequestAsync<T>(
-        Uri endpointUrl,
-        HttpMethod httpMethod,
-        object? requestBody,
-        HttpStatusCode expectedResponseStatusCode,
-        CancellationToken cancellationToken) where T : class
-    {
-        using HttpResponseMessage? response = await TrySendRawRequestAsync(
-            endpointUrl,
-            httpMethod,
-            requestBody,
-            expectedResponseStatusCode,
-            cancellationToken);
-
-        return response is null ? null : await FromHttpContentAsync<T>(response.Content, cancellationToken);
-    }
-
-    /// <inheritdoc cref="IStationApiClient"/>
     public async Task<bool> TrySendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
@@ -382,6 +364,24 @@ internal sealed class StationApiClient : IStationApiClient
             cancellationToken);
 
         return response is not null;
+    }
+
+    /// <inheritdoc cref="IStationApiClient"/>
+    public async Task<T?> TrySendRequestAsync<T>(
+        Uri endpointUrl,
+        HttpMethod httpMethod,
+        object? requestBody,
+        HttpStatusCode expectedResponseStatusCode,
+        CancellationToken cancellationToken) where T : class
+    {
+        using HttpResponseMessage? response = await TrySendRawRequestAsync(
+            endpointUrl,
+            httpMethod,
+            requestBody,
+            expectedResponseStatusCode,
+            cancellationToken);
+
+        return response is null ? null : await FromHttpContentAsync<T>(response.Content, cancellationToken);
     }
     #endregion
 }

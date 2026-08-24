@@ -21,7 +21,7 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
         ~abstract FeatureManager {
             #{abstract} HttpClientTimeout : TimeSpan
             #JsonDeserializationOptions : JsonSerializerOptions
-            #StationApiClientsFactory : IStationApiClientFactory
+            #StationApiClient : IStationApiClient
             +ParentStation : StationEntity
             #FeatureManager(StationEntity, IStationApiClientFactory) : FeatureManager
             #GetBaseStationApiUrl() : Uri?
@@ -47,8 +47,8 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
     }
 
     ~class SwitchManager {
+        -{static} StationApiClientTimeout : TimeSpan
         -_logger : ILogger<SwitchManager>
-        #HttpClientTimeout : TimeSpan
         +ManagedSwitch : SwitchEntity
         +SwitchManager(SwitchEntity, StationEntity, IStationApiClientFactory, ILogger<SwitchManager>) : SwitchManager
         -GetSwitchUrl : Uri?
@@ -63,8 +63,8 @@ package "SmartHome.Server.Features.Managers" as FeaturesManagers {
     }
     
     ~class SensorManager {
+        -{static} StationApiClientTimeout : TimeSpan
         -_logger : ILogger<SensorManager>
-        #HttpClientTimeout : TimeSpan
         +ManagedSensor : SensorEntity
         +SensorManager(SensorEntity, StationEntity, IStationApiClientFactory, ILogger<SensorManager>) : SensorManager
         -GetSensorUrl() : Uri?
