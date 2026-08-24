@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using SmartHome.Server.Api.Clients;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers.Abstractions;
 using SmartHome.Server.Features.Managers.Responses;
@@ -110,47 +109,29 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
     
             return null;
         }
-    
-        StationApiResponse<GetMeasurementResponse>? response = 
-            await StationApiClient.SendRequestAsync<GetMeasurementResponse>(
+
+        if (await StationApiClient.TrySendRequestAsync<GetMeasurementResponse>(
                 endpointUrl,
                 HttpMethod.Get,
                 null,
-                cancellationToken);
-
-        /*
-         * TODO: That kind of response validation is a common task amogn managers and generates too much boilerplate code.
-         * Rework needed.
-         */
-        if (response is null)
+                HttpStatusCode.OK,
+                cancellationToken) is GetMeasurementResponse response)
         {
-            _logger.LogWarning(
-                "Attempt to take a measurement failed: Message=[{Message}], SensorId=[{SensorId}], StationId=[{StationId}]",
-                "Failed to send a request",
+            _logger.LogInformation("Attempt to take a measurement successful: " +
+                "SensorId=[{SensorId}], StationId=[{StationId}], Value=[{Value}]",
+                ManagedSensor.Id,
+                ParentStation.Id,
+                response.MeasurementValue);
+
+            return response.MeasurementValue;
+        }
+
+        _logger.LogWarning(
+                "Attempt to take a measurement failed: SensorId=[{SensorId}], StationId=[{StationId}]",
                 ManagedSensor.Id,
                 ParentStation.Id);
 
-            return null;
-        }
-
-        if (response.StatusCode is not HttpStatusCode.OK)
-        {
-            _logger.LogError(
-                "Attempt to take a measurement failed: Message=[{Message}], SensorId=[{SensorId}], StationId=[{StationId}]",
-                "Unexpected HTTP status received.",
-                ManagedSensor.Id,
-                ParentStation.Id);
-
-            return null;
-        }
-
-        _logger.LogInformation("Attempt to take a measurement successful: " +
-            "SensorId=[{SensorId}], StationId=[{StationId}], Value=[{Value}]",
-            ManagedSensor.Id,
-            ParentStation.Id,
-            response.Body.MeasurementValue);
-
-        return response.Body.MeasurementValue;
+        return null;
     }
     #endregion
 }
