@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
@@ -72,7 +71,7 @@ internal sealed class StationApiClient : IStationApiClient
     }
     #endregion
 
-    #region Utilities
+    #region Serialization
     /// <summary>
     /// Creates HTTP client complementary to communicate with the associated station API.
     /// </summary>
@@ -218,7 +217,7 @@ internal sealed class StationApiClient : IStationApiClient
     }
     #endregion
 
-    #region Interactions
+    #region Sending requests
     /// <summary>
     /// Sends an asynchronous HTTP request to the station associated with this client.
     /// </summary>
@@ -254,7 +253,7 @@ internal sealed class StationApiClient : IStationApiClient
     /// <exception cref="ArgumentException">
     /// Thrown, when at least one of provided arguments is invalid.
     /// </exception>
-    private async Task<HttpResponseMessage?> SendRawRequestAsync(
+    private async Task<HttpResponseMessage?> TrySendRawRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
@@ -350,14 +349,14 @@ internal sealed class StationApiClient : IStationApiClient
     }
 
     /// <inheritdoc cref="IStationApiClient"/>
-    public async Task<T?> SendRequestAsync<T>(
+    public async Task<T?> TrySendRequestAsync<T>(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
         HttpStatusCode expectedResponseStatusCode,
         CancellationToken cancellationToken) where T : class
     {
-        using HttpResponseMessage? response = await SendRawRequestAsync(
+        using HttpResponseMessage? response = await TrySendRawRequestAsync(
             endpointUrl,
             httpMethod,
             requestBody,
@@ -368,14 +367,14 @@ internal sealed class StationApiClient : IStationApiClient
     }
 
     /// <inheritdoc cref="IStationApiClient"/>
-    public async Task<bool> SendRequestAsync(
+    public async Task<bool> TrySendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
         HttpStatusCode expectedResponseStatusCode,
         CancellationToken cancellationToken)
     {
-        using HttpResponseMessage? response = await SendRawRequestAsync(
+        using HttpResponseMessage? response = await TrySendRawRequestAsync(
             endpointUrl,
             httpMethod,
             requestBody,

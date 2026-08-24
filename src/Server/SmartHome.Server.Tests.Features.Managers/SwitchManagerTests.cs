@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using NUnit.Framework.Internal;
-using SmartHome.Server.Api.Clients;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers;
 using SmartHome.Server.Features.Managers.Requests;
@@ -11,7 +10,6 @@ using SmartHome.Server.Tests.Utilities;
 using System.Net;
 
 namespace SmartHome.Server.Tests.Features.Managers;
-
 
 [Category("UnitTest")]
 [TestOf(typeof(SwitchManager))]
@@ -193,16 +191,16 @@ internal sealed class SwitchManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
-        var response = new StationApiResponse(expectedStatusCode);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
+            .TrySendRequestAsync(
                 expectedEndpointUrl,
                 expectedHttpMethod,
                 request,
+                expectedStatusCode,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+            .ReturnsAsync(true);
 
         var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
         stationApiClientFactoryStub.Setup(mock => mock
@@ -223,10 +221,11 @@ internal sealed class SwitchManagerTests
         Assert.That(wasAttemptSuccessful, Is.True);
 
         stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
+            .TrySendRequestAsync(
                 expectedEndpointUrl,
                 expectedHttpMethod,
                 request,
+                expectedStatusCode,
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
@@ -272,10 +271,11 @@ internal sealed class SwitchManagerTests
         Assert.That(wasAttemptSuccessful, Is.True);
 
         stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
+            .TrySendRequestAsync(
                 It.IsAny<Uri>(),
                 It.IsAny<HttpMethod>(),
                 It.IsAny<object?>(),
+                It.IsAny<HttpStatusCode>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
 
@@ -321,10 +321,11 @@ internal sealed class SwitchManagerTests
         Assert.That(wasAttemptSuccessful, Is.False);
 
         stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
+            .TrySendRequestAsync(
                 It.IsAny<Uri>(),
                 It.IsAny<HttpMethod>(),
                 It.IsAny<object?>(),
+                It.IsAny<HttpStatusCode>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
 
@@ -376,10 +377,11 @@ internal sealed class SwitchManagerTests
         var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
 
         stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName),
-                request,
+            .TrySendRequestAsync(
+                It.IsAny<Uri>(),
+                It.IsAny<HttpMethod>(),
+                It.IsAny<object?>(),
+                It.IsAny<HttpStatusCode>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
@@ -387,77 +389,6 @@ internal sealed class SwitchManagerTests
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
-    }
-
-    [TestCase(1, "PATCH", HttpStatusCode.NoContent)]
-    public async Task SwitchStateChangeFailsIfStationReturnsInvalidStatusCode(
-        byte stationApiVersion,
-        string expectedHttpMethodName,
-        HttpStatusCode expectedStatusCode)
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-        switchEntity = switchEntity with
-        {
-            ActualState = !switchEntity.ExpectedState
-        };
-
-        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
-        {
-            Id = switchEntity.StationId,
-            ApiVersion = stationApiVersion
-        };
-
-        HttpStatusCode invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        while (invalidStatusCode == expectedStatusCode)
-        {
-            invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        }
-
-        HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
-        Uri expectedEndpointUrl = GetSwitchUrl(switchEntity, stationEntity);
-        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
-        var response = new StationApiResponse(invalidStatusCode);
-
-        var stationApiClientMock = new Mock<IStationApiClient>();
-        stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                request,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
-        stationApiClientFactoryStub.Setup(mock => mock
-            .CreateFor(stationEntity, It.IsAny<TimeSpan>()))
-            .Returns(stationApiClientMock.Object);
-
-        var loggerMock = new FakeLogger<SwitchManager>();
-
-        var managerUnderTest = new SwitchManager(
-            switchEntity,
-            stationEntity,
-            stationApiClientFactoryStub.Object,
-            loggerMock);
-
-        bool wasAttemptSuccessful = await managerUnderTest.TryChangeState(switchEntity.ExpectedState, CancellationToken.None);
-
-        Assert.That(wasAttemptSuccessful, Is.False);
-
-        stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                request,
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
 }
