@@ -1,4 +1,4 @@
-﻿using System.Reflection.Metadata;
+﻿using System.Net;
 
 namespace SmartHome.Server.Api.Clients.Abstractions;
 
@@ -25,18 +25,57 @@ public interface IStationApiClient
     /// The object to be serialized into the HTTP request body,
     /// or <see langword="null"/> if no body is required.
     /// </param>
+    /// <param name="expectedResponseStatusCode">
+    /// The expected status code of the response.
+    /// If the actual status code would not match this value,
+    /// the request will be considered as failed.
+    /// </param>
     /// <param name="cancellationToken">
     /// A token to cancel the asynchronous operation.
     /// </param>
     /// <returns>
-    /// HTTP response returned by the station API if 
-    /// the request was processed successfully, <see langword="null"/> otherwise.
-    /// <see cref="HttpResponseMessage"/> implements <see cref="IDisposable"/> - it is caller's
-    /// responsibility to dispose it, as when disposed it will be impossible to read the response content.
+    /// <see langword="true"/> if the request was processed successfully,
+    /// <see langword="false"/> otherwise.
     /// </returns>
-    Task<HttpResponseMessage?> SendRequestAsync(
+    Task<bool> TrySendRequestAsync(
         Uri endpointUrl,
         HttpMethod httpMethod,
         object? requestBody,
+        HttpStatusCode expectedResponseStatusCode,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sends an asynchronous HTTP request to the station associated with this client.
+    /// </summary>
+    /// <typeparam name="T">
+    /// Type to which response body should be attempted to be deserialized.
+    /// </typeparam>
+    /// <param name="endpointUrl">
+    /// Absolute URL of the station API endpoint.
+    /// </param>
+    /// <param name="httpMethod">
+    /// HTTP method to be used for the request.
+    /// </param>
+    /// <param name="requestBody">
+    /// The object to be serialized into the HTTP request body,
+    /// or <see langword="null"/> if no body is required.
+    /// </param>
+    /// <param name="expectedResponseStatusCode">
+    /// The expected status code of the response.
+    /// If the actual status code would not match this value
+    /// the request will be considered as failed.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// Representation of the HTTP response body returned by the station API if 
+    /// the request was processed successfully, <see langword="null"/> otherwise.
+    /// </returns>
+    Task<T?> TrySendRequestAsync<T>(
+        Uri endpointUrl,
+        HttpMethod httpMethod,
+        object? requestBody,
+        HttpStatusCode expectedResponseStatusCode,
+        CancellationToken cancellationToken) where T : class;
 }

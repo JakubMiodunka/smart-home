@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Moq;
 using NUnit.Framework.Internal;
+using SmartHome.Server.Api.Clients;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers;
 using SmartHome.Server.Features.Managers.Responses;
@@ -189,18 +190,15 @@ internal sealed class SensorManagerTests
         Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
 
         double expectedMeasurementValue = randomizer.NextDouble();
-        var responseBody = new GetMeasurementResponse(expectedMeasurementValue);
-        using var response = new HttpResponseMessage(expectedStatusCode)
-        {
-            Content = JsonContent.Create(responseBody)
-        };
+        var response = new GetMeasurementResponse(expectedMeasurementValue);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
         stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
+            .TrySendRequestAsync<GetMeasurementResponse>(
                 expectedEndpointUrl,
                 expectedHttpMethod,
                 null,
+                expectedStatusCode,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
 
@@ -222,10 +220,11 @@ internal sealed class SensorManagerTests
         Assert.That(actualMeasurementValue, Is.EqualTo(expectedMeasurementValue));
 
         stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
+            .TrySendRequestAsync<GetMeasurementResponse>(
                 expectedEndpointUrl,
                 expectedHttpMethod,
                 null,
+                expectedStatusCode,
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
@@ -266,10 +265,11 @@ internal sealed class SensorManagerTests
         Assert.That(actualMeasurementValue, Is.Null);
 
         stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
+            .TrySendRequestAsync<GetMeasurementResponse>(
                 It.IsAny<Uri>(),
                 It.IsAny<HttpMethod>(),
                 It.IsAny<object?>(),
+                It.IsAny<HttpStatusCode>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
 
@@ -315,10 +315,11 @@ internal sealed class SensorManagerTests
         Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, stationEntity);
 
         stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName),
-                null,
+            .TrySendRequestAsync<GetMeasurementResponse>(
+                It.IsAny<Uri>(),
+                It.IsAny<HttpMethod>(),
+                It.IsAny<object?>(),
+                It.IsAny<HttpStatusCode>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
@@ -326,225 +327,6 @@ internal sealed class SensorManagerTests
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
-    }
-
-    [TestCase(1, "GET", HttpStatusCode.OK)]
-    public async Task TakingMeasurementFailsIfStationReturnsInvalidStatusCode(
-        byte stationApiVersion,
-        string expectedHttpMethodName,
-        HttpStatusCode expectedStatusCode)
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        SensorEntity sensorEntity = randomizer.NextSensorEntity();
-        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
-        {
-            Id = sensorEntity.StationId,
-            ApiVersion = stationApiVersion
-        };
-
-        HttpStatusCode invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        while (invalidStatusCode == expectedStatusCode)
-        {
-            invalidStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        }
-
-        HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
-        Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
-
-        double expectedMeasurementValue = randomizer.NextDouble();
-        var responseBody = new GetMeasurementResponse(expectedMeasurementValue);
-        using var response = new HttpResponseMessage(invalidStatusCode)
-        {
-            Content = JsonContent.Create(responseBody)
-        };
-
-        var stationApiClientMock = new Mock<IStationApiClient>();
-        stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
-        stationApiClientFactoryStub.Setup(mock => mock
-            .CreateFor(parentStation, It.IsAny<TimeSpan>()))
-            .Returns(stationApiClientMock.Object);
-
-        var loggerMock = new FakeLogger<SensorManager>();
-
-        var managerUnderTest = new SensorManager(
-            sensorEntity,
-            parentStation,
-            stationApiClientFactoryStub.Object,
-            loggerMock);
-
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
-
-        Assert.That(actualMeasurementValue, Is.Null);
-
-        stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
-    }
-
-    private static IEnumerable<TestCaseData> InvalidResponseBodyTestCaseParameters()
-    {
-        yield return new TestCaseData(
-            1,
-            "GET",
-            HttpStatusCode.OK,
-            null);
-
-        yield return new TestCaseData(
-            1,
-            "GET",
-            HttpStatusCode.OK,
-            JsonContent.Create(new { Message = "This is invalid response body." }));
-    }
-
-    [Test]
-    [TestCaseSource(nameof(InvalidResponseBodyTestCaseParameters))]
-    public async Task SwitchStateChangeFailsIfStationResponseHaveInvalidBody(
-        byte stationApiVersion,
-        string expectedHttpMethodName,
-        HttpStatusCode expectedStatusCode,
-        HttpContent? invalidResponseContent)
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        SensorEntity sensorEntity = randomizer.NextSensorEntity();
-        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
-        {
-            Id = sensorEntity.StationId,
-            ApiVersion = stationApiVersion
-        };
-
-        HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
-        Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
-
-        double expectedMeasurementValue = randomizer.NextDouble();
-
-        using var response = new HttpResponseMessage(expectedStatusCode)
-        {
-            Content = invalidResponseContent
-        };
-
-        var stationApiClientMock = new Mock<IStationApiClient>();
-        stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
-        stationApiClientFactoryStub.Setup(mock => mock
-            .CreateFor(parentStation, It.IsAny<TimeSpan>()))
-            .Returns(stationApiClientMock.Object);
-
-        var loggerMock = new FakeLogger<SensorManager>();
-
-        var managerUnderTest = new SensorManager(
-            sensorEntity,
-            parentStation,
-            stationApiClientFactoryStub.Object,
-            loggerMock);
-
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
-
-        Assert.That(actualMeasurementValue, Is.Null);
-
-        stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
-    }
-
-    [TestCase(1, "GET", HttpStatusCode.OK)]
-    public async Task SwitchStateChangeFailsIfStationResponsHaveEmptyBody(
-        byte stationApiVersion,
-        string expectedHttpMethodName,
-        HttpStatusCode expectedStatusCode)
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        SensorEntity sensorEntity = randomizer.NextSensorEntity();
-        StationEntity parentStation = randomizer.NextOnlineStationEntity() with
-        {
-            Id = sensorEntity.StationId,
-            ApiVersion = stationApiVersion
-        };
-
-        HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
-        Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
-        /*
-         * By default content of newly created message is set to instance of EmptyContent type,
-         * which is private nested class defined in System.Net.Http.HttpResponseMessage.
-         * It indicates that the response body is empty.
-         * Only way to force the response to have empty body is to not set it,
-         * which is the reason why sepparate test case needs to be created for this scenario.
-         */
-        using var response = new HttpResponseMessage(expectedStatusCode);
-
-        var stationApiClientMock = new Mock<IStationApiClient>();
-        stationApiClientMock.Setup(mock => mock
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var stationApiClientFactoryStub = new Mock<IStationApiClientFactory>();
-        stationApiClientFactoryStub.Setup(mock => mock
-            .CreateFor(parentStation, It.IsAny<TimeSpan>()))
-            .Returns(stationApiClientMock.Object);
-
-        var loggerMock = new FakeLogger<SensorManager>();
-
-        var managerUnderTest = new SensorManager(
-            sensorEntity,
-            parentStation,
-            stationApiClientFactoryStub.Object,
-            loggerMock);
-
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
-
-        Assert.That(actualMeasurementValue, Is.Null);
-
-        stationApiClientMock.Verify(client => client
-            .SendRequestAsync(
-                expectedEndpointUrl,
-                expectedHttpMethod,
-                null,
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
     }
     #endregion
 }

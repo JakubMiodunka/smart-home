@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using SmartHome.Server.Api.Clients;
 using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Features.Managers.Abstractions;
 using SmartHome.Server.Features.Managers.Requests;
@@ -11,11 +12,11 @@ namespace SmartHome.Server.Features.Managers;
 internal sealed class SwitchManager : FeatureManager, ISwitchManager
 {
     #region Properties
-    private readonly ILogger<SwitchManager> _logger;
-
     // TODO: Move this value to some cinfiguration file.
-    protected override TimeSpan HttpClientTimeout => 
+    private static TimeSpan StationApiClientTimeout =>
         TimeSpan.FromMilliseconds(5000);
+
+    private readonly ILogger<SwitchManager> _logger;
 
     /// <remarks>
     /// This property reflects the most recent state of the switch, 
@@ -52,7 +53,7 @@ internal sealed class SwitchManager : FeatureManager, ISwitchManager
         StationEntity parentStation,
         IStationApiClientFactory stationApiClientsFactory,
         ILogger<SwitchManager> logger)
-        : base(parentStation, stationApiClientsFactory)
+        : base(parentStation, stationApiClientsFactory, StationApiClientTimeout)
     {
         ArgumentNullException.ThrowIfNull(managedSwitch, nameof(managedSwitch));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
@@ -131,15 +132,13 @@ internal sealed class SwitchManager : FeatureManager, ISwitchManager
         }
 
         var request = new SwitchUpdateRequest(expectedSwitchState);
-        IStationApiClient apiClient = StationApiClientsFactory.CreateFor(ParentStation, HttpClientTimeout);
 
-        using HttpResponseMessage? response = await apiClient.SendRequestAsync(
+        if (await StationApiClient.TrySendRequestAsync(
             endpointUrl,
             HttpMethod.Patch,
             request,
-            cancellationToken);
-
-        if (response?.StatusCode is HttpStatusCode.NoContent)
+            HttpStatusCode.NoContent,
+            cancellationToken))
         {
             _logger.LogInformation("Attempting to change state of switch successful: SwitchId=[{SwitchId}], StationId=[{StationId}]" +
                 "ExpectedState=[{ExpectedState}], ActualState=[{ActualState}]",
@@ -152,10 +151,8 @@ internal sealed class SwitchManager : FeatureManager, ISwitchManager
             return true;
         }
 
-        _logger.Log(
-            response is null ? LogLevel.Warning : LogLevel.Error,
-            "Attempting to change state of switch failed: Message=[{Message}], SwitchId=[{SwitchId}], StationId=[{StationId}]",
-            response is null ? "Failed to send a request" : "Unexpected HTTP status received.",
+        _logger.LogWarning(
+            "Attempting to change state of switch failed: SwitchId=[{SwitchId}], StationId=[{StationId}]",
             ManagedSwitch.Id,
             ParentStation.Id);
 

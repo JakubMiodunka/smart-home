@@ -6,6 +6,7 @@ using SmartHome.Server.Api.Clients;
 using SmartHome.Server.Repositories.Entities;
 using SmartHome.Server.Tests.Utilities;
 using System.Net;
+using System.Net.Http.Json;
 
 namespace SmartHome.Server.Tests.Api.Clients;
 
@@ -145,9 +146,14 @@ internal sealed class StationApiClientTests
         StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
-        using var expectedResponse = new HttpResponseMessage(responseStatusCode);
+        GenericHttpRequestBody expectedResponseBody = randomizer.NextHttpRequestBody();
+        using var expectedResponse = new HttpResponseMessage(responseStatusCode)
+        {
+            Content = JsonContent.Create(expectedResponseBody)
+        };
+
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => expectedResponse);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         httpClientFactoryStub.Setup(factory => factory
@@ -166,13 +172,16 @@ internal sealed class StationApiClientTests
         HttpMethod httpMethod = randomizer.NextHttpMethod();
         GenericHttpRequestBody requestBody = randomizer.NextHttpRequestBody();
 
-        using HttpResponseMessage? actualResponse = await clientUnderTest.SendRequestAsync(
-            endpointUrl,
-            httpMethod,
-            requestBody,
-            CancellationToken.None);
+        GenericHttpRequestBody? actualResponseBody = 
+            await clientUnderTest.TrySendRequestAsync<GenericHttpRequestBody>(
+                endpointUrl,
+                httpMethod,
+                requestBody,
+                responseStatusCode,
+                CancellationToken.None);
 
-        Assert.That(expectedResponse, Is.SameAs(actualResponse));
+        Assert.That(actualResponseBody, Is.Not.Null);
+        Assert.That(expectedResponseBody, Is.EqualTo(actualResponseBody));
 
         Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
 
@@ -198,7 +207,7 @@ internal sealed class StationApiClientTests
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         httpClientFactoryStub.Setup(factory => factory
@@ -216,13 +225,12 @@ internal sealed class StationApiClientTests
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
         Func<Task> actionUnderTest = async () =>
-        {
-            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+            await clientUnderTest.TrySendRequestAsync(
                 null!,
                 httpMethod,
                 null,
+                responseStatusCode,
                 CancellationToken.None);
-        };
 
         Assert.ThrowsAsync<ArgumentNullException>(actionUnderTest);
         Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
@@ -237,7 +245,7 @@ internal sealed class StationApiClientTests
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         httpClientFactoryStub.Setup(factory => factory
@@ -256,13 +264,12 @@ internal sealed class StationApiClientTests
         HttpMethod httpMethod = randomizer.NextHttpMethod();
 
         Func<Task> actionUnderTest = async () =>
-        {
-            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+            await clientUnderTest.TrySendRequestAsync(
                 endpointUrl,
                 httpMethod,
                 null,
+                responseStatusCode,
                 CancellationToken.None);
-        };
 
         Assert.ThrowsAsync<ArgumentException>(actionUnderTest);
         Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
@@ -277,7 +284,7 @@ internal sealed class StationApiClientTests
 
         HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => new HttpResponseMessage(responseStatusCode));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         httpClientFactoryStub.Setup(factory => factory
@@ -295,27 +302,29 @@ internal sealed class StationApiClientTests
         Uri endpointUrl = randomizer.NextHttpUrl();
 
         Func<Task> actionUnderTest = async () =>
-        {
-            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+            await clientUnderTest.TrySendRequestAsync(
                 endpointUrl,
                 null!,
                 null,
+                responseStatusCode,
                 CancellationToken.None);
-        };
 
         Assert.ThrowsAsync<ArgumentNullException>(actionUnderTest);
         Assert.That(httpMessageHandlerMock.SentRequests, Is.Empty);
     }
 
     [Test]
-    public async Task SendingRequestFailsIfHttpClientThrowsHttpRequestException()
+    public async Task SendingRequestFailsIfResponseHaveUnexpectedStatusCode()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new HttpRequestException());
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        using var response = new HttpResponseMessage(responseStatusCode);
+
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => response);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         httpClientFactoryStub.Setup(factory => factory
@@ -332,14 +341,74 @@ internal sealed class StationApiClientTests
 
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
+        GenericHttpRequestBody requestBody = randomizer.NextHttpRequestBody();
 
-        using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+        HttpStatusCode unexpectedResponseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        while (unexpectedResponseStatusCode == responseStatusCode)
+        {
+            unexpectedResponseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        }
+
+        bool wasRequestSuccessful = await clientUnderTest.TrySendRequestAsync(
+                endpointUrl,
+                httpMethod,
+                requestBody,
+                unexpectedResponseStatusCode,
+                CancellationToken.None);
+
+        Assert.That(wasRequestSuccessful, Is.False);
+
+        Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
+
+        RequestSnapshot request = httpMessageHandlerMock.SentRequests.Single();
+
+        await request.AssertJsonRequest(
+            expectedUri: endpointUrl,
+            expectedHttpMethod: httpMethod,
+            expectedRequestBody: requestBody);
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
+    }
+
+    [Test]
+    public async Task SendingRequestFailsIfHttpClientThrowsHttpRequestException()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
+
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new HttpRequestException());
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
+
+        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
+        httpClientFactoryStub.Setup(factory => factory
+            .CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
+        var loggerMock = new FakeLogger<StationApiClient>();
+
+        var clientUnderTest = new StationApiClient(
+            stationEntity,
+            httpClientFactoryStub.Object,
+            StationApiClient.MaxTimeout,
+            loggerMock);
+
+        Uri endpointUrl = randomizer.NextHttpUrl();
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
+        // Required only for method invocation. Never checked.
+        HttpStatusCode expectedStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+
+        bool wasRequestSuccessful = await clientUnderTest.TrySendRequestAsync(
             endpointUrl,
             httpMethod,
             null,
+            expectedStatusCode,
             CancellationToken.None);
 
-        Assert.That(response, Is.Null);
+        Assert.That(wasRequestSuccessful, Is.False);
 
         Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
 
@@ -365,7 +434,7 @@ internal sealed class StationApiClientTests
 
         var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => 
             throw new OperationCanceledException(null, new TimeoutException()));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         httpClientFactoryStub.Setup(factory => factory
@@ -382,14 +451,17 @@ internal sealed class StationApiClientTests
 
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
+        // Required only for method invocation. Never checked.
+        HttpStatusCode expectedStatusCode = randomizer.NextSuccessfulHttpStatusCode();
 
-        using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+        bool wasRequestSuccessful = await clientUnderTest.TrySendRequestAsync(
             endpointUrl,
             httpMethod,
             null,
+            expectedStatusCode,
             CancellationToken.None);
 
-        Assert.That(response, Is.Null);
+        Assert.That(wasRequestSuccessful, Is.False);
 
         Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
 
@@ -406,15 +478,28 @@ internal sealed class StationApiClientTests
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
+    private static IEnumerable<HttpContent?> GetInvalidResponseContents()
+    {
+        yield return null;
+        yield return JsonContent.Create(new { Message = "This is invalid response body." });
+    }
+
     [Test]
-    public async Task SendingRequestThrowsExceptionWhenOperationIsCancelled()
+    public async Task SendingRequestFailsIfResponseHaveInvalidContent(
+        [ValueSource(nameof(GetInvalidResponseContents))] HttpContent? invalidResponseContent)
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
 
         StationEntity stationEntity = randomizer.NextOnlineStationEntity();
 
-        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new OperationCanceledException());
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        using var rawResponse = new HttpResponseMessage(responseStatusCode)
+        {
+            Content = invalidResponseContent
+        };
+
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => rawResponse);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
 
         var httpClientFactoryStub = new Mock<IHttpClientFactory>();
         httpClientFactoryStub.Setup(factory => factory
@@ -431,15 +516,130 @@ internal sealed class StationApiClientTests
 
         Uri endpointUrl = randomizer.NextHttpUrl();
         HttpMethod httpMethod = randomizer.NextHttpMethod();
+        GenericHttpRequestBody requestBody = randomizer.NextHttpRequestBody();
+
+        GenericHttpRequestBody? actualResponseBody =
+            await clientUnderTest.TrySendRequestAsync<GenericHttpRequestBody>(
+                endpointUrl,
+                httpMethod,
+                requestBody,
+                responseStatusCode,
+                CancellationToken.None);
+
+        Assert.That(actualResponseBody, Is.Null);
+
+        Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
+
+        RequestSnapshot request = httpMessageHandlerMock.SentRequests.Single();
+
+        await request.AssertJsonRequest(
+            expectedUri: endpointUrl,
+            expectedHttpMethod: httpMethod,
+            expectedRequestBody: requestBody);
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
+    }
+
+    [Test]
+    public async Task SendingRequestFailsIfResponseHaveEmptyContent()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
+
+        HttpStatusCode responseStatusCode = randomizer.NextSuccessfulHttpStatusCode();
+        /*
+         * By default content of newly created message is set to instance of EmptyContent type,
+         * which is private nested class defined in System.Net.Http.HttpResponseMessage.
+         * It indicates that the response body is empty.
+         * Only way to force the response to have empty body is to not set it,
+         * which is the reason why sepparate test case needs to be created for this scenario.
+         */
+        using var rawResponse = new HttpResponseMessage(responseStatusCode);
+
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => rawResponse);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
+
+        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
+        httpClientFactoryStub.Setup(factory => factory
+            .CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
+        var loggerMock = new FakeLogger<StationApiClient>();
+
+        var clientUnderTest = new StationApiClient(
+            stationEntity,
+            httpClientFactoryStub.Object,
+            StationApiClient.MaxTimeout,
+            loggerMock);
+
+        Uri endpointUrl = randomizer.NextHttpUrl();
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
+        GenericHttpRequestBody requestBody = randomizer.NextHttpRequestBody();
+
+        GenericHttpRequestBody? actualResponseBody =
+            await clientUnderTest.TrySendRequestAsync<GenericHttpRequestBody>(
+                endpointUrl,
+                httpMethod,
+                requestBody,
+                responseStatusCode,
+                CancellationToken.None);
+
+        Assert.That(actualResponseBody, Is.Null);
+
+        Assert.That(httpMessageHandlerMock.SentRequests, Has.Exactly(1).Items);
+
+        RequestSnapshot request = httpMessageHandlerMock.SentRequests.Single();
+
+        await request.AssertJsonRequest(
+            expectedUri: endpointUrl,
+            expectedHttpMethod: httpMethod,
+            expectedRequestBody: requestBody);
+
+        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
+        Assert.That(logMessages, Is.Not.Empty);
+        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Error));
+        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Error < record.Level));
+    }
+
+    [Test]
+    public async Task SendingRequestThrowsExceptionWhenOperationIsCancelled()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
+
+        var httpMessageHandlerMock = new FakeHttpMessageHandler(_ => throw new OperationCanceledException());
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
+
+        var httpClientFactoryStub = new Mock<IHttpClientFactory>();
+        httpClientFactoryStub.Setup(factory => factory
+            .CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
+        var loggerMock = new FakeLogger<StationApiClient>();
+
+        var clientUnderTest = new StationApiClient(
+            stationEntity,
+            httpClientFactoryStub.Object,
+            StationApiClient.MaxTimeout,
+            loggerMock);
+
+        Uri endpointUrl = randomizer.NextHttpUrl();
+        HttpMethod httpMethod = randomizer.NextHttpMethod();
+        // Required only for method invocation. Never checked.
+        HttpStatusCode expectedStatusCode = randomizer.NextSuccessfulHttpStatusCode();
 
         Func<Task> actionUnderTest = async () =>
-        {
-            using HttpResponseMessage? response = await clientUnderTest.SendRequestAsync(
+            await clientUnderTest.TrySendRequestAsync(
                 endpointUrl,
                 httpMethod,
                 null,
+                expectedStatusCode,
                 CancellationToken.None);
-        };
 
         Assert.ThrowsAsync<OperationCanceledException>(actionUnderTest);
 

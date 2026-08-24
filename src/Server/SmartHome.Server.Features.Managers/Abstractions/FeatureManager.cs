@@ -1,7 +1,6 @@
 ﻿using SmartHome.Server.Api.Clients.Abstractions;
 using SmartHome.Server.Repositories.Entities;
 using System.Net;
-using System.Text.Json;
 
 namespace SmartHome.Server.Features.Managers.Abstractions;
 
@@ -12,14 +11,7 @@ namespace SmartHome.Server.Features.Managers.Abstractions;
 internal abstract class FeatureManager
 {
     #region Properties
-    protected abstract TimeSpan HttpClientTimeout { get; }
-
-    protected JsonSerializerOptions JsonDeserializationOptions => 
-        new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        {
-            RespectRequiredConstructorParameters = true
-        };
-    protected IStationApiClientFactory StationApiClientsFactory { get; init; }
+    protected IStationApiClient StationApiClient { get; init; }
     public StationEntity ParentStation { get; init; }
     #endregion
 
@@ -34,16 +26,22 @@ internal abstract class FeatureManager
     /// Factory of station API clients, which shall be used to obtain clients
     /// capable of communicating with station associated with the managed feature.
     /// </param>
+    /// <param name="stationApiClientTimeout">
+    /// The maximum time to wait for a station API response.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown, when at least one non-nullable argument is a <see langword="null"/> reference.
     /// </exception>
-    protected FeatureManager(StationEntity parentStation, IStationApiClientFactory stationApiClientsFactory)
+    protected FeatureManager(
+        StationEntity parentStation,
+        IStationApiClientFactory stationApiClientsFactory,
+        TimeSpan stationApiClientTimeout)
     {
         ArgumentNullException.ThrowIfNull(parentStation, nameof(parentStation));
         ArgumentNullException.ThrowIfNull(stationApiClientsFactory, nameof(stationApiClientsFactory));
         
         ParentStation = parentStation;
-        StationApiClientsFactory = stationApiClientsFactory;
+        StationApiClient = stationApiClientsFactory.CreateFor(parentStation, stationApiClientTimeout);
     }
     #endregion
 
