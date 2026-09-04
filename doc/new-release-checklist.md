@@ -30,26 +30,26 @@ Add a new entry to [CHANGELOG.md](../../CHANGELOG.md) using the following templa
 
 ## UML Documentation
 
-1. Verify UML diagrams stored in [uml/src](./uml/src) directory.
-2. Render PlantUML source code to SVG images and place them in in [uml/images](./uml/images) directory.
+1. Verify UML diagrams stored in [./swr/server/uml/src](./swr/server/uml/src) directory.
+2. Render PlantUML source code to SVG images and place them in in [uml/images](./swr/server/uml/images/) directory.
 
 ## Text Documentation
 
 Ensure the following files content is factually correct and remains relevant to the new version of the system:
 
 1. [new-version-release-checklist.md](./new-version-release-checklist.md)
-2. [server-api-endpoints.md](./server-api-endpoints.md)
+2. [server-api-endpoints.md](./swr/server/server-api-endpoints.md)
 
 ## Server codebase
 
 1. Ensure the development connection string has been replaced with a generic placeholder.
 2. Verify the server application binds only to localhost in
-[launchSettings.json](../../src/Server/SmartHome.Server.Main/Properties/launchSettings.json).
+[launchSettings.json](../../swr/server/SmartHome.Server.Main/Properties/launchSettings.json).
 3. Verify that all client-facing API endpoints have call examples in
-[SmartHome.Server.Main.http](../../src/Server/SmartHome.Server.Main/SmartHome.Server.Main.http).
-4. Check that the base URL in [SmartHome.Server.Main.http](../../src/Server/SmartHome.Server.Main/SmartHome.Server.Main.http) points to localhost and the port specified in [launchSettings.json](../../src/Server/SmartHome.Server.Main/Properties/launchSettings.json).
+[SmartHome.Server.Main.http](../../swr/server/SmartHome.Server.Main/SmartHome.Server.Main.http).
+4. Check that the base URL in [SmartHome.Server.Main.http](../../swr/server/SmartHome.Server.Main/SmartHome.Server.Main.http) points to localhost and the port specified in [launchSettings.json](../../swr/server/SmartHome.Server.Main/Properties/launchSettings.json).
 5. Ensure all unit tests pass successfully.
 
 ## Firmware codebase
 
-1. Ensure no development secrets or credentials were leaked in [secrets.cpp](../../src/Firmware/generic_firmware/secrets.cpp).
+1. Ensure no development secrets or credentials were leaked in [secrets.cpp](../../fwr/generic_firmware/secrets.cpp).
