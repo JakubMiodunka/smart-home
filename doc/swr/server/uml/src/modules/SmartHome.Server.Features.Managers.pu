@@ -1,0 +1,108 @@
+@startuml
+
+package "SmartHome.Server.Features.Managers" as FeaturesManagers {
+    package Abstractions {
+        +interface ISwitchManagerFactory {
+            +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
+        }
+
+        +interface ISwitchManager {
+            +TryChangeState(bool, CancellationToken) : Task<bool>
+        }
+        
+        +interface ISensorManagerFactory {
+            +CreateFor(SensorEntity, StationEntity) : ISensorManager
+        }
+        
+        +interface ISensorManager {
+            +TryGetMeasurementAsync(CancellationToken) : Task<double?>
+        }
+        
+        ~abstract FeatureManager {
+            #{abstract} HttpClientTimeout : TimeSpan
+            #JsonDeserializationOptions : JsonSerializerOptions
+            #StationApiClient : IStationApiClient
+            +ParentStation : StationEntity
+            #FeatureManager(StationEntity, IStationApiClientFactory) : FeatureManager
+            #GetBaseStationApiUrl() : Uri?
+        }
+    }
+
+    package Requests {
+        ~record SwitchUpdateRequest {
+            +ExpectedSwitchState : bool
+        }
+    }
+    
+    package Responses {
+        ~record GetMeasurementResponse {
+            +MeasurementValue : double
+        }
+    }
+
+    package Configuration {
+        +class FeaturesManagersConfiguration {
+            +{static} ConfigureApplicationBuilder(IHostApplicationBuilder) : void
+        }
+    }
+
+    ~class SwitchManager {
+        -{static} StationApiClientTimeout : TimeSpan
+        -_logger : ILogger<SwitchManager>
+        +ManagedSwitch : SwitchEntity
+        +SwitchManager(SwitchEntity, StationEntity, IStationApiClientFactory, ILogger<SwitchManager>) : SwitchManager
+        -GetSwitchUrl : Uri?
+        +TryChangeState(bool, CancellationToken) : Task<bool>
+    }
+
+    ~class SwitchManagerFactory {
+        -_stationApiClientsFactory : IStationApiClientFactory
+        -_loggerFactory : ILoggerFactory
+        +SwitchManagerFactory(IStationApiClientFactory, ILoggerFactory) : SwitchManagerFactory
+        +CreateFor(SwitchEntity, StationEntity) : ISwitchManager
+    }
+    
+    ~class SensorManager {
+        -{static} StationApiClientTimeout : TimeSpan
+        -_logger : ILogger<SensorManager>
+        +ManagedSensor : SensorEntity
+        +SensorManager(SensorEntity, StationEntity, IStationApiClientFactory, ILogger<SensorManager>) : SensorManager
+        -GetSensorUrl() : Uri?
+        +TryGetMeasurementAsync(CancellationToken) : Task<double?>
+    }
+    
+    ~class SensorManagerFactory {
+        -_stationApiClientsFactory : IStationApiClientFactory
+        -_loggerFactory : ILoggerFactory
+        +SensorManagerFactory(IStationApiClientFactory, ILoggerFactory) : SensorManagerFactory
+        +CreateFor(SensorEntity, StationEntity) : ISensorManager
+    }
+
+    ISwitchManager <|.. SwitchManager
+    FeatureManager <|-- SwitchManager
+    SwitchUpdateRequest <-- SwitchManager
+    
+    ISwitchManagerFactory <|.. SwitchManagerFactory
+    SwitchManager <-- SwitchManagerFactory
+    
+    ISensorManager <|.. SensorManager
+    FeatureManager <|-- SensorManager
+    GetMeasurementResponse <-- SensorManager
+    
+    ISensorManagerFactory <|.. SensorManagerFactory
+    SensorManager <-- SensorManagerFactory
+    
+    ISwitchManagerFactory <-- FeaturesManagersConfiguration
+    SwitchManagerFactory <-- FeaturesManagersConfiguration
+    ISensorManagerFactory <-- FeaturesManagersConfiguration
+    SensorManagerFactory <-- FeaturesManagersConfiguration
+
+    note left of FeaturesManagersConfiguration::ConfigureApplicationBuilder
+        Used to configure dependency injection to expose package-defined 
+        utilities through their interface definitions.
+        This approach prevents exposing the concrete interface implementations publicly.
+
+        Shall be called from Program.cs.
+    end note
+}
+@enduml

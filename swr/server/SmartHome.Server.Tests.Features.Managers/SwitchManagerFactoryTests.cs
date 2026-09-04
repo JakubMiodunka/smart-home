@@ -1,0 +1,165 @@
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
+using Moq;
+using NUnit.Framework.Internal;
+using SmartHome.Server.Api.Clients.Abstractions;
+using SmartHome.Server.Features.Managers;
+using SmartHome.Server.Features.Managers.Abstractions;
+using SmartHome.Server.Repositories.Entities;
+using SmartHome.Server.Tests.Utilities;
+
+namespace SmartHome.Server.Tests.Features.Managers;
+
+[Category("UnitTest")]
+[TestOf(typeof(SwitchManagerFactory))]
+[Author("Jakub Miodunka")]
+internal sealed class SwitchManagerFactoryTests
+{
+    #region Constructor
+    [Test]
+    public void InstantiationPossible()
+    {
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        Action actionUnderTest = () => new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        Assert.DoesNotThrow(actionUnderTest);
+    }
+
+    [Test]
+    public void InstantiationImpossibleUsingNullReferenceAsStationClientsFactory()
+    {
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        Action actionUnderTest = () => new SwitchManagerFactory(
+            null!,
+            loggerFactoryStub.Object);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+    }
+
+    [Test]
+    public void InstantiationImpossibleUsingNullReferenceAsLoggerFactory()
+    {
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        Action actionUnderTest = () => new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            null!);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+    }
+    #endregion
+
+    #region Manager creation
+    [Test]
+    public void ManagerCreationPossible()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        loggerFactoryStub.Setup(factory => factory
+            .CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
+
+        var factoryUnderTest = new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+        StationEntity parentStation = randomizer.NextOnlineStationEntity() with { Id = switchEntity.StationId };
+        ISwitchManager switchManager = factoryUnderTest.CreateFor(switchEntity, parentStation);
+
+        Assert.That(switchManager, Is.Not.Null);
+        Assert.That(switchManager, Is.InstanceOf<SwitchManager>());
+    }
+
+    [Test]
+    public void ManagerCreationImpossibleUsingNullReferenceAsSwitchEntity()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        loggerFactoryStub.Setup(factory => factory
+            .CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
+
+        var factoryUnderTest = new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        StationEntity stationEntity = randomizer.NextOnlineStationEntity();
+
+        ISwitchManager? switchManager = null;
+        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(null!, stationEntity);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+        Assert.That(switchManager, Is.Null);
+    }
+
+    [Test]
+    public void ManagerCreationImpossibleUsingNullReferenceAsParentStationEntity()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        loggerFactoryStub.Setup(factory => factory
+            .CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
+
+        var factoryUnderTest = new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+
+        ISwitchManager? switchManager = null;
+        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(switchEntity, null!);
+
+        Assert.Throws<ArgumentNullException>(actionUnderTest);
+        Assert.That(switchManager, Is.Null);
+    }
+
+    [Test]
+    public void ManagerCreationImpossibleUsingStationWhichIsNotSwitchParentStation()
+    {
+        Randomizer randomizer = TestContext.CurrentContext.Random;
+
+        var stationApiClientsFactoryStub = new Mock<IStationApiClientFactory>();
+        var loggerFactoryStub = new Mock<ILoggerFactory>();
+
+        loggerFactoryStub.Setup(factory => factory
+            .CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => new FakeLogger(new FakeLogCollector(), categoryName));
+
+        var factoryUnderTest = new SwitchManagerFactory(
+            stationApiClientsFactoryStub.Object,
+            loggerFactoryStub.Object);
+
+        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
+
+        StationEntity parentStation = randomizer.NextOnlineStationEntity();
+        while (parentStation.Id == switchEntity.StationId)
+        {
+            parentStation = randomizer.NextOnlineStationEntity();
+        }
+        ;
+
+        ISwitchManager? switchManager = null;
+        Action actionUnderTest = () => switchManager = factoryUnderTest.CreateFor(switchEntity, parentStation);
+
+        Assert.Throws<ArgumentException>(actionUnderTest);
+        Assert.That(switchManager, Is.Null);
+    }
+    #endregion
+}
