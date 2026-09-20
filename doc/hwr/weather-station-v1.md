@@ -31,6 +31,10 @@ Without this switching mechanism, the continuous parasitic current draw (7-10uA 
 as it can be substantial compared to the ~20 uA current drawn by the ESP8266 in deep sleep mode.
 The P-MOS transistor must be switched on (driven into conduction) by the firmware immediately prior to acquiring the ADC sample.
 
+The hardware for the battery level measurement system was heavily inspired by the
+[Battery Voltage Monitoring breakout board](https://github.com/hallard/Battery-Voltage-Measure/blob/master/README.md) by
+[Charles Hallard](https://github.com/hallard).
+
 ## Power Supply
 
 A single-cell 18650 Li-Ion battery serves as the main power source for the board, secured in a dedicated holder (U1) for quick and easy replacement when discharged.
