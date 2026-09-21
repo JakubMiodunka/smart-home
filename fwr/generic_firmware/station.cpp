@@ -14,7 +14,19 @@ void StationRegistrationStationRequest::toJsonDocument(JsonDocument& jsonDocumen
   jsonDocument["stationApiVersion"] = this->stationApiVersion;
 }
 
-bool Station::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const {
+/// <summary>
+/// Attempts to register the station on the remote server.
+/// </summary>
+/// <param name="wiFiManager">
+/// Reference to the WiFi manager responsible for maintaining the network connection.
+/// </param>
+/// <param name="macAddress">
+/// The MAC address of the station.
+/// </param>
+/// <returns>
+/// <see langword="true"/> if the attempt was successful, <see langword="false"/> otherwise.
+/// </returns>
+static const bool tryRegisterStationOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) {
   logToSerial(INFO, "Attempting to register station: MAC_ADDRESS=[%s]", macAddress.c_str());
 
   if (REMOTE_SERVER_API_VERSION != 1) {
@@ -43,14 +55,14 @@ bool Station::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const Str
   return wasOperationSuccessful;
 }
 
-void Station::registerOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) const {
-  while (!this->tryRegisterOnRemoteServer(wiFiManager, macAddress)) {
+void registerStationOnRemoteServer(ESP8266WiFiMulti& wiFiManager, const String macAddress) {
+  while (!tryRegisterStationOnRemoteServer(wiFiManager, macAddress)) {
     logToSerial(WARNING, "Registration attempt failed. RETRY_INTERVAL=[%lu][ms]", REQUESTS_RETRY_INTERVAL);
     delay(REQUESTS_RETRY_INTERVAL);
   }
 }
 
-bool Station::trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) const {
+bool trySendHeartbeatSignal(ESP8266WiFiMulti& wiFiManager) {
   logToSerial(INFO, "Attempting to send heartbeat signal:");
 
   if (REMOTE_SERVER_API_VERSION != 1) {
