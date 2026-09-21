@@ -18,7 +18,10 @@ ESP8266WiFiMulti WiFiManager;
 ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
 // Peripherals definition:
-Station ThisStation = {};
+constexpr uint8_t WifiConnectionIndicatorPinNumber = 12;
+constexpr uint8_t RegistrationIndicatorPinNumber = 13;
+
+// Features definition:
 Switch Switches[] = 
   { 
     {
@@ -45,14 +48,12 @@ Sensor Sensors[] =
 uint32_t LastHeartbeatTimestamp = 0;    // Given in milliseconds.
 uint32_t LastLocalApiPollTimestamp = 0; // Given in milliseconds.
 
-/// <summary>
-/// Registers all peripherals on remote server.
-/// </summary>
-void registerAll() {
+void registerAllFeatures()
+{
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
 
-  ThisStation.registerOnRemoteServer(WiFiManager, macAddress);
+  registerStationOnRemoteServer(WiFiManager, macAddress);
 
   logToSerial(INFO, "Attempting to register all switches on the remote server.");
 
@@ -81,7 +82,16 @@ void setup() {
   Serial.begin(SERIAL_PORT_BAUD_RATE);
   Serial.println();
 
-  logToSerial(INFO, "Serial port to initialization successful: BAUD_RATE=[%ul]", SERIAL_PORT_BAUD_RATE);
+  logToSerial(INFO, "Serial port initialization successful: BAUD_RATE=[%ul]", SERIAL_PORT_BAUD_RATE);
+  logToSerial(INFO, "Attempting to initialize status indicators:");
+
+  pinMode(WifiConnectionIndicatorPinNumber, OUTPUT);
+  digitalWrite(WifiConnectionIndicatorPinNumber, HIGH);
+
+  pinMode(RegistrationIndicatorPinNumber, OUTPUT);
+  digitalWrite(RegistrationIndicatorPinNumber, HIGH);
+
+  logToSerial(INFO, "All status indicators initialized successfully: STATE=[disabled]");
   logToSerial(INFO, "Attempting to initialize all switches: COUNT=[%d]", sizeof(Switches)/sizeof(Switch));
 
   for (const Switch& currentSwitch : Switches) {
@@ -108,8 +118,15 @@ void setup() {
   logToSerial(INFO, "Connection established successfully:");
   logToSerial(DEBUG, "DHCP server assigned IP address to station: IP_ADDRESS=[%s]", WiFi.localIP().toString().c_str());
   logToSerial(DEBUG, "WiFi signal strength measured: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
+  logToSerial(DEBUG, "Changing state of WiFi connection indicator: STATE=[enabled]");
 
-  registerAll();
+  digitalWrite(WifiConnectionIndicatorPinNumber, LOW);
+
+  registerAllFeatures();
+
+  logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
+
+  digitalWrite(RegistrationIndicatorPinNumber, LOW);
 
   logToSerial(INFO, "Initializing local server API: PORT=[%d]", LOCAL_SERVER_PORT);
 
@@ -135,8 +152,14 @@ void loop() {
   }
 
   if (currentTimestamp - LastHeartbeatTimestamp >= HEARTBEAT_INTERVAL) {
-    if (!ThisStation.trySendHeartbeatSignal(WiFiManager)) {
-      registerAll();
+    if (!trySendHeartbeatSignal(WiFiManager)) {
+      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[disabled]");
+      digitalWrite(RegistrationIndicatorPinNumber, HIGH);
+
+      registerAllFeatures();
+
+      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
+      digitalWrite(RegistrationIndicatorPinNumber, HIGH);
     }
     LastHeartbeatTimestamp = currentTimestamp;
   }
