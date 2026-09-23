@@ -1,4 +1,5 @@
 #include "config.h"
+#include "serial_logging.h"
 
 const char* REMOTE_SERVER_IP_ADDRESS = "192.168.0.199";
 const uint16_t REMOTE_SERVER_PORT = 5236;
@@ -10,7 +11,9 @@ const uint8_t LOCAL_SERVER_API_VERSION = 1;
 const uint32_t LOCAL_SERVER_API_POLL_INTERVAL = 1000;
 const bool IP_RESTRICTION = true;
 
-const bool SERIAL_PORT_LOGGING = true;
-const uint32_t SERIAL_PORT_BAUD_RATE = 115200;
 const uint32_t REQUESTS_RETRY_INTERVAL = 10000;
 const uint32_t HEARTBEAT_INTERVAL = 45000;
+
+const uint32_t SERIAL_PORT_BAUD_RATE = 115200;
+const bool SERIAL_PORT_LOGGING = true;
+const LoggingLevel SERIAL_PORT_LOGGING_LEVEL = DEBUG;

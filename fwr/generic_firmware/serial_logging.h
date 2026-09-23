@@ -6,7 +6,7 @@
 /// <summary>
 /// Describes the severity level of a log message.
 /// </summary>
-enum LoggingLevel {
+enum LoggingLevel : uint8_t {
   UNKNOWN,
   DEBUG,
   INFO,
