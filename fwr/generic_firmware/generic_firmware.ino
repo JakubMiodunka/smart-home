@@ -86,10 +86,10 @@ void setup() {
   logToSerial(INFO, "Attempting to initialize status indicators:");
 
   pinMode(WifiConnectionIndicatorPinNumber, OUTPUT);
-  digitalWrite(WifiConnectionIndicatorPinNumber, HIGH);
+  digitalWrite(WifiConnectionIndicatorPinNumber, LOW);
 
   pinMode(RegistrationIndicatorPinNumber, OUTPUT);
-  digitalWrite(RegistrationIndicatorPinNumber, HIGH);
+  digitalWrite(RegistrationIndicatorPinNumber, LOW);
 
   logToSerial(INFO, "All status indicators initialized successfully: STATE=[disabled]");
   logToSerial(INFO, "Attempting to initialize all switches: COUNT=[%d]", sizeof(Switches)/sizeof(Switch));
@@ -120,13 +120,13 @@ void setup() {
   logToSerial(DEBUG, "WiFi signal strength measured: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
   logToSerial(DEBUG, "Changing state of WiFi connection indicator: STATE=[enabled]");
 
-  digitalWrite(WifiConnectionIndicatorPinNumber, LOW);
+  digitalWrite(WifiConnectionIndicatorPinNumber, HIGH);
 
   registerAllFeatures();
 
   logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
 
-  digitalWrite(RegistrationIndicatorPinNumber, LOW);
+  digitalWrite(RegistrationIndicatorPinNumber, HIGH);
 
   logToSerial(INFO, "Initializing local server API: PORT=[%d]", LOCAL_SERVER_PORT);
 
@@ -154,7 +154,7 @@ void loop() {
   if (currentTimestamp - LastHeartbeatTimestamp >= HEARTBEAT_INTERVAL) {
     if (!trySendHeartbeatSignal(WiFiManager)) {
       logToSerial(DEBUG, "Changing state of registration indicator: STATE=[disabled]");
-      digitalWrite(RegistrationIndicatorPinNumber, HIGH);
+      digitalWrite(RegistrationIndicatorPinNumber, LOW);
 
       registerAllFeatures();
 
