@@ -116,7 +116,7 @@ void setup() {
   }
 
   logToSerial(INFO, "Connection established successfully:");
-  logToSerial(DEBUG, "DHCP server assigned IP address to station: IP_ADDRESS=[%s]", WiFi.localIP().toString().c_str());
+  logToSerial(DEBUG, "IP address assigned to station: IP_ADDRESS=[%s]", WiFi.localIP().toString().c_str());
   logToSerial(DEBUG, "WiFi signal strength measured: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
   logToSerial(DEBUG, "Changing state of WiFi connection indicator: STATE=[enabled]");
 
