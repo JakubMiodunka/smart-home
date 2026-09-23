@@ -5,7 +5,7 @@
 #include "serial_logging.h"
 
 void logToSerial(const LoggingLevel level, const char* format, ...) {
-  if (!SERIAL_PORT_LOGGING) {
+  if (!SERIAL_PORT_LOGGING || level < SERIAL_PORT_LOGGING_LEVEL) {
     return;
   }
 
