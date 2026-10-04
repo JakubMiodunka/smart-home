@@ -29,3 +29,30 @@ This approach guarantees consistent, time-series data collection independent of 
 making it essential for the continuous monitoring of fluctuating environmental conditions, such as outdoor temperature.
 
 Currently not implemented.
+
+## Measurement Execution Sequence
+
+Different hardware sensors often demand specific operational sequences to guarantee accurate data collection and preserve component longevity.
+To maximize flexibility and support a wide variety of hardware configurations, the firmware divides the sensor lifecycle
+and measurement execution flow into four distinct, fully customizable steps:
+
+1. **Sensor Initialization**
+   Executes a one-time setup routine when the device boots or registers a new sensor.
+   This step includes actions such as configuring GPIO pin modes, initializing communication protocols like I2C or SPI,
+   setting default sampling resolutions, or verifying hardware connectivity.
+
+2. **Pre-Measurement Action**
+   Executes necessary preparation tasks immediately before taking a reading.
+   This step includes actions such as powering up peripheral lines via MOSFETs, warming up sensitive environmental sensors,
+   or sending wake-up commands to sleeping chips.
+
+3. **Measurement Action**
+   Executes the primary data acquisition logic.
+   This step includes actions such as reading analog signals or digital registers,
+   applying calibration formulas, and returning the final numerical telemetry value.
+
+4. **Post-Measurement Action**
+   Performs teardown and power-management tasks immediately following data retrieval.
+   This step includes actions such as cutting power to external modules, putting sensors back into low-power sleep modes,
+   or releasing bus locks to optimize energy efficiency.
+   

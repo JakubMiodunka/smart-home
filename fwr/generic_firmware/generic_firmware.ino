@@ -40,7 +40,9 @@ Sensor Sensors[] =
       1,
       MeasurementType::Temperature,
       []() {},  // No initializaion required.
-      []() { return 21.37; }  // Returning fake measurement.
+      []() {},  // No pre-measurement action required.
+      []() { return 21.37; },  // Returning fake measurement.
+      []() {}  // No post-measurement action required.
     } 
   };
 

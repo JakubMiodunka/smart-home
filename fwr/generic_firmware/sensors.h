@@ -112,20 +112,48 @@ struct Sensor {
   /// Performs initial configuration of the sensor.
   /// </summary>
   /// <remarks>
-  /// Needs to be assigned during structure creation according to particualr sensor hardware.
+  /// Needs to be assigned during structure creation according to particualr sensor specification.
   /// </remarks>
   void (* const initialize)();
 
   /// <summary>
-  /// Takes a single measurement.
+  /// Action performed before sensor will take a measurement.
   /// </summary>
   /// <remarks>
-  /// Needs to be assigned during structure creation according to particualr sensor hardware.
+  /// Needs to be assigned during structure creation according to particualr sensor specification.
+  /// </remarks>
+  void (* const preMeasurementAction)();
+
+  /// <summary>
+  /// Action performed to take a measurement.
+  /// </summary>
+  /// <remarks>
+  /// Needs to be assigned during structure creation according to particualr sensor specification.
   /// </remarks>
   /// <returns>
   /// Measurement value retrieved from the sensor.
   /// </returns>
-  double (* const takeMeasurement)();
+  double (* const measurementAction)();
+
+  /// <summary>
+  /// Action performed after the sensor has taken its measurement.
+  /// </summary>
+  /// <remarks>
+  /// Needs to be assigned during structure creation according to particular sensor needs.
+  /// </remarks>
+  void (* const postMeasurementAction)();
+
+  /// <summary>
+  /// Executes the complete measurement sequence.
+  /// </summary>
+  /// <remarks>
+  /// Performs the entire sequence of taking measurements - executes pre-measurement action, 
+  /// measurement action and post-measurement action.
+  /// </remarks>
+  /// <returns>
+  /// The measurement value retrieved from the sensor.
+  /// </returns>
+  double takeMeasurement();
 
   /// <summary>
   /// Attempts to register the sensor on the remote server.
