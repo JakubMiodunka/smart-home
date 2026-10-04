@@ -40,6 +40,26 @@ bool SensorRegistrationServerResponse::tryParseJsonDocument(const JsonDocument& 
   return true;
 }
 
+double Sensor::takeMeasurement()
+{
+  logToSerial(INFO, "Attempting to take a measurement using sensor: ID=[%d], LOCAL_ID=[%d]", this->id, this->localId);
+
+  logToSerial(DEBUG, "Attempting to perform sensor pre-measurement action:");
+  this->preMeasurementAction();
+  logToSerial(DEBUG, "Sensor pre-measurement action successful:");
+
+  logToSerial(DEBUG, "Attempting to perform sensor measurement action:");
+  double measurementValue = this->measurementAction();
+  logToSerial(DEBUG, "Sensor measurement action successful: MEASUREMENT_VALUE=[%f]", measurementValue);
+
+  logToSerial(DEBUG, "Attempting to perform sensor post-measurement action:");
+  this->postMeasurementAction();
+  logToSerial(DEBUG, "Sensor post-measurement action successful:");
+
+  logToSerial(INFO, "Measurement taken successfully using a sensor: ID=[%d], LOCAL_ID=[%d], MEASUREMENT_VALUE=[%f]", this->id, this->localId, measurementValue);
+  return measurementValue;
+}
+
 bool Sensor::tryRegisterOnRemoteServer(ESP8266WiFiMulti& wiFiManager) {
   logToSerial(INFO, "Attempting to register sensor: LOCAL_ID=[%d]", this->localId);
   
