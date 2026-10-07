@@ -21,6 +21,8 @@ public static class ApiControllersConfiguration
     public static void ConfigureApplicationBuilder(IHostApplicationBuilder applicationBuilder)
     {
         applicationBuilder.Services.AddHttpContextAccessor();
+        
+        applicationBuilder.Services.AddScoped<RequireRemoteIpAddressAttribute>();
 
         applicationBuilder.Services.AddControllers().AddJsonOptions(options =>
             options.JsonSerializerOptions.Converters.Add(new PhysicalAddressConverter()));

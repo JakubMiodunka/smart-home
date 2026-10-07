@@ -172,32 +172,23 @@ public sealed class SensorsController : BaseController
     [HttpPut]
     public async Task<IActionResult> RegisterSensorAsync([FromBody] SensorRegistrationRequest request)
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
-        {
-            _logger.LogWarning(
-                "Sensor registration request rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing sensor registration request: StationIpAddress=[{StationIpAddress}], SensorLocalId=[{SensorLocalId}]",
-            stationIpAddress,
+            RemoteIpAddress,
             request.SensorLocalId);
 
         _logger.LogDebug(
             "Searching for parent station entity: StationIpAddress=[{StationIpAddress}]",
-            stationIpAddress);
+            RemoteIpAddress);
 
         if (await _stationsRepository.GetSingleStationAsync(
                 filterByIpAddress: true,
-                ipAddress: stationIpAddress) is not StationEntity parentStationEntity)
+                ipAddress: RemoteIpAddress) is not StationEntity parentStationEntity)
         {
             _logger.LogWarning(
                 "Failed to process sensor registration request: Message=[{Message}], StationIpAddress=[{StationIpAddress}]",
                 "Parent station entity not found.",
-                stationIpAddress);
+                RemoteIpAddress);
 
             return NotFound();
         }
