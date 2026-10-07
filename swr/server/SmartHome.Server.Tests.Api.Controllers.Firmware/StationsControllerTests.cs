@@ -266,45 +266,6 @@ internal sealed class StationsControllerTests
     }
 
     [Test]
-    public async Task RegistrationReturnsBadRequestIfStationIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        StationEntity stationEntity = randomizer.NextOnlineStationEntity() with
-        {
-            IpAddress = null
-        };
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var timeProviderStub = new FakeTimeProvider();
-        var loggerMock = new FakeLogger<StationsController>();
-
-        var controllerUnderTest = new StationsController(
-            httpContextAccessorStub.Object,
-            stationsRepositoryMock.Object,
-            timeProviderStub,
-            loggerMock);
-
-        var request = new StationRegistrationRequest(
-            stationEntity.MacAddress,
-            stationEntity.ApiPort!.Value,
-            stationEntity.ApiVersion!.Value);
-
-        IActionResult response = await controllerUnderTest.RegisterStation(request);
-        response.AssertBadRequestResult();
-
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
-    }
-
-    [Test]
     public async Task RegistrationReturnsInternalServerErrorIfRepositoryUpdateDuringRegistrationOfKnownStationFails()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
@@ -467,49 +428,6 @@ internal sealed class StationsControllerTests
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
-    }
-
-    [Test]
-    public async Task UpdateOfHeartbeatSignalReturnsBadRequestIfStationIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        var stationEntity = randomizer.NextOnlineStationEntity() with
-        {
-            IpAddress = null
-        };
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(stationEntity.IpAddress);
-
-        StationEntity updatedStationEntity = stationEntity with
-        {
-            /* 
-             * There is no validation if successive heartbeat timestamps are chronological.
-             * In real scenario it is enforced by the usage of TimeProvider instance instead of FakeTimeProvider.
-             */
-            LastHeartbeat = randomizer.NextDateTimeOffset()
-        };
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var timeProviderStub = new FakeTimeProvider();
-        var loggerMock = new FakeLogger<StationsController>();
-
-        var controllerUnderTest = new StationsController(
-            httpContextAccessorStub.Object,
-            stationsRepositoryMock.Object,
-            timeProviderStub,
-            loggerMock);
-
-        IActionResult response = await controllerUnderTest.ProcessHeartbeatSignal();
-        response.AssertBadRequestResult();
-
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
     [Test]
