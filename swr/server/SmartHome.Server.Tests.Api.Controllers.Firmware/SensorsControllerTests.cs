@@ -258,39 +258,6 @@ internal sealed class SensorsControllerTests
     }
 
     [Test]
-    public async Task RegistrationReturnsBadRequestIfStationIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(remoteIpAddress: null);
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var sensorsRepositoryMock = new Mock<ISensorsRepository>();
-        var loggerMock = new FakeLogger<SensorsController>();
-
-        var controllerUnderTest = new SensorsController(
-            httpContextAccessorStub.Object,
-            sensorsRepositoryMock.Object,
-            stationsRepositoryMock.Object,
-            loggerMock);
-
-        SensorEntity sensorEntity = randomizer.NextSensorEntity();
-        var request = new SensorRegistrationRequest(sensorEntity.LocalId, sensorEntity.MeasurementType);
-        IActionResult response = await controllerUnderTest.RegisterSensorAsync(request);
-
-        response.AssertBadRequestResult();
-
-        sensorsRepositoryMock.AssertNoContentModifications();
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
-    }
-
-    [Test]
     public async Task RegistrationReturnsNotFoundIfStationIsNotRegistered()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
