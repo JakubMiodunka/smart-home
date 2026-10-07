@@ -74,18 +74,9 @@ public sealed class SwitchesController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetSwitches()
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
-        {
-            _logger.LogWarning(
-                "Request for getting collection of switches rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing request for getting collection of switches: ClientIpAddress=[{ClientIpAddress}]",
-            clientIpAddress);
+            RemoteIpAddress);
 
         _logger.LogDebug("Searching for switch entities:");
 
@@ -95,7 +86,7 @@ public sealed class SwitchesController : BaseController
 
         _logger.LogInformation(
             "Request processed successfully: ClientIpAddress=[{ClientIpAddress}, EntitiesReturned=[{EntitiesReturned}]",
-            clientIpAddress,
+            RemoteIpAddress,
             allSwitches.Count());
 
         return Ok(allSwitches);
@@ -113,18 +104,9 @@ public sealed class SwitchesController : BaseController
     [HttpGet("{switchId}")]
     public async Task<IActionResult> GetSwitch(long switchId)
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
-        {
-            _logger.LogWarning(
-                "Request for getting a switch rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing request for getting a switch: ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}]",
-            clientIpAddress,
+            RemoteIpAddress,
             switchId);
 
         _logger.LogDebug("Searching for switch entity: SwitchId=[{SwitchId}]", switchId);
@@ -135,7 +117,7 @@ public sealed class SwitchesController : BaseController
             switchEntity is null ? LogLevel.Warning : LogLevel.Information,
             "Request processed successfully: Message=[{Message}], ClientIpAddress=[{ClientIpAddress}], SwitchId=[{SwitchId}]",
             switchEntity is null ? "Switch not found." : "Switch found.",
-            clientIpAddress,
+            RemoteIpAddress,
             switchId);
 
         return switchEntity is null ? NotFound() : Ok(switchEntity);
@@ -162,20 +144,12 @@ public sealed class SwitchesController : BaseController
         [FromBody] SwitchUpdateRequest request,
         CancellationToken cancellationToken)
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
-        {
-            _logger.LogWarning("Switch update request rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing switch update request: SwitchId=[{SwitchId}], " +
             "ExpectedSwitchState=[{ExpectedSwitchState}], ClientIpAddress=[{ClientIpAddress}]",
             switchId,
             request.ExpectedSwitchState,
-            clientIpAddress);
+            RemoteIpAddress);
 
         if (await _switchesRepository.GetSingleSwitchAsync(
                 filterById: true,
@@ -186,7 +160,7 @@ public sealed class SwitchesController : BaseController
                 "SwitchId=[{SwitchId}], ClientIpAddress=[{ClientIpAddress}]",
                 "Switch not found.",
                 switchId,
-                clientIpAddress);
+                RemoteIpAddress);
 
             return NotFound();
         }
@@ -201,7 +175,7 @@ public sealed class SwitchesController : BaseController
                 "Parent station not found.",
                 switchEntity.Id,
                 switchEntity.StationId,
-                clientIpAddress);
+                RemoteIpAddress);
 
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -236,7 +210,7 @@ public sealed class SwitchesController : BaseController
                     "Switches repository update failed.",
                     switchEntity.Id,
                     parentStation.Id,
-                    clientIpAddress);
+                    RemoteIpAddress);
 
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
@@ -248,7 +222,7 @@ public sealed class SwitchesController : BaseController
                 switchEntity.Id,
                 parentStation.Id,
                 request.ExpectedSwitchState,
-                clientIpAddress);
+                RemoteIpAddress);
 
             return NoContent();
         }
@@ -269,7 +243,7 @@ public sealed class SwitchesController : BaseController
                 "Switches repository update failed.",
                 switchEntity.Id,
                 parentStation.Id,
-                clientIpAddress);
+                RemoteIpAddress);
 
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -281,7 +255,7 @@ public sealed class SwitchesController : BaseController
             switchEntity.Id,
             parentStation.Id,
             request.ExpectedSwitchState,
-            clientIpAddress);
+            RemoteIpAddress);
 
         return StatusCode(StatusCodes.Status503ServiceUnavailable);
     }

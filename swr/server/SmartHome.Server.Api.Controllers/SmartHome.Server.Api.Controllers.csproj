@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <!-- Unit tests project. -->
+	<InternalsVisibleTo Include="SmartHome.Server.Tests.Utilities" />
 	<InternalsVisibleTo Include="SmartHome.Server.Tests.Api.Controllers" />
   </ItemGroup>
 

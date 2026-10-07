@@ -238,51 +238,6 @@ internal sealed class SwitchesControllerTests
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
-    [Test]
-    public async Task GettingSingleSwitchReturnsBadRequestIfClientIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(remoteIpAddress: null);
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-
-        switchesRepositoryMock.Setup(mock => mock
-            .GetSingleSwitchAsync(
-                filterById: true,
-                id: switchEntity.Id,
-                filterByStationId: false,
-                stationId: null,
-                filterByLocalId: false,
-                localId: null))
-            .ReturnsAsync(switchEntity);
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
-        var loggerMock = new FakeLogger<SwitchesController>();
-
-        var controllerUnderTest = new SwitchesController(
-            httpContextAccessorStub.Object,
-            switchesRepositoryMock.Object,
-            stationsRepositoryMock.Object,
-            switchManagerFactoryStub.Object,
-            loggerMock);
-
-        IActionResult response = await controllerUnderTest.GetSwitch(switchEntity.Id);
-        response.AssertBadRequestResult();
-
-        switchesRepositoryMock.AssertNoContentModifications();
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
-    }
-
     [TestCase(2)]
     public async Task GettingMultipleSwitchesPossible(int switchesInRepository)
     {
@@ -323,38 +278,6 @@ internal sealed class SwitchesControllerTests
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
 
-    }
-
-    [Test]
-    public async Task GettingMultipleSwitchesReturnsBadRequestIfClientIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(remoteIpAddress: null);
-
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
-        var loggerMock = new FakeLogger<SwitchesController>();
-
-        var controllerUnderTest = new SwitchesController(
-            httpContextAccessorStub.Object,
-            switchesRepositoryMock.Object,
-            stationsRepositoryMock.Object,
-            switchManagerFactoryStub.Object,
-            loggerMock);
-
-        IActionResult response = await controllerUnderTest.GetSwitches();
-        response.AssertBadRequestResult();
-
-        switchesRepositoryMock.AssertNoContentModifications();
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
     #endregion
 
@@ -450,41 +373,6 @@ internal sealed class SwitchesControllerTests
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
-    }
-
-    [Test]
-    public async Task UpdateReturnsBadRequestIfClientIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(remoteIpAddress: null);
-
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchManagerFactoryStub = new Mock<ISwitchManagerFactory>();
-        var loggerMock = new FakeLogger<SwitchesController>();
-
-        var controllerUnderTest = new SwitchesController(
-            httpContextAccessorStub.Object,
-            switchesRepositoryMock.Object,
-            stationsRepositoryMock.Object,
-            switchManagerFactoryStub.Object,
-            loggerMock);
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity();
-
-        var request = new SwitchUpdateRequest(switchEntity.ExpectedState);
-        IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request, CancellationToken.None);
-        response.AssertBadRequestResult();
-
-        switchesRepositoryMock.AssertNoContentModifications();
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
     [Test]

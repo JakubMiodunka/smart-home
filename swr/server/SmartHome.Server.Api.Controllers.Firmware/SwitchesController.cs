@@ -75,35 +75,26 @@ public sealed class SwitchesController : BaseController
     [HttpPut]
     public async Task<IActionResult> RegisterSwitch([FromBody] SwitchRegistrationRequest request)
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
-        {
-            _logger.LogWarning(
-                "Switch registration request rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing switch registration request: StationIpAddress=[{StationIpAddress}], SwitchLocalId=[{SwitchLocalId}]",
-            stationIpAddress,
+            RemoteIpAddress,
             request.SwitchLocalId);
 
         _logger.LogDebug(
             "Searching for parent station entity: StationIpAddress=[{StationIpAddress}]",
-            stationIpAddress);
+            RemoteIpAddress);
 
         StationEntity? parentStationEntity =
             await _stationsRepository.GetSingleStationAsync(
                 filterByIpAddress: true,
-                ipAddress: stationIpAddress);
+                ipAddress: RemoteIpAddress);
 
         if (parentStationEntity is null)
         {
             _logger.LogWarning(
                 "Failed to process switch registration request: Message=[{Message}], StationIpAddress=[{StationIpAddress}]",
                 "Parent station entity not found.",
-                stationIpAddress);
+                RemoteIpAddress);
 
             return NotFound();
         }
@@ -186,33 +177,24 @@ public sealed class SwitchesController : BaseController
     [HttpPatch("{switchId}")]
     public async Task<IActionResult> UpdateSwitch(long switchId, [FromBody] SwitchUpdateRequest request)
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? stationIpAddress))
-        {
-            _logger.LogWarning(
-                "Switch update request rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing switch update request: SwitchId=[{SwitchId}], StationIpAddress=[{StationIpAddress}]",
             switchId,
-            stationIpAddress);
+            RemoteIpAddress);
 
-        _logger.LogDebug("Searching for parent station entity: StationIpAddress=[{StationIpAddress}]", stationIpAddress);
+        _logger.LogDebug("Searching for parent station entity: StationIpAddress=[{StationIpAddress}]", RemoteIpAddress);
 
         StationEntity? stationEntity = 
             await _stationsRepository.GetSingleStationAsync(
                 filterByIpAddress: true,
-                ipAddress: stationIpAddress);
+                ipAddress: RemoteIpAddress);
 
         if (stationEntity is null)
         {
             _logger.LogWarning("Failed to process switch update request: Message=[{Message}], SwitchId=[{SwitchId}], StationIpAddress=[{StationIpAddress}]",
                 "Parent station entity not found.",
                 switchId,
-                stationIpAddress);
+                RemoteIpAddress);
 
             return NotFound();
         }
@@ -238,7 +220,7 @@ public sealed class SwitchesController : BaseController
                 "Switch entity not found.",
                 switchId,
                 stationEntity.Id,
-                stationIpAddress);
+                RemoteIpAddress);
 
             return NotFound();
         }

@@ -74,18 +74,9 @@ public sealed class SensorsController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetSensorsAsync()
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
-        {
-            _logger.LogWarning(
-                "Request for getting collection of sensors rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing request for getting collection of sensors: ClientIpAddress=[{ClientIpAddress}]",
-            clientIpAddress);
+            RemoteIpAddress);
 
         _logger.LogDebug("Searching for sensor entities:");
 
@@ -95,7 +86,7 @@ public sealed class SensorsController : BaseController
 
         _logger.LogInformation(
             "Request processed successfully: ClientIpAddress=[{ClientIpAddress}, EntitiesReturned=[{EntitiesReturned}]",
-            clientIpAddress,
+            RemoteIpAddress,
             allSensors.Count());
 
         return Ok(allSensors);
@@ -113,18 +104,9 @@ public sealed class SensorsController : BaseController
     [HttpGet("{sensorId}")]
     public async Task<IActionResult> GetSensorAsync(long sensorId)
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
-        {
-            _logger.LogWarning(
-                "Request for getting a sensor rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing request for getting a sensor: ClientIpAddress=[{ClientIpAddress}], SensorId=[{SensorId}]",
-            clientIpAddress,
+            RemoteIpAddress,
             sensorId);
 
         _logger.LogDebug("Searching for sensor entity: SensorId=[{SensorId}]", sensorId);
@@ -135,7 +117,7 @@ public sealed class SensorsController : BaseController
             sensorEntity is null ? LogLevel.Warning : LogLevel.Information,
             "Request processed successfully: Message=[{Message}], ClientIpAddress=[{ClientIpAddress}], SensorId=[{SensorId}]",
             sensorEntity is null ? "Sensor not found." : "Sensor found.",
-            clientIpAddress,
+            RemoteIpAddress,
             sensorId);
 
         return sensorEntity is null ? NotFound() : Ok(sensorEntity);
@@ -157,18 +139,10 @@ public sealed class SensorsController : BaseController
     [HttpGet("{sensorId}/measurement")]
     public async Task<IActionResult> GetMeasurementAsync(long sensorId, CancellationToken cancellationToken)
     {
-        if (!TryGetRemoteIpAddress(out IPAddress? clientIpAddress))
-        {
-            _logger.LogWarning("Get measurement request rejected: Message=[{Message}]",
-                "Failed to determine client IP address.");
-
-            return BadRequest();
-        }
-
         _logger.LogInformation(
             "Processing get measurement request: SensorId=[{SensorId}], ClientIpAddress=[{ClientIpAddress}]",
             sensorId,
-            clientIpAddress);
+            RemoteIpAddress);
 
         if (await _sensorsRepository.GetSingleSensorAsync(
                 filterById: true,
@@ -179,7 +153,7 @@ public sealed class SensorsController : BaseController
                 "Message=[{Message}], SensorId=[{SensorId}], ClientIpAddress=[{ClientIpAddress}]",
                 "Sensor not found.",
                 sensorId,
-                clientIpAddress);
+                RemoteIpAddress);
 
             return NotFound();
         }
@@ -194,7 +168,7 @@ public sealed class SensorsController : BaseController
                 "Parent station not found.",
                 sensorEntity.Id,
                 sensorEntity.StationId,
-                clientIpAddress);
+                RemoteIpAddress);
 
             return StatusCode(StatusCodes.Status500InternalServerError);
         }

@@ -8,7 +8,7 @@ namespace SmartHome.Server.Api.Controllers.Common;
 /// Base class for all controllers defined within the application.
 /// </summary>
 [ApiController]
-[RequireRemoteIpAddress]
+[ServiceFilter(typeof(RequireRemoteIpAddressAttribute))]
 public abstract class BaseController : ControllerBase
 {
     #region Properties

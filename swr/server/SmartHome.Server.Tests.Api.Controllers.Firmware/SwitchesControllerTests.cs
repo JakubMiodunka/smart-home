@@ -265,47 +265,6 @@ internal sealed class SwitchesControllerTests
     }
 
     [Test]
-    public async Task RegistrationReturnsBadRequestIfStationIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity() with
-        {
-            IpAddress = null
-        };
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity() with
-        {
-            StationId = parentStationEntity.Id
-        };
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var loggerMock = new FakeLogger<SwitchesController>();
-
-        var controllerUnderTest = new SwitchesController(
-            httpContextAccessorStub.Object,
-            switchesRepositoryMock.Object,
-            stationsRepositoryMock.Object,
-            loggerMock);
-
-        var request = new SwitchRegistrationRequest(switchEntity.LocalId);
-        IActionResult response = await controllerUnderTest.RegisterSwitch(request);
-        
-        response.AssertBadRequestResult();
-
-        switchesRepositoryMock.AssertNoContentModifications();
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
-    }
-
-    [Test]
     public async Task RegistrationReturnsNotFoundIfStationIsNotRegistered()
     {
         Randomizer randomizer = TestContext.CurrentContext.Random;
@@ -443,49 +402,6 @@ internal sealed class SwitchesControllerTests
         IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
         Assert.That(logMessages, Is.Not.Empty);
         Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Information < record.Level));
-    }
-
-    [Test]
-    public async Task UpdateReturnsBadRequestIfStationIpAddressCannotBeDetermined()
-    {
-        Randomizer randomizer = TestContext.CurrentContext.Random;
-
-        StationEntity parentStationEntity = randomizer.NextOnlineStationEntity() with
-        {
-            IpAddress = null
-        };
-
-        Mock<IHttpContextAccessor> httpContextAccessorStub =
-            FakeDataGenerationUtilities.CreateHttpContextAccessorFake(parentStationEntity.IpAddress);
-
-        SwitchEntity switchEntity = randomizer.NextSwitchEntity() with
-        {
-            StationId = parentStationEntity.Id,
-            ActualState = randomizer.NextBool() // Actual switch state shall be known.
-        };
-
-        var stationsRepositoryMock = new Mock<IStationsRepository>();
-        var switchesRepositoryMock = new Mock<ISwitchesRepository>();
-        var loggerMock = new FakeLogger<SwitchesController>();
-
-        var controllerUnderTest = new SwitchesController(
-            httpContextAccessorStub.Object,
-            switchesRepositoryMock.Object,
-            stationsRepositoryMock.Object,
-            loggerMock);
-
-        var request = new SwitchUpdateRequest(switchEntity.ActualState.Value);
-        IActionResult response = await controllerUnderTest.UpdateSwitch(switchEntity.Id, request);
-
-        response.AssertBadRequestResult();
-
-        switchesRepositoryMock.AssertNoContentModifications();
-        stationsRepositoryMock.AssertNoContentModifications();
-
-        IReadOnlyList<FakeLogRecord> logMessages = loggerMock.Collector.GetSnapshot();
-        Assert.That(logMessages, Is.Not.Empty);
-        Assert.That(logMessages, Has.Some.Matches<FakeLogRecord>(record => record.Level == LogLevel.Warning));
-        Assert.That(logMessages, Has.None.Matches<FakeLogRecord>(record => LogLevel.Warning < record.Level));
     }
 
     [Test]

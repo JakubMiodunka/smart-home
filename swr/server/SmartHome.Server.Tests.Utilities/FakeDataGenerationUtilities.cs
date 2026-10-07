@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework.Internal;
+using SmartHome.Server.Api.Controllers;
 using SmartHome.Server.Repositories.Entities;
 using SmartHome.Server.Repositories.Enumerations;
 using System.Net;
@@ -19,6 +20,9 @@ public static class FakeDataGenerationUtilities
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Connection.RemoteIpAddress = remoteIpAddress;
+
+        // Mimicking the behavior of the custom attribute.
+        httpContext.Items.Add(RequireRemoteIpAddressAttribute.RemoteIpAddressKey, remoteIpAddress);
 
         var httpContextAccessorFake = new Mock<IHttpContextAccessor>();
         httpContextAccessorFake.Setup(fake => fake.HttpContext).Returns(httpContext);
