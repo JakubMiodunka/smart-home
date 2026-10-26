@@ -139,4 +139,15 @@ This BOM was prepared to roughly estimate which components are needed and how mu
 
 ### Photos
 
-TODO: Add photo of prototype PCB board when it will be ready.
+|                                                               |                                                                |
+|:-------------------------------------------------------------:|:--------------------------------------------------------------:|
+|![Prototype PCB](./images/weather-station-v1-prototype-01.png) | ![Prototype PCB](./images/weather-station-v1-prototype-02.png) |
+
+### Remarks
+
+Note that, to allow for more convenient placement of components, the guidelines regarding the restricted area around the `ESP8266` antenna
+(the region around the antena, where electronic components or copper traces should not be placed to preserve optimal antenna performance)
+were not followed. While this compromise is acceptable for a prototype, it may reduce the device's available *Wi-Fi* range.
+Therefore, compliance with these restricted area guidelines should be strictly maintained during the main PCB design.
+
+Additionally, a simple 3D-printed base was created to provide a stable physical foundation for the PCB and to protect the copper traces from mechanical damage.
