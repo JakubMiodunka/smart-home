@@ -1,5 +1,5 @@
 # Firmware secrets.
-fwr\generic_firmware\secrets.cpp
+#fwr/src/*/Secrets.cpp
 
 # Visual Studio cache directory.
 .vs/

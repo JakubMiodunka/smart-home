@@ -107,6 +107,7 @@ All configurations are handled directly within the source code.
 
 Hardware stations are built using the NodeMCU (ESP8266) platform. You will need the Arduino IDE to flash the firmware.
 
+* Make sure that drivers for USB-UART controller used by your NodeMCU are installed on your PC.
 * Open the Arduino IDE and configure it to support NodeMCU by
 following the [official tutorial](https://projecthub.arduino.cc/PatelDarshil/getting-started-with-nodemcu-esp8266-on-arduino-ide-b193c3)
 * Open the [*generic_firmware.ino*](./fwr/generic_firmware/generic_firmware.ino) in the Arduino IDE,

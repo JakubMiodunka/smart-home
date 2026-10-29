@@ -5,7 +5,7 @@
 #include <ArduinoJson.h>
 #include <ESP8266WiFiMulti.h>
 
-#include "switches.h"
+#include <Switches.h> // TODO: Is it neccessary here?
 
 /// <summary>
 /// Defines the HTTP methods supported in this library.
