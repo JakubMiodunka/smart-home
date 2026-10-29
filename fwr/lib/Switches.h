@@ -6,7 +6,7 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFiMulti.h>
 
-#include "requests.h"
+#include <Requests.h>
 
 /// <summary>
 /// Data transfer object (DTO) representing the request for switch registration on the remote server.

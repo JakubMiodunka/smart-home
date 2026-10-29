@@ -3,10 +3,10 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFiMulti.h>
 
-#include "config.h"
-#include "serial_logging.h"
-#include "station.h"
-#include "requests.h"
+#include <Config.h>
+#include <SerialLogging.h>
+#include <Station.h>
+#include <Requests.h>
 
 void StationRegistrationStationRequest::toJsonDocument(JsonDocument& jsonDocument) const {
   jsonDocument["stationMacAddress"] = this->stationMacAddress;
