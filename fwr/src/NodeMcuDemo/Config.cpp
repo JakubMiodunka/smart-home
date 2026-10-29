@@ -1,5 +1,5 @@
-#include "config.h"
-#include "serial_logging.h"
+#include <Config.h>
+#include <SerialLogging.h>
 
 const char* REMOTE_SERVER_IP_ADDRESS = "192.168.0.199";
 const uint16_t REMOTE_SERVER_PORT = 5236;
