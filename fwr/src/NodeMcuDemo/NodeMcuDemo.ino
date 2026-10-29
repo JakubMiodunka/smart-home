@@ -17,10 +17,6 @@
 ESP8266WiFiMulti WiFiManager;
 ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
-// Peripherals definition:
-constexpr uint8_t WifiConnectionIndicatorPinNumber = 12;
-constexpr uint8_t RegistrationIndicatorPinNumber = 13;
-
 // Features definition:
 Switch Switches[] = 
   { 
@@ -33,25 +29,14 @@ Switch Switches[] =
     }
   };
 
-Sensor Sensors[] = 
-  { 
-    { 
-      0,  // Global ID unknown until registration.
-      1,
-      MeasurementType::Temperature,
-      []() {},  // No initializaion required.
-      []() {},  // No pre-measurement action required.
-      []() { return 21.37; },  // Returning fake measurement.
-      []() {}  // No post-measurement action required.
-    } 
-  };
-
 // Timekeeping:
 uint32_t LastHeartbeatTimestamp = 0;    // Given in milliseconds.
 uint32_t LastLocalApiPollTimestamp = 0; // Given in milliseconds.
 
 void registerAllFeatures()
 {
+  logToSerial(INFO, "Attempting to register all station features.");
+
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
 
@@ -71,13 +56,7 @@ void registerAllFeatures()
   }
 
   logToSerial(INFO, "State of all switches updated successfully.");
-  logToSerial(INFO, "Attempting to register all sensors on the remote server.");
-
-  for (Sensor& currentSensor : Sensors) {
-    currentSensor.registerOnRemoteServer(WiFiManager);
-  }
-
-  logToSerial(INFO, "All sensors registered successfully.");
+  logToSerial(INFO, "All station features registered successfully.");
 }
 
 void setup() {
@@ -85,15 +64,6 @@ void setup() {
   Serial.println();
 
   logToSerial(INFO, "Serial port initialization successful: BAUD_RATE=[%ul]", SERIAL_PORT_BAUD_RATE);
-  logToSerial(INFO, "Attempting to initialize status indicators:");
-
-  pinMode(WifiConnectionIndicatorPinNumber, OUTPUT);
-  digitalWrite(WifiConnectionIndicatorPinNumber, LOW);
-
-  pinMode(RegistrationIndicatorPinNumber, OUTPUT);
-  digitalWrite(RegistrationIndicatorPinNumber, LOW);
-
-  logToSerial(INFO, "All status indicators initialized successfully: STATE=[disabled]");
   logToSerial(INFO, "Attempting to initialize all switches: COUNT=[%d]", sizeof(Switches)/sizeof(Switch));
 
   for (const Switch& currentSwitch : Switches) {
@@ -101,13 +71,6 @@ void setup() {
   }
 
   logToSerial(INFO, "All switches initialized successfully.");
-  logToSerial(INFO, "Attempting to initialize all sensors: COUNT=[%d]", sizeof(Sensors)/sizeof(Sensor));
-
-  for (const Sensor& currentSensor : Sensors) {
-    currentSensor.initialize();
-  }
-
-  logToSerial(INFO, "All sensors initialized successfully.");
   logToSerial(INFO, "Attempting to connect to WiFi network: WIFI_SSID=[%s]", WIFI_SSID);
 
   WiFi.mode(WIFI_STA);
@@ -120,24 +83,13 @@ void setup() {
   logToSerial(INFO, "Connection established successfully:");
   logToSerial(DEBUG, "IP address assigned to station: IP_ADDRESS=[%s]", WiFi.localIP().toString().c_str());
   logToSerial(DEBUG, "WiFi signal strength measured: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
-  logToSerial(DEBUG, "Changing state of WiFi connection indicator: STATE=[enabled]");
-
-  digitalWrite(WifiConnectionIndicatorPinNumber, HIGH);
 
   registerAllFeatures();
-
-  logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
-
-  digitalWrite(RegistrationIndicatorPinNumber, HIGH);
 
   logToSerial(INFO, "Initializing local server API: PORT=[%d]", LOCAL_SERVER_PORT);
 
   for (Switch& currentSwitch : Switches) {
     currentSwitch.setupControlEndpoint(LocalServer);
-  }
-
-  for (Sensor& currentSensor : Sensors) {
-    currentSensor.setupControlEndpoint(LocalServer);
   }
 
   LocalServer.begin(LOCAL_SERVER_PORT);
@@ -155,14 +107,9 @@ void loop() {
 
   if (currentTimestamp - LastHeartbeatTimestamp >= HEARTBEAT_INTERVAL) {
     if (!trySendHeartbeatSignal(WiFiManager)) {
-      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[disabled]");
-      digitalWrite(RegistrationIndicatorPinNumber, LOW);
-
       registerAllFeatures();
-
-      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
-      digitalWrite(RegistrationIndicatorPinNumber, HIGH);
     }
+    
     LastHeartbeatTimestamp = currentTimestamp;
   }
 }
