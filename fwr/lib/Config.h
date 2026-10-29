@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "serial_logging.h"
+#include <SerialLogging.h>
 
 // Remote server properties:
 extern const char* REMOTE_SERVER_IP_ADDRESS;
