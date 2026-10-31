@@ -7,7 +7,6 @@
 
 #include <Config.h>
 #include <Secrets.h>
-#include <Sensors.h>
 #include <SerialLogging.h>
 #include <Station.h>
 #include <Switches.h>

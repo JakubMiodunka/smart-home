@@ -15,7 +15,21 @@
 /// Must be kept in sync with the corresponding enumeration in the remote server codebase.
 /// </remarks>
 enum MeasurementType : uint8_t {
-  Temperature
+  /// <remarks>
+  /// Expressed in kelvins.
+  /// </remarks>
+  Temperature,
+
+  /// <remarks>
+  /// Expressed in Pascals.
+  /// </remarks>
+  Pressure,
+
+  /// <remarks>
+  /// Dimensionless. 
+  /// Expressed as percentage.
+  /// </remarks>
+  RelativeHumidity
 };
 
 /// <summary>
@@ -86,6 +100,10 @@ struct GetMeasurementStationResponse {
 /// <summary>
 /// Representation of a single sensor capable of taking measurements.
 /// </summary>
+/// <remarks>
+/// Initial setup and hardware configuration shall be performed externally.
+/// This struct assumes an already initialized and operational device.
+/// </remarks>
 struct Sensor {
   /// <summary>
   /// The identifier of the sensor, unique within the system.
@@ -98,10 +116,7 @@ struct Sensor {
   /// <summary>
   /// The identifier of the sensor, unique only at the station level.
   /// </summary>
-  /// <remarks>
-  /// A value of zero indicates that the identifier has not yet been assigned.
-  /// </remarks>
-  uint8_t localId = 0;
+  uint8_t localId;
 
   /// <summary>
   /// Type of measurements taken by the sensor.
@@ -109,18 +124,10 @@ struct Sensor {
   MeasurementType measurementType;
 
   /// <summary>
-  /// Performs initial configuration of the sensor.
-  /// </summary>
-  /// <remarks>
-  /// Needs to be assigned during structure creation according to particualr sensor specification.
-  /// </remarks>
-  void (* const initialize)();
-
-  /// <summary>
   /// Action performed before sensor will take a measurement.
   /// </summary>
   /// <remarks>
-  /// Needs to be assigned during structure creation according to particualr sensor specification.
+  /// Needs to be assigned during structure creation according to particular sensor specification.
   /// </remarks>
   void (* const preMeasurementAction)();
 
@@ -128,7 +135,7 @@ struct Sensor {
   /// Action performed to take a measurement.
   /// </summary>
   /// <remarks>
-  /// Needs to be assigned during structure creation according to particualr sensor specification.
+  /// Needs to be assigned during structure creation according to particular sensor specification.
   /// </remarks>
   /// <returns>
   /// Measurement value retrieved from the sensor.
