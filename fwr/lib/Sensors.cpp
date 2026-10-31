@@ -126,11 +126,11 @@ void Sensor::setupControlEndpoint(ESP8266WebServer& server) {
     double measurementValue = this->takeMeasurement();
     
     GetMeasurementStationResponse response = { measurementValue };
-    JsonDocument repsonseJson;
-    response.toJsonDocument(repsonseJson);
+    JsonDocument responseJson;
+    response.toJsonDocument(responseJson);
 
     String serializedResponse;
-    serializeJson(repsonseJson, serializedResponse);
+    serializeJson(responseJson, serializedResponse);
 
     httpStatusCode = HTTP_CODE_OK;
     logToSerial(INFO, "Sending response: HTTP_STATUS_CODE=[%d], BODY=[%s]", httpStatusCode, serializedResponse.c_str());
