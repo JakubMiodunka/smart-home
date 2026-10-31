@@ -38,11 +38,14 @@ in context of firmware development.
 * Practical implementation of
 [ADO.NET](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/ "Microsoft Learn article") basics.
 * Architecture and design of end-to-end IoT systems.
+* Hardware design, covering circuit analysis, schematic capture, and PCB layout.
 
 Beyond the technical milestones, this project is driven by the enjoyment of the engineering craft.
 There is immense satisfaction in building a system from the ground up that reflects personal philosophy of software development.
 
 ### Current state
+
+// TODO: UPDATE PRIOR TO RELEASE
 
 The system currently features a functional foundational architecture with established bidirectional communication between
 the central server and hardware nodes. The core database schema is implemented for persistent data management,
@@ -67,18 +70,34 @@ of cybersecurity to transition the system from a foundational prototype to a har
 
 ## Repository Structure
 
-* [*/fwr*](./fwr/) - Source code for the station's firmware.
-Implemented in [Arduino](https://www.arduino.cc/ "Arduino website") ecosystem.
-* [*/swr/server](./swr/server/) - Source code for the central server responsible for managing the system
+### Firmware
+
+* [`/fwr/lib`](./fwr/lib) - Source code for shared libraries utilized across multiple station firmware variants.
+* [`/fwr/src`](./fwr/src) - Source code dedicated to specific station firmware implementations.
+* [`/doc/fwr`](./doc/fwr/) - Documentation detailing the firmware development philosophy 
+and specific implementations for individual station types.
+
+### Software
+* [`/swr/server`](./swr/server/) - Source code for the central server responsible for managing the system
 and aggregating data from all components.
 Implemented in [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language) "Wikipedia article") and ADO.NET.
-* [*/doc/swr/server/uml*](./doc/swr/server/uml/) - UML-based description of the current system architecture 
+* [`/doc/swr/server/uml`](./doc/swr/server/uml/) - UML-based description of the current system architecture 
 (component diagram) along with the class diagrams for each individual module.
 All diagrams are created using [PlantUML](https://plantuml.com/ "PlantUML website"), meaning they are stored
 as plain text files and can be easily viewed or edited using the [PlantUML Online Editor](https://editor.plantuml.com/ "PlantUML Online Editor").
-* [*/doc/swr/server/html/*](./doc/swr/server/html/) - HTML-based server code documentation, automatically generated using
+* [`/doc/swr/server/html/`](./doc/swr/server/html/) - HTML-based server code documentation, automatically generated using
 [DoxyGen](https://www.doxygen.nl/ "DoxyGen website"). View the content by opening
 [*index.html*](./doc/Server/html/index.html) in Your browser of choice.
+
+### Hardware
+
+* [`/hdw`](./hdw) - Hardware designs for stations supported by created system and auxiliary development devices.
+Created using [EasyEDA](https://easyeda.com).
+* [`/doc/hwr`](./doc/hwr/) - Hardware documentation covering stations supported by created system and diagnostic/development tools.
+
+### Others
+
+* [`/doc`](./doc/) - General documentation covering high-level concepts and core development philosophy.
 
 ## Getting Started 
 
@@ -105,19 +124,27 @@ All configurations are handled directly within the source code.
 
 ### Node Deployment
 
-Hardware stations are built using the NodeMCU (ESP8266) platform. You will need the Arduino IDE to flash the firmware.
+Hardware stations are built using the ESP8266 platform. You will need the Arduino IDE to flash the firmware.
 
 * Make sure that drivers for USB-UART controller used by your NodeMCU are installed on your PC.
-* Open the Arduino IDE and configure it to support NodeMCU by
-following the [official tutorial](https://projecthub.arduino.cc/PatelDarshil/getting-started-with-nodemcu-esp8266-on-arduino-ide-b193c3)
-* Open the [*generic_firmware.ino*](./fwr/generic_firmware/generic_firmware.ino) in the Arduino IDE,
-adjust configuration parameters defined in [*config.h*](./fwr/generic_firmware/config.cpp) according to your setup,
-compile and upload the code to your NodeMCU board.
+* Make a copy of the [`/fwr/lib`](./fwr/lib/) directory and place it in your local Arduino libraries folder
+(`C:\Users\<USERNAME>\Documents\Arduino\libraries` by default).
+Alternatively, you can create a symbolic link using the `mklink /D` command in *Windows CMD*.
+* Open the *Arduino IDE* and configure it to support ESP8266-based boards by following the
+[official tutorial](https://projecthub.arduino.cc/PatelDarshil/getting-started-with-nodemcu-esp8266-on-arduino-ide-b193c3).
+* Open your choice of firmware from [`/fwr/src`](./fwr/src/) in the Arduino IDE, install all required external libraries
+specified in the respective firmware documentation (refer to the `/doc/fwr` directory),
+adjust the configuration parameters defined in `config.cpp` according to your setup, compile and upload the code to your PCB.
 * Upon startup, the node will automatically attempt to register with the server. Once registration completes successfully,
 all node features will become operational.
-* In case of of registration or operational issues, the *SERIAL_PORT_LOGGING* configuration parameter can be set to *true*
+
+**Notes:**
+
+* For your first run, it is recommended to start with [`NodeMcuDemo.ino`](./fwr/src/NodeMcuDemo/NodeMcuDemo.ino),
+which requires only a bare *NodeMcu* board (no proprietary project hardware needed).
+The demo implementation includes a simple on/off utility configured to control the state of the built-in LED.
+* In case of registration or operational issues, the *SERIAL_PORT_LOGGING* configuration parameter can be set to *true*
 (enabled by default) to route system log messages to the serial port for debugging and investigation.
-* The current firmware implementation includes a single on/off switch utility, which is configured to control the state of the build-in LED.
 
 ### Interactions With The System
 
