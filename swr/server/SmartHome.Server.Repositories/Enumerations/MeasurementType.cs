@@ -10,6 +10,19 @@
 /// </remarks>
 public enum MeasurementType : byte
 {
+    /// <remarks>
+    /// Expressed in kelvins.
+    /// </remarks>
     Temperature,
-    AirHumidity,
+
+    /// <remarks>
+    /// Expressed in Pascals.
+    /// </remarks>
+    Pressure,
+
+    /// <remarks>
+    /// Dimensionless. 
+    /// Expressed as percentage.
+    /// </remarks>
+    RelativeHumidity
 }
