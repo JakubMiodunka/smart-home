@@ -2,9 +2,9 @@
 
 ## Overview
 
-The firmware is developed within the Arduino Environment targeting the ESP8266 microcontroller platform.
-ESP8266 support is provided to the *Arduino IDE* via the community-maintained
-Board Manager package ([ESP8266 Arduino Core](https://github.com/esp8266/Arduino)).
+The firmware is developed within the [Arduino Environment](https://www.arduino.cc/ "Arduino website")
+targeting the ESP8266 microcontroller platform. ESP8266 support is provided to the *Arduino IDE*
+via the community-maintained Board Manager package ([ESP8266 Arduino Core](https://github.com/esp8266/Arduino)).
 
 The system architecture is designed for modularity and maintainability, separating universal logic from hardware-specific implementations.
 The firmware for each station model is split into two primary components:

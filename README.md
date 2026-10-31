@@ -126,7 +126,7 @@ All configurations are handled directly within the source code.
 
 Hardware stations are built using the ESP8266 platform. You will need the Arduino IDE to flash the firmware.
 
-* Make sure that drivers for USB-UART controller used by your NodeMCU are installed on your PC.
+* Make sure that drivers for USB-UART controller used by your *NodeMCU* are installed on your PC.
 * Make a copy of the [`/fwr/lib`](./fwr/lib/) directory and place it in your local Arduino libraries folder
 (`C:\Users\<USERNAME>\Documents\Arduino\libraries` by default).
 Alternatively, you can create a symbolic link using the `mklink /D` command in *Windows CMD*.
@@ -134,7 +134,8 @@ Alternatively, you can create a symbolic link using the `mklink /D` command in *
 [official tutorial](https://projecthub.arduino.cc/PatelDarshil/getting-started-with-nodemcu-esp8266-on-arduino-ide-b193c3).
 * Open your choice of firmware from [`/fwr/src`](./fwr/src/) in the Arduino IDE, install all required external libraries
 specified in the respective firmware documentation (refer to the `/doc/fwr` directory),
-adjust the configuration parameters defined in `config.cpp` according to your setup, compile and upload the code to your PCB.
+* Adjust the configuration parameters defined in `config.cpp` according to your setup.
+* Compile and upload the code to your PCB.
 * Upon startup, the node will automatically attempt to register with the server. Once registration completes successfully,
 all node features will become operational.
 
