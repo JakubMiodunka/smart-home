@@ -29,7 +29,13 @@ enum MeasurementType : uint8_t {
   /// Dimensionless. 
   /// Expressed as percentage.
   /// </remarks>
-  RelativeHumidity
+  RelativeHumidity,
+
+  /// <remarks>
+  /// Dimensionless. 
+  /// Expressed as percentage.
+  /// </remarks>
+  BatteryLevel,
 };
 
 /// <summary>

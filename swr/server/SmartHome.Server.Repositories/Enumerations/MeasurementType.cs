@@ -24,5 +24,11 @@ public enum MeasurementType : byte
     /// Dimensionless. 
     /// Expressed as percentage.
     /// </remarks>
-    RelativeHumidity
+    RelativeHumidity,
+
+    /// <remarks>
+    /// Dimensionless. 
+    /// Expressed as percentage.
+    /// </remarks>
+    BatteryLevel
 }
