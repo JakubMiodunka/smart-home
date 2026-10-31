@@ -23,35 +23,46 @@ ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 Adafruit_BME280 Bme280;
 constexpr uint8_t Bme280I2CAddress = 0x76;  // Usually eather 0x76 or 0x77.
 
-constexpr uint8_t WifiConnectionIndicatorPinNumber = 12;
-constexpr uint8_t RegistrationIndicatorPinNumber = 13;
+constexpr uint8_t WifiConnectionIndicatorPin = 12;
+constexpr uint8_t RegistrationIndicatorPin = 13;
+
+constexpr uint8_t BatteryMeasureEnablePin = 14;
+constexpr uint8_t BatteryMeasureAnalogPin = A0;
 
 // Features definition:
 Sensor Sensors[] = 
-  { 
-    {
+  {
+    { 
       0,  // Global ID unknown until registration.
       1,
+      MeasurementType::BatteryLevel,
+      []() { digitalWrite(BatteryMeasureEnablePin, LOW); },
+      []() { return (double)analogRead(BatteryMeasureAnalogPin); },  // TODO: Figure out how to compute battery level as percentage.
+      []() { digitalWrite(BatteryMeasureEnablePin, LOW); }
+    },
+    {
+      0,
+      2,
       MeasurementType::Temperature,
       []() {},  // No pre-measurement action required.
       []() { return (double)(Bme280.readTemperature() + 273.15F); },  // Conversion from Celsius to kelvin
       []() {}  // No post-measurement action required.
     },
     { 
-      0,  // Global ID unknown until registration.
-      2,
+      0,
+      3,
       MeasurementType::Pressure,
-      []() {},  // No pre-measurement action required.
+      []() {},
       []() { return (double)Bme280.readPressure(); },
-      []() {}  // No post-measurement action required.
+      []() {}
     },
     { 
-      0,  // Global ID unknown until registration.
-      3,
+      0,
+      4,
       MeasurementType::RelativeHumidity,
-      []() {},  // No pre-measurement action required.
+      []() {},
       []() { return (double)Bme280.readHumidity(); },
-      []() {}  // No post-measurement action required.
+      []() {}
     } 
   };
 
@@ -82,13 +93,19 @@ void setup() {
   logToSerial(INFO, "Serial port initialization successful: BAUD_RATE=[%ul]", SERIAL_PORT_BAUD_RATE);
   logToSerial(INFO, "Attempting to initialize status indicators:");
 
-  pinMode(WifiConnectionIndicatorPinNumber, OUTPUT);
-  digitalWrite(WifiConnectionIndicatorPinNumber, HIGH);
+  pinMode(WifiConnectionIndicatorPin, OUTPUT);
+  digitalWrite(WifiConnectionIndicatorPin, HIGH);
 
-  pinMode(RegistrationIndicatorPinNumber, OUTPUT);
-  digitalWrite(RegistrationIndicatorPinNumber, HIGH);
+  pinMode(RegistrationIndicatorPin, OUTPUT);
+  digitalWrite(RegistrationIndicatorPin, HIGH);
 
   logToSerial(INFO, "All status indicators initialized successfully: STATE=[disabled]");
+  logToSerial(INFO, "Attempting to initialize sensor: TYPE=[BATT_LEVEL]");
+
+  pinMode(BatteryMeasureEnablePin, OUTPUT);
+  digitalWrite(BatteryMeasureEnablePin, HIGH);
+
+  logToSerial(INFO, "Sensor initialized successfully: TYPE=[BATT_LEVEL]");
   logToSerial(INFO, "Attempting to initialize sensor: TYPE=[BME280]");
 
   while(!Bme280.begin()) {
@@ -112,13 +129,13 @@ void setup() {
   logToSerial(DEBUG, "WiFi signal strength measured: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
   logToSerial(DEBUG, "Changing state of WiFi connection indicator: STATE=[enabled]");
 
-  digitalWrite(WifiConnectionIndicatorPinNumber, LOW);
+  digitalWrite(WifiConnectionIndicatorPin, LOW);
 
   registerAllFeatures();
 
   logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
 
-  digitalWrite(RegistrationIndicatorPinNumber, LOW);
+  digitalWrite(RegistrationIndicatorPin, LOW);
 
   logToSerial(INFO, "Initializing local server API: PORT=[%d]", LOCAL_SERVER_PORT);
 
@@ -142,12 +159,12 @@ void loop() {
   if (currentTimestamp - LastHeartbeatTimestamp >= HEARTBEAT_INTERVAL) {
     if (!trySendHeartbeatSignal(WiFiManager)) {
       logToSerial(DEBUG, "Changing state of registration indicator: STATE=[disabled]");
-      digitalWrite(RegistrationIndicatorPinNumber, HIGH);
+      digitalWrite(RegistrationIndicatorPin, HIGH);
 
       registerAllFeatures();
 
       logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
-      digitalWrite(RegistrationIndicatorPinNumber, LOW);
+      digitalWrite(RegistrationIndicatorPin, LOW);
     }
     LastHeartbeatTimestamp = currentTimestamp;
   }
