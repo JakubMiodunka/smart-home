@@ -14,7 +14,8 @@ It integrates sensors to monitor temperature, humidity, atmospheric pressure, an
 ### Environmental Monitoring
 
 Ambient temperature, relative humidity, and atmospheric pressure are measured using a `BME280` environmental sensor module (`U3`).
-The sensor interfaces with the `ESP8266` microcontroller over the *I2C* communication bus, enabling data acquisition with minimal pin usage. Pins related to *SPI* communication mode are left unused.
+The sensor interfaces with the `ESP8266` microcontroller over the *I2C* communication bus, enabling data acquisition with minimal pin usage.
+Pins related to *SPI* communication mode are left unused.
 
 ### Batter Level
 
