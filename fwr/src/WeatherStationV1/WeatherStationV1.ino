@@ -8,6 +8,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
+#include <Batteries.h>
 #include <Config.h>
 #include <Secrets.h>
 #include <Sensors.h>
@@ -36,8 +37,15 @@ Sensor Sensors[] =
       0,  // Global ID unknown until registration.
       1,
       MeasurementType::BatteryLevel,
-      []() { digitalWrite(BatteryMeasureEnablePin, LOW); },
-      []() { return (double)analogRead(BatteryMeasureAnalogPin); },  // TODO: Figure out how to compute battery level as percentage.
+      []() { digitalWrite(BatteryMeasureEnablePin, HIGH); },
+      []() {
+        int analogValue = analogRead(BatteryMeasureAnalogPin);
+
+        // Convert raw ADC reading (0-1023) to voltage and compensate for the R1/R2 voltage divider ratio.
+        float batteryVoltage = (analogValue / 1023.0F) * 4.3F;
+
+        return (double)computeLithiumBatteryChargeLevel(batteryVoltage, 1);
+      },
       []() { digitalWrite(BatteryMeasureEnablePin, LOW); }
     },
     {
@@ -103,7 +111,7 @@ void setup() {
   logToSerial(INFO, "Attempting to initialize sensor: TYPE=[BATT_LEVEL]");
 
   pinMode(BatteryMeasureEnablePin, OUTPUT);
-  digitalWrite(BatteryMeasureEnablePin, HIGH);
+  digitalWrite(BatteryMeasureEnablePin, LOW);
 
   logToSerial(INFO, "Sensor initialized successfully: TYPE=[BATT_LEVEL]");
   logToSerial(INFO, "Attempting to initialize sensor: TYPE=[BME280]");
