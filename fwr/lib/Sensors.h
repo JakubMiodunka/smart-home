@@ -92,7 +92,7 @@ struct GetMeasurementStationResponse {
   /// <summary>
   /// Value measured by the sensor.
   /// </summary>
-  double measurementValue;
+  float measurementValue;
 
   /// <summary>
   /// Populates the provided JSON document with the sensor measurement data.
@@ -146,7 +146,7 @@ struct Sensor {
   /// <returns>
   /// Measurement value retrieved from the sensor.
   /// </returns>
-  double (* const measurementAction)();
+  float (* const measurementAction)();
 
   /// <summary>
   /// Action performed after the sensor has taken its measurement.
@@ -166,7 +166,7 @@ struct Sensor {
   /// <returns>
   /// The measurement value retrieved from the sensor.
   /// </returns>
-  double takeMeasurement();
+  float takeMeasurement();
 
   /// <summary>
   /// Attempts to register the sensor on the remote server.
