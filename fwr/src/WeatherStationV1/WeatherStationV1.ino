@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <cmath>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
@@ -37,41 +38,96 @@ Sensor Sensors[] =
       0,  // Global ID unknown until registration.
       1,
       MeasurementType::BatteryLevel,
-      []() { digitalWrite(BatteryMeasureEnablePin, HIGH); },
       []() {
-        int analogValue = analogRead(BatteryMeasureAnalogPin);
+        logToSerial(DEBUG, "Enabling battery voltage measurement hardware: GPIO_PIN=[%d]", BatteryMeasureEnablePin);
+
+        digitalWrite(BatteryMeasureEnablePin, LOW);
+        delay(10); // Time for Q2 transistor to fully open before taking measurement.
+
+        logToSerial(DEBUG, "Battery measurement hardware enabled successfully:");
+      },
+      []() {
+        logToSerial(DEBUG, "Retrieving value from ADC: PIN=[%d]", BatteryMeasureAnalogPin);
+
+        // TODO: Perform multiple readings to then calculate average - to much noise - battery voltage level is unstable to read.
+        int adcValue = analogRead(BatteryMeasureAnalogPin);
+
+        logToSerial(DEBUG, "Value from ADC retrieved successfully: ADC_VALUE=[%d]", adcValue);
+        logToSerial(DEBUG, "Determining battery voltage:");
 
         // Convert raw ADC reading (0-1023) to voltage and compensate for the R1/R2 voltage divider ratio.
-        float batteryVoltage = (analogValue / 1023.0F) * 4.3F;
+        float batteryVoltage = ((float)adcValue / 1023.0F) * 4.3F;
 
-        return (double)computeLithiumBatteryChargeLevel(batteryVoltage, 1);
+        logToSerial(DEBUG, "Battery voltage determined successfully: BATT_VOLTAGE=[%f V]", batteryVoltage);
+        logToSerial(DEBUG, "Determining battery level:");
+
+        float batteryLevel = computeLithiumBatteryChargeLevel(batteryVoltage, 1);
+
+        logToSerial(DEBUG, "Battery level determined successfully: BATT_LEVEL=[%f%%]", batteryLevel);
+
+        return batteryLevel;
       },
-      []() { digitalWrite(BatteryMeasureEnablePin, LOW); }
+      []() {
+        logToSerial(DEBUG, "Disabling battery voltage measurement hardware: GPIO_PIN=[%d]", BatteryMeasureEnablePin);
+
+        digitalWrite(BatteryMeasureEnablePin, HIGH);
+
+        logToSerial(DEBUG, "Battery measurement hardware disabled successfully:");
+      }
     },
     {
       0,
       2,
       MeasurementType::Temperature,
-      []() {},  // No pre-measurement action required.
-      []() { return (double)(Bme280.readTemperature() + 273.15F); },  // Conversion from Celsius to kelvin
-      []() {}  // No post-measurement action required.
+      []() { logToSerial(DEBUG, "No pre-measurement action required."); },
+      []() {
+          logToSerial(DEBUG, "Retrieving temperature value from BME280:");
+          
+          float temperatureValue = Bme280.readTemperature();  // Given in Celsius.
+
+          logToSerial(DEBUG, "Temperature value retrieved successfully: VALUE=[%f °C]", temperatureValue);
+          logToSerial(DEBUG, "Performing conversion from Celsius to Kelvin:");
+          
+          float temperatureKelvin = temperatureValue + 273.15F;
+
+          logToSerial(DEBUG, "Conversion successful: VALUE=[%f K]", temperatureKelvin);
+
+          return temperatureKelvin;
+      },
+      []() { logToSerial(DEBUG, "No post-measurement action required."); }
     },
     { 
       0,
       3,
       MeasurementType::Pressure,
-      []() {},
-      []() { return (double)Bme280.readPressure(); },
-      []() {}
+      []() { logToSerial(DEBUG, "No pre-measurement action required:"); },
+      []() {
+          logToSerial(DEBUG, "Retrieving pressure value from BME280:");
+          
+          float pressureValue = Bme280.readPressure();  // Given in Pascals.
+
+          logToSerial(DEBUG, "Pressure value retrieved successfully: VALUE=[%f Pa]", pressureValue);
+
+          return pressureValue;
+      },
+      []() { logToSerial(DEBUG, "No post-measurement action required:"); }
     },
     { 
-      0,
-      4,
-      MeasurementType::RelativeHumidity,
-      []() {},
-      []() { return (double)Bme280.readHumidity(); },
-      []() {}
-    } 
+        0,
+        4,
+        MeasurementType::RelativeHumidity,
+        []() { logToSerial(DEBUG, "No pre-measurement action required:"); },
+        []() {
+            logToSerial(DEBUG, "Retrieving humidity value from BME280:");
+            
+            float humidityValue = Bme280.readHumidity();  // Given in %.
+
+            logToSerial(DEBUG, "Humidity value retrieved successfully: VALUE=[%f%%]", humidityValue);
+
+            return humidityValue;
+        },
+        []() { logToSerial(DEBUG, "No post-measurement action required:"); }
+    }
   };
 
 // Timekeeping:
@@ -102,21 +158,21 @@ void setup() {
   logToSerial(INFO, "Attempting to initialize status indicators:");
 
   pinMode(WifiConnectionIndicatorPin, OUTPUT);
-  digitalWrite(WifiConnectionIndicatorPin, HIGH);
+  digitalWrite(WifiConnectionIndicatorPin, LOW);
 
   pinMode(RegistrationIndicatorPin, OUTPUT);
-  digitalWrite(RegistrationIndicatorPin, HIGH);
+  digitalWrite(RegistrationIndicatorPin, LOW);
 
-  logToSerial(INFO, "All status indicators initialized successfully: STATE=[disabled]");
+  logToSerial(INFO, "All status indicators initialized successfully: STATE=[enabled]");
   logToSerial(INFO, "Attempting to initialize sensor: TYPE=[BATT_LEVEL]");
 
   pinMode(BatteryMeasureEnablePin, OUTPUT);
   digitalWrite(BatteryMeasureEnablePin, LOW);
 
   logToSerial(INFO, "Sensor initialized successfully: TYPE=[BATT_LEVEL]");
-  logToSerial(INFO, "Attempting to initialize sensor: TYPE=[BME280]");
+  logToSerial(INFO, "Attempting to initialize sensor: TYPE=[BME280], I2C_ADDRESS=[%d]", Bme280I2CAddress);
 
-  while(!Bme280.begin()) {
+  while(!Bme280.begin(Bme280I2CAddress)) {
     logToSerial(ERROR, "Failed to initialize sensor: TYPE=[BME280]");
     delay(1000);
     logToSerial(INFO, "Re-attempting to initialize sensor: TYPE=[BME280]");
@@ -135,15 +191,15 @@ void setup() {
   logToSerial(INFO, "Connection established successfully:");
   logToSerial(DEBUG, "IP address assigned to station: IP_ADDRESS=[%s]", WiFi.localIP().toString().c_str());
   logToSerial(DEBUG, "WiFi signal strength measured: SIGNAL_STRENGTH=[%d][dBm]", WiFi.RSSI());
-  logToSerial(DEBUG, "Changing state of WiFi connection indicator: STATE=[enabled]");
+  logToSerial(DEBUG, "Changing state of WiFi connection indicator: STATE=[disabled]");
 
-  digitalWrite(WifiConnectionIndicatorPin, LOW);
+  digitalWrite(WifiConnectionIndicatorPin, HIGH);
 
   registerAllFeatures();
 
-  logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
+  logToSerial(DEBUG, "Changing state of registration indicator: STATE=[disabled]");
 
-  digitalWrite(RegistrationIndicatorPin, LOW);
+  digitalWrite(RegistrationIndicatorPin, HIGH);
 
   logToSerial(INFO, "Initializing local server API: PORT=[%d]", LOCAL_SERVER_PORT);
 
@@ -166,13 +222,13 @@ void loop() {
 
   if (currentTimestamp - LastHeartbeatTimestamp >= HEARTBEAT_INTERVAL) {
     if (!trySendHeartbeatSignal(WiFiManager)) {
-      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[disabled]");
-      digitalWrite(RegistrationIndicatorPin, HIGH);
+      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
+      digitalWrite(RegistrationIndicatorPin, LOW);
 
       registerAllFeatures();
 
-      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[enabled]");
-      digitalWrite(RegistrationIndicatorPin, LOW);
+      logToSerial(DEBUG, "Changing state of registration indicator: STATE=[disabled]");
+      digitalWrite(RegistrationIndicatorPin, HIGH);
     }
     LastHeartbeatTimestamp = currentTimestamp;
   }
