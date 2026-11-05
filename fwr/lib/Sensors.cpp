@@ -40,7 +40,7 @@ bool SensorRegistrationServerResponse::tryParseJsonDocument(const JsonDocument& 
   return true;
 }
 
-double Sensor::takeMeasurement()
+float Sensor::takeMeasurement()
 {
   logToSerial(INFO, "Attempting to take a measurement using sensor: ID=[%d], LOCAL_ID=[%d]", this->id, this->localId);
 
@@ -49,7 +49,7 @@ double Sensor::takeMeasurement()
   logToSerial(DEBUG, "Sensor pre-measurement action successful:");
 
   logToSerial(DEBUG, "Attempting to perform sensor measurement action:");
-  double measurementValue = this->measurementAction();
+  float measurementValue = this->measurementAction();
   logToSerial(DEBUG, "Sensor measurement action successful: MEASUREMENT_VALUE=[%f]", measurementValue);
 
   logToSerial(DEBUG, "Attempting to perform sensor post-measurement action:");
@@ -123,7 +123,7 @@ void Sensor::setupControlEndpoint(ESP8266WebServer& server) {
       return;
     }
 
-    double measurementValue = this->takeMeasurement();
+    float measurementValue = this->takeMeasurement();
     
     GetMeasurementStationResponse response = { measurementValue };
     JsonDocument responseJson;
