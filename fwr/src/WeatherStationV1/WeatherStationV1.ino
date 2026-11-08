@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <cmath>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
@@ -8,6 +7,7 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#include <math.h>
 
 #include <Batteries.h>
 #include <Config.h>
@@ -17,11 +17,9 @@
 #include <Station.h>
 #include <Requests.h>
 
-// Connectivity:
 ESP8266WiFiMulti WiFiManager;
 ESP8266WebServer LocalServer(LOCAL_SERVER_PORT);
 
-// Peripherals definition:
 Adafruit_BME280 Bme280;
 constexpr uint8_t Bme280I2CAddress = 0x76;  // Usually eather 0x76 or 0x77.
 
@@ -49,7 +47,6 @@ Sensor Sensors[] =
       []() {
         logToSerial(DEBUG, "Retrieving value from ADC: PIN=[%d]", BatteryMeasureAnalogPin);
 
-        // TODO: Perform multiple readings to then calculate average - to much noise - battery voltage level is unstable to read.
         int adcValue = analogRead(BatteryMeasureAnalogPin);
 
         logToSerial(DEBUG, "Value from ADC retrieved successfully: ADC_VALUE=[%d]", adcValue);
@@ -58,12 +55,19 @@ Sensor Sensors[] =
         // Convert raw ADC reading (0-1023) to voltage and compensate for the R1/R2 voltage divider ratio.
         float batteryVoltage = ((float)adcValue / 1023.0F) * 4.3F;
 
-        logToSerial(DEBUG, "Battery voltage determined successfully: BATT_VOLTAGE=[%f V]", batteryVoltage);
+        /* 
+         *Round to one decimal place to filter out minor voltage fluctuations, ensuring stable battery level reading.
+         * Tried to also add averaging of the ADC reading to achieve similar effect, but readings were still not stable.
+         * This approach offers reasonable accuracy and reading consistency.
+         */
+        batteryVoltage = roundf(batteryVoltage * 10.0F) / 10.0F;
+
+        logToSerial(DEBUG, "Battery voltage determined successfully: BATT_VOLTAGE=[%.1f V]", batteryVoltage);
         logToSerial(DEBUG, "Determining battery level:");
 
         float batteryLevel = computeLithiumBatteryChargeLevel(batteryVoltage, 1);
 
-        logToSerial(DEBUG, "Battery level determined successfully: BATT_LEVEL=[%f%%]", batteryLevel);
+        logToSerial(DEBUG, "Battery level determined successfully: BATT_LEVEL=[%.2f%%]", batteryLevel);
 
         return batteryLevel;
       },
