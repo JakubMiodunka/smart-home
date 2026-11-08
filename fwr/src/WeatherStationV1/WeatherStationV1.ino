@@ -56,9 +56,9 @@ Sensor Sensors[] =
         float batteryVoltage = ((float)adcValue / 1023.0F) * 4.3F;
 
         /* 
-         *Round to one decimal place to filter out minor voltage fluctuations, ensuring stable battery level reading.
+         * Round to one decimal place to filter out minor voltage fluctuations, ensuring stable battery level reading.
          * Tried to also add averaging of the ADC reading to achieve similar effect, but readings were still not stable.
-         * This approach offers reasonable accuracy and reading consistency.
+         * This approach offers reasonable accuracy and reading consistency, without adding lot of additional overhead.
          */
         batteryVoltage = roundf(batteryVoltage * 10.0F) / 10.0F;
 
