@@ -36,6 +36,11 @@ The hardware for the battery level measurement system was heavily inspired by th
 [Battery Voltage Monitoring breakout board](https://github.com/hallard/Battery-Voltage-Measure/blob/master/README.md) by
 [Charles Hallard](https://github.com/hallard).
 
+The described solution is capable of delivering a stable precision of 0.1 V (determined through empirical testing) - readings at subsequent
+decimal places fluctuate too excessively due to inherent ADC noise to be used for more precise battery level measurement.
+Consequently, this limitation yields 12 discrete reference points across the 3.0 V to 4.2 V range of a 1S lithium cell,
+while still providing sufficient granularity for reliable battery level estimation.
+
 ## Power Supply
 
 A single-cell 18650 Li-Ion battery serves as the main power source for the board, secured in a dedicated holder (`U1`) for quick and easy replacement when discharged.
