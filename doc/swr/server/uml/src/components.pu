@@ -136,6 +136,7 @@ package Tests {
         **Dependencies**
         NuGet packages:
         - coverlet.collector
+        - Microsoft.Extensions.Diagnostics.Testing
         - Microsoft.NET.Test.Sdk
         - NUnit.Analyzers
         - NUnit3TestAdapter
