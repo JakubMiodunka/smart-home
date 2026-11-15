@@ -322,7 +322,7 @@ internal sealed class SensorsControllerTests
                 macAddress: null))
             .ReturnsAsync(parentStation);
 
-        double expectedMeasurementValue = randomizer.NextDouble();
+        float expectedMeasurementValue = randomizer.NextFloat();
         var sensorManagerMock = new Mock<ISensorManager>();
 
         sensorManagerMock.Setup(mock =>
@@ -485,7 +485,7 @@ internal sealed class SensorsControllerTests
 
         sensorManagerMock.Setup(mock =>
             mock.TryGetMeasurementAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as double?);
+            .ReturnsAsync(null as float?);
 
         var sensorManagerFactoryStub = new Mock<ISensorManagerFactory>();
 
