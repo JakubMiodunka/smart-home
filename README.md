@@ -45,27 +45,32 @@ There is immense satisfaction in building a system from the ground up that refle
 
 ### Current state
 
-// TODO: UPDATE PRIOR TO RELEASE
-
 The system currently features a functional foundational architecture with established bidirectional communication between
 the central server and hardware nodes. The core database schema is implemented for persistent data management,
 and the server-side logic is integrated with modular firmware components capable of data exchange.
-At this stage, the system supports primary home automation functionality through on/off switching,
-allowing the server to control binary states within the household while maintaining
-a stable connection across the local network infrastructure.
+
+Building upon this infrastructure, the project incorporates the complete end-to-end hardware design, BOM (Bill of Materials),
+and a working prototype of its first dedicated node model - a weather station - powered by custom firmware utilizing shared libraries.   
+
+In terms of operational capabilities, the platform supports both digital actuation (ON/OFF switches) and telemetry data exchange.
+It is fully equipped to ingest, process, and persist any arbitrary sensor measurements and status telemetry delivered by remote hardware nodes.
 
 ### Future Directions
 
 The project is designed for continuous expansion across all layers of the stack.
-Future functional updates will extend the system's capabilities beyond binary switching to include linear control modules,
-such as light dimmers, and the integration of environmental telemetry to track measurements like temperature
-and humidity across rooms within the household. To move beyond the current reliance on manual HTTP requests via tools like
+Future functional updates will extend the system's capabilities to include linear control modules,
+such as light dimmers, and home automation rules.
+
+To move beyond the current reliance on manual HTTP requests via tools like
 [cURL](https://curl.se/ "cURL website"), [Postman](https://www.postman.com/ "Postman website")
 or [Insomnia](https://insomnia.rest/ "Insomnia website"), a dedicated graphical client application is planned to provide
-a more intuitive and fluid interaction with the system. On the hardware side, the project will expand to include comprehensive
-designs for specific station models, accompanied by electronic schematics and 3D CAD models. These assets will cover protective
-enclosures and also functional mechanical components required for specialized station operations.
-Furthermore, development will focus on iterative improvements to code quality and the systematic strengthening
+a more intuitive and fluid interaction with the system.
+
+On the hardware side, the project will expand to include new station models designs,
+accompanied by electronic schematics and 3D CAD models.
+These assets will cover protective enclosures and also functional mechanical components required for specialized station operations.
+
+Alongside the feature expansions, development will focus on iterative improvements to code quality and the systematic strengthening
 of cybersecurity to transition the system from a foundational prototype to a hardened, production-ready smart-home solution.
 
 ## Repository Structure
@@ -78,13 +83,12 @@ of cybersecurity to transition the system from a foundational prototype to a har
 and specific implementations for individual station types.
 
 ### Software
+
 * [`/swr/server`](./swr/server/) - Source code for the central server responsible for managing the system
 and aggregating data from all components.
 Implemented in [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language) "Wikipedia article") and ADO.NET.
-* [`/doc/swr/server/uml`](./doc/swr/server/uml/) - UML-based description of the current system architecture 
+* [`/doc/swr/server/uml/img`](./doc/swr/server/uml/img/) - UML-based description of the current system architecture 
 (component diagram) along with the class diagrams for each individual module.
-All diagrams are created using [PlantUML](https://plantuml.com/ "PlantUML website"), meaning they are stored
-as plain text files and can be easily viewed or edited using the [PlantUML Online Editor](https://editor.plantuml.com/ "PlantUML Online Editor").
 * [`/doc/swr/server/html/`](./doc/swr/server/html/) - HTML-based server code documentation, automatically generated using
 [DoxyGen](https://www.doxygen.nl/ "DoxyGen website"). View the content by opening
 [*index.html*](./doc/Server/html/index.html) in Your browser of choice.
@@ -92,7 +96,6 @@ as plain text files and can be easily viewed or edited using the [PlantUML Onlin
 ### Hardware
 
 * [`/hdw`](./hdw) - Hardware designs for stations supported by created system and auxiliary development devices.
-Created using [EasyEDA](https://easyeda.com).
 * [`/doc/hwr`](./doc/hwr/) - Hardware documentation covering stations supported by created system and diagnostic/development tools.
 
 ### Others
@@ -103,7 +106,7 @@ Created using [EasyEDA](https://easyeda.com).
 
 ### Server Setup
 
-The backend infrastructure requires instance of SQL Server 2022. For a streamlined deployment, it is recommended
+The backend infrastructure requires instance of SQL Server 2025. For a streamlined deployment, it is recommended
 to use [Docker](https://www.docker.com/ "Docker website") and [Official SQL Server Docker Image](https://hub.docker.com/_/microsoft-mssql-server).
 
 * Initialize your database instance by deploying the schema located in the
@@ -142,10 +145,10 @@ all node features will become operational.
 **Notes:**
 
 * For your first run, it is recommended to start with [`NodeMcuDemo.ino`](./fwr/src/NodeMcuDemo/NodeMcuDemo.ino),
-which requires only a bare *NodeMcu* board (no proprietary project hardware needed).
+which requires only a bare *NodeMcu* board (no project-proprietary hardware needed).
 The demo implementation includes a simple on/off utility configured to control the state of the built-in LED.
 * In case of registration or operational issues, the *SERIAL_PORT_LOGGING* configuration parameter can be set to *true*
-(enabled by default) to route system log messages to the serial port for debugging and investigation.
+to route system log messages to the serial port for debugging.
 
 ### Interactions With The System
 
@@ -159,7 +162,7 @@ the [*SmartHome.Server.Main.http*](./swr/server/SmartHome.Server.Main/SmartHome.
 Versioning for this project follows the established guidelines
 of [semantic versioning](https://en.m.wikipedia.org/wiki/Software_versioning#Semantic_versioning "Wikipedia article").
 
-Current version: 1.0.2
+Current version: 1.1.0
 
 ## Project management
 
@@ -175,7 +178,7 @@ If You spotted some bug or have a suggestion feel free to create corresponding i
 * Auxiliary Text Editor: [Visual Studio Code](https://code.visualstudio.com/ "Visual Studio Code website")
 * HTML Documentation Generator: [DoxyGen 1.12.0](https://www.doxygen.nl/ "DoxyGen website")
 * UML Diagramming Tool: [PlantUML Online Editor](https://editor.plantuml.com/ "PlantUML Online Editor").
-* Hardware design: [EasyEDA](https://easyeda.com/editor "EasyEDA editor)
+* Hardware design: [EasyEDA](https://easyeda.com/editor "EasyEDA editor")
 * AI Assistants: [Google Gemini](https://gemini.google.com/app "Google Gemini chat") + [Perplexity](https://www.perplexity.ai/ "Perplexity chat")
 
 ## AI Disclaimer
