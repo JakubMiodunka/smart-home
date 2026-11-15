@@ -6,6 +6,9 @@ fwr/src/*/Secrets.cpp
 swr/.vs/
 swr/server/.vs/
 
+# Visual Studio Code cache directory.
+.vscode/
+
 # Directories used during application build.
 swr/server/SmartHome.Server.Databases.Main/bin/
 swr/server/SmartHome.Server.Databases.Main/obj/

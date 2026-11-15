@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 1.1.0
+
+**Release Date:** 2026-11-15  
+**License:** MIT  
+**Contributors:**
+- [Jakub Miodunka](https://github.com/JakubMiodunka "GitHub profile")
+
+### Changes
+- Added support for sensor measurements taken by hardware nodes.
+- Completed the end-to-end design of the first dedicated hardware model - weather station.
+
 ## Version 1.0.2
 
 **Release Date:** 2026-07-16
