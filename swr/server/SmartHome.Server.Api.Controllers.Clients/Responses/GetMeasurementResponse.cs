@@ -7,4 +7,4 @@
 /// <param name="MeasurementValue">
 /// Value of the measurement retrieved from the sensor.
 /// </param>
-internal sealed record GetMeasurementResponse(double MeasurementValue);
+internal sealed record GetMeasurementResponse(float MeasurementValue);

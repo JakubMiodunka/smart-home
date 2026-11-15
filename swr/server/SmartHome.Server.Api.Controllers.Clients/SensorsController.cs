@@ -179,7 +179,7 @@ public sealed class SensorsController : BaseController
 
         ISensorManager sensorManager = _sensorManagerFactory.CreateFor(sensorEntity, parentStation);
 
-        if (await sensorManager.TryGetMeasurementAsync(cancellationToken) is double measurementValue)
+        if (await sensorManager.TryGetMeasurementAsync(cancellationToken) is float measurementValue)
         {
             _logger.LogInformation(
                 "Get measurement request processed successfully: " +

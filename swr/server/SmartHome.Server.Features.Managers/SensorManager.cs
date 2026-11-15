@@ -93,7 +93,7 @@ internal sealed class SensorManager : FeatureManager, ISensorManager
     /// <summary>
     /// Sends a command to station associated with managed switch to take a measurement.
     /// </summary>
-    public async Task<double?> TryGetMeasurementAsync(CancellationToken cancellationToken)
+    public async Task<float?> TryGetMeasurementAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Attempting to take a measurement: SensorId=[{SensorId}], StationId=[{StationId}]",
