@@ -81,6 +81,9 @@ of cybersecurity to transition the system from a foundational prototype to a har
 * [`/fwr/src`](./fwr/src) - Source code dedicated to specific station firmware implementations.
 * [`/doc/fwr`](./doc/fwr/) - Documentation detailing the firmware development philosophy 
 and specific implementations for individual station types.
+* [`/doc/fwr/html/`](./doc/swr/server/html/) - HTML-based firmware shared libraries code documentation,
+automatically generated using [DoxyGen](https://www.doxygen.nl/ "DoxyGen website").
+View the content by opening [*index.html*](./doc/fwr/html/index.html) in Your browser of choice.
 
 ### Software
 
