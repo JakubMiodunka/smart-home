@@ -5,5 +5,6 @@ var searchData=
   ['backgroundprocessorservicetests_2',['BackgroundProcessorServiceTests',['../class_smart_home_1_1_server_1_1_tests_1_1_services_1_1_background_processor_service_tests.html',1,'SmartHome::Server::Tests::Services']]],
   ['backgroundprocessorservicetests_2ecs_3',['BackgroundProcessorServiceTests.cs',['../_background_processor_service_tests_8cs.html',1,'']]],
   ['basecontroller_4',['BaseController',['../class_smart_home_1_1_server_1_1_api_1_1_controllers_1_1_common_1_1_base_controller.html',1,'SmartHome.Server.Api.Controllers.Common.BaseController'],['../class_smart_home_1_1_server_1_1_api_1_1_controllers_1_1_common_1_1_base_controller.html#a7a09e27a16ee6e9a29f3861a57190357',1,'SmartHome.Server.Api.Controllers.Common.BaseController.BaseController()']]],
-  ['basecontroller_2ecs_5',['BaseController.cs',['../_base_controller_8cs.html',1,'']]]
+  ['basecontroller_2ecs_5',['BaseController.cs',['../_base_controller_8cs.html',1,'']]],
+  ['batterylevel_6',['BatteryLevel',['../namespace_smart_home_1_1_server_1_1_repositories_1_1_enumerations.html#a16446395f9d5a279774a37fdf6271f06ac6b9d1a622ec8d12966b84826768f206',1,'SmartHome::Server::Repositories::Enumerations']]]
 ];
