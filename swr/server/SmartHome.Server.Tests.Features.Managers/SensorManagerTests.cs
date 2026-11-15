@@ -189,7 +189,7 @@ internal sealed class SensorManagerTests
         HttpMethod expectedHttpMethod = HttpTestUtilities.GetHttpMethodFromName(expectedHttpMethodName);
         Uri expectedEndpointUrl = GetSensorUrl(sensorEntity, parentStation);
 
-        double expectedMeasurementValue = randomizer.NextDouble();
+        float expectedMeasurementValue = randomizer.NextFloat();
         var response = new GetMeasurementResponse(expectedMeasurementValue);
 
         var stationApiClientMock = new Mock<IStationApiClient>();
@@ -215,7 +215,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
+        float? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
 
         Assert.That(actualMeasurementValue, Is.EqualTo(expectedMeasurementValue));
 
@@ -260,7 +260,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
+        float? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
 
         Assert.That(actualMeasurementValue, Is.Null);
 
@@ -308,7 +308,7 @@ internal sealed class SensorManagerTests
             stationApiClientFactoryStub.Object,
             loggerMock);
 
-        double? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
+        float? actualMeasurementValue = await managerUnderTest.TryGetMeasurementAsync(CancellationToken.None);
         
         Assert.That(actualMeasurementValue, Is.Null);
 

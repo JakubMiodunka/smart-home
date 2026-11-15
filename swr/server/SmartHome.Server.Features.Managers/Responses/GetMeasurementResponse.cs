@@ -10,4 +10,4 @@ namespace SmartHome.Server.Features.Managers.Responses;
 /// <param name="MeasurementValue">
 /// Value of the measurement taken by the sensor.
 /// </param>
-internal sealed record GetMeasurementResponse([Required] double MeasurementValue);
+internal sealed record GetMeasurementResponse([Required] float MeasurementValue);
