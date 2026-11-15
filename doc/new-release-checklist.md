@@ -35,21 +35,20 @@ Add a new entry to [CHANGELOG.md](../../CHANGELOG.md) using the following templa
 
 ## Text Documentation
 
-Ensure the following files content is factually correct and remains relevant to the new version of the system:
-
-1. [new-version-release-checklist.md](./new-version-release-checklist.md)
-2. [server-api-endpoints.md](./swr/server/server-api-endpoints.md)
+Ensure the written documentation stored in [/doc](../doc/) is factually correct and remains relevant to the new version of the system.
 
 ## Server codebase
 
-1. Ensure the development connection string has been replaced with a generic placeholder.
+1. Ensure the development connection string stored in
+[RepositoriesConfiguration.cs](../swr/server/SmartHome.Server.Repositories/Configuration/RepositoriesConfiguration.cs)
+has been replaced with a generic placeholder.
 2. Verify the server application binds only to localhost in
-[launchSettings.json](../../swr/server/SmartHome.Server.Main/Properties/launchSettings.json).
+[launchSettings.json](../swr/server/SmartHome.Server.Main/Properties/launchSettings.json).
 3. Verify that all client-facing API endpoints have call examples in
-[SmartHome.Server.Main.http](../../swr/server/SmartHome.Server.Main/SmartHome.Server.Main.http).
-4. Check that the base URL in [SmartHome.Server.Main.http](../../swr/server/SmartHome.Server.Main/SmartHome.Server.Main.http) points to localhost and the port specified in [launchSettings.json](../../swr/server/SmartHome.Server.Main/Properties/launchSettings.json).
+[SmartHome.Server.Main.http](../swr/server/SmartHome.Server.Main/SmartHome.Server.Main.http).
+4. Check that the base URL in [SmartHome.Server.Main.http](../swr/server/SmartHome.Server.Main/SmartHome.Server.Main.http) points to localhost and the port specified in [launchSettings.json](../swr/server/SmartHome.Server.Main/Properties/launchSettings.json).
 5. Ensure all unit tests pass successfully.
 
 ## Firmware codebase
 
-1. Ensure no development secrets or credentials were leaked in [secrets.cpp](../../fwr/generic_firmware/secrets.cpp).
+1. Ensure no development secrets or credentials were leaked in `secrets.cpp`.
