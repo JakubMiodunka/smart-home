@@ -2,7 +2,7 @@
 
 ## Overview
 
-A dedicated programming board based on the NodeMCU 1.0 layout,
+A dedicated programming board based on the NodeMCU 1.0 board,
 engineered to simplify firmware flashing and debugging for standalone ESP8266-based hardware modules and custom boards.
 
 ## Schematic

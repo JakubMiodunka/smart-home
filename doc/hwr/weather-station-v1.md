@@ -7,7 +7,7 @@ It integrates sensors to monitor temperature, humidity, atmospheric pressure, an
 
 ## Schematic
 
-![Electronic Schematic](./images/weather-station-v1-schematic.svg)
+![Electronic Schematic](./img/weather-station-v1-schematic.svg)
 
 ## Measurements
 
@@ -147,12 +147,12 @@ This BOM was prepared to roughly estimate which components are needed and how mu
 
 |                                                               |                                                                |
 |:-------------------------------------------------------------:|:--------------------------------------------------------------:|
-|![Prototype PCB](./images/weather-station-v1-prototype-01.png) | ![Prototype PCB](./images/weather-station-v1-prototype-02.png) |
+|![Prototype PCB](./img/weather-station-v1-prototype-01.png) | ![Prototype PCB](./img/weather-station-v1-prototype-02.png) |
 
 ### Remarks
 
 Note that, to allow for more convenient placement of components, the guidelines regarding the restricted area around the `ESP8266` antenna
-(the region around the antena, where electronic components or copper traces should not be placed to preserve optimal antenna performance)
+(the region around the antenna, where electronic components or copper traces should not be placed to preserve optimal antenna performance)
 were not followed. While this compromise is acceptable for a prototype, it may reduce the device's available *Wi-Fi* range.
 Therefore, compliance with these restricted area guidelines should be strictly maintained during the main PCB design.
 
